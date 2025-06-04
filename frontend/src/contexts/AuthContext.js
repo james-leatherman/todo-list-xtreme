@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 const AuthContext = createContext(null);
@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
     if (token) {
       try {
         // Verify token and get user info
-        const decoded = jwt_decode(token);
+        const decoded = jwtDecode(token);
         
         // Check if token is expired
         const currentTime = Date.now() / 1000;

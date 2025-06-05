@@ -5,7 +5,7 @@
 SECRET_KEY=$(openssl rand -hex 32)
 
 # Generate random database credentials for production
-DB_USER="dbuser_$(openssl rand -hex 4)"
+DB_USER="tlx-dbuser"
 DB_PASSWORD=$(openssl rand -base64 24)
 
 # Create .env file for local development

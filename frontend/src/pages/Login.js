@@ -20,6 +20,16 @@ function Login() {
     window.location.href = authService.getGoogleLoginUrl();
   };
 
+  // Update the handleDevLogin function with the new token
+  const handleDevLogin = () => {
+    // Use the newly generated token
+    const testToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzgwNjU4ODE4fQ.LTQHkvhqBWpFxR7SC9nrOz0mVp9-xEhbr69m6WwHZqs";
+    
+    localStorage.setItem('token', testToken);
+    // Force a page reload to update the auth context
+    window.location.href = '/';
+  };
+
   return (
     <Container maxWidth="sm" sx={{ mt: 10 }}>
       <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
@@ -49,11 +59,7 @@ function Login() {
               variant="outlined"
               color="secondary"
               size="medium"
-              onClick={() => {
-                const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzQ5MTcyMzExfQ.Xwo6PVcoIgchrd3rWlBDKMWofs18yx0QUqzX0CSefLE';
-                localStorage.setItem('token', token);
-                window.location.reload();
-              }}
+              onClick={handleDevLogin}
               sx={{ mt: 2 }}
               fullWidth
             >

@@ -29,6 +29,10 @@ def create_test_user():
         if existing_user:
             print(f"User {test_user.email} already exists with ID: {existing_user.id}")
             user_id = existing_user.id
+            # Update the existing user to ensure it's valid
+            setattr(existing_user, "name", "Test User")
+            setattr(existing_user, "google_id", "test123")
+            db.commit()
         else:
             # Add the new user
             db.add(test_user)
@@ -37,8 +41,8 @@ def create_test_user():
             user_id = test_user.id
             print(f"Created new user with ID: {user_id}")
         
-        # Create a token that will be valid for 24 hours
-        expires_delta = timedelta(hours=24)
+        # Create a token that will be valid for 365 days (long-lasting for dev purposes)
+        expires_delta = timedelta(days=365)
         expire = datetime.now(timezone.utc) + expires_delta
         
         # Create JWT token

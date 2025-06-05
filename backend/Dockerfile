@@ -3,10 +3,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy requirements first to leverage Docker caching
-COPY requirements.txt .
+COPY updated_requirements.txt .
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r updated_requirements.txt
 
 # Copy the rest of the application
 COPY . .

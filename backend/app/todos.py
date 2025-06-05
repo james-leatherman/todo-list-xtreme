@@ -117,7 +117,7 @@ async def upload_todo_photo(
         raise HTTPException(status_code=404, detail="Todo not found")
     
     # Generate unique filename
-    file_ext = os.path.splitext(file.filename)[1]
+    file_ext = os.path.splitext(file.filename)[1] # type: ignore
     unique_filename = f"{uuid.uuid4()}{file_ext}"
     
     # Handle file upload
@@ -175,7 +175,7 @@ def delete_todo_photo(
         raise HTTPException(status_code=404, detail="Photo not found")
     
     # Delete from S3 if using S3
-    if s3_client and photo.s3_key:
+    if s3_client and photo.s3_key: # type: ignore
         try:
             s3_client.delete_object(Bucket=settings.AWS_S3_BUCKET, Key=photo.s3_key)
         except ClientError:

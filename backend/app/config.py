@@ -1,5 +1,16 @@
 import os
-from pydantic_settings import BaseSettings
+try:
+    # Try to import from pydantic_settings (newer approach)
+    from pydantic_settings import BaseSettings
+except ImportError:
+    try:
+        # Fall back to pydantic if pydantic_settings is not available
+        from pydantic import BaseSettings
+    except ImportError:
+        raise ImportError("Neither 'pydantic_settings' nor 'pydantic' is installed. Please install one of them.")
+        # As a fallback, define a dummy BaseSettings to avoid further errors
+        class BaseSettings:
+            pass
 from dotenv import load_dotenv
 from typing import List
 
@@ -7,7 +18,7 @@ from typing import List
 load_dotenv()
 
 
-class Settings(BaseSettings):
+class Settings(BaseSettings): # type: ignore
     # API settings
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Todo List Xtreme"

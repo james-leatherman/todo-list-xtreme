@@ -1,6 +1,12 @@
-# Todo List Xtreme
+# Todo List Xtreme - MVP
 
 A full-stack to-do list application with photo upload capabilities, responsive design, and OAuth authentication.
+
+![Todo List Xtreme](https://via.placeholder.com/1200x600?text=Todo+List+Xtreme+MVP)
+
+## MVP Status
+
+This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It includes all core functionality and is ready for basic use and testing.
 
 ## Features
 
@@ -177,6 +183,34 @@ todo-list-xtreme/
     ├── variables.tf
     └── outputs.tf
 ```
+
+## Contributing
+
+Contributions are welcome! Here's how you can contribute:
+
+1. **Fork the repository**
+2. **Create a feature branch**:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Commit your changes**:
+   ```bash
+   git commit -m 'Add some feature'
+   ```
+4. **Push to the branch**:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+5. **Create a Pull Request**
+
+## Roadmap
+
+- [ ] Implement Google OAuth authentication
+- [ ] Add AWS S3 integration for production photo storage
+- [ ] Create CI/CD pipeline with GitHub Actions
+- [ ] Add unit and integration tests
+- [ ] Implement tagging system for todos
+- [ ] Add user preferences and theme selection
 
 ## License
 

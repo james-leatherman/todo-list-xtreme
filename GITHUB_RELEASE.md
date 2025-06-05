@@ -49,7 +49,18 @@ This document outlines the steps to prepare and release the Todo List Xtreme MVP
    git push origin v1.0.0-mvp
    ```
 
-5. **Create GitHub Release**
+5. **Set Up GitHub Secrets**
+   - Navigate to your GitHub repository
+   - Go to "Settings" > "Secrets and variables" > "Actions"
+   - Add the following repository secrets:
+     - DB_USER: Your PostgreSQL username (default: postgres)
+     - DB_PASSWORD: Your PostgreSQL password (default: postgres)
+     - SECRET_KEY: A secure random string for JWT token generation
+     - DOCKER_HUB_USERNAME: Your Docker Hub username (for CI/CD pipeline)
+     - DOCKER_HUB_ACCESS_TOKEN: Your Docker Hub access token
+     - API_URL: The URL where your API will be hosted (for production builds)
+
+6. **Create GitHub Release**
    - Go to GitHub repository
    - Navigate to "Releases"
    - Create a new release with tag "v1.0.0-mvp"

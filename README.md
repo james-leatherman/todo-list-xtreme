@@ -50,6 +50,16 @@ This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It include
 - AWS CLI (for deployment)
 - Terraform (for infrastructure provisioning)
 
+### GitHub Repository Setup
+If you're setting up the project on GitHub, you'll need to configure the following secrets:
+
+1. **DB_USER** - PostgreSQL username (default: postgres)
+2. **DB_PASSWORD** - PostgreSQL password (default: postgres)
+3. **SECRET_KEY** - JWT secret key for authentication
+4. **DOCKER_HUB_USERNAME** - Docker Hub username for CI/CD pipeline
+5. **DOCKER_HUB_ACCESS_TOKEN** - Docker Hub access token
+6. **API_URL** - The URL where your API will be hosted (for production build)
+
 ### Local Development
 
 #### Backend
@@ -98,6 +108,20 @@ python create_test_user.py
 # Create sample todo items
 python test_api.py
 ```
+
+### Generating Secure Credentials
+The project includes a script to generate secure random credentials for development and production:
+
+```bash
+# Generate secure random credentials
+./generate_secrets.sh
+```
+
+This script will:
+1. Generate a secure random JWT secret key
+2. Create random database credentials for production
+3. Set up local development .env files with safe defaults
+4. Output the production credentials to add to GitHub Secrets
 
 ### Environment Variables
 

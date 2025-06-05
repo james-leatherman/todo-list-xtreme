@@ -186,3 +186,30 @@ def delete_todo_photo(
     db.commit()
     
     return None
+
+
+@router.post("/test/create-sample-todos", response_model=List[TodoSchema])
+def create_sample_todos(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Create sample todo items for testing"""
+    # Sample todo data
+    sample_todos = [
+        {"title": "Complete project documentation", "description": "Write detailed documentation for the Todo List Xtreme app"},
+        {"title": "Setup CI/CD pipeline", "description": "Configure GitHub Actions workflow for continuous integration"},
+        {"title": "Add unit tests", "description": "Increase test coverage to at least 80%"},
+        {"title": "Design landing page", "description": "Create a responsive landing page for the application"},
+        {"title": "Fix mobile view issues", "description": "Address styling problems on small screens"},
+    ]
+    
+    # Create todos
+    created_todos = []
+    for todo_data in sample_todos:
+        db_todo = Todo(**todo_data, user_id=current_user.id)
+        db.add(db_todo)
+        db.commit()
+        db.refresh(db_todo)
+        created_todos.append(db_todo)
+    
+    return created_todos

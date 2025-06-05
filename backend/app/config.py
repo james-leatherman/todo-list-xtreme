@@ -24,7 +24,10 @@ class Settings(BaseSettings): # type: ignore
     PROJECT_NAME: str = "Todo List Xtreme"
     
     # CORS settings
-    CORS_ORIGINS: List[str] = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+    @property
+    def CORS_ORIGINS(self) -> List[str]:
+        origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+        return origins.split(",")
     
     # Database settings
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")

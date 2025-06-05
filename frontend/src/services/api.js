@@ -13,12 +13,12 @@ if (token) {
 export const todoService = {
   // Get all todos
   getAll: () => {
-    return axios.get('/todos');
+    return axios.get('/todos/');
   },
 
   // Get a single todo
   getById: (id) => {
-    return axios.get(`/todos/${id}`);
+    return axios.get(`/todos/${id}/`);
   },
 
   // Create a new todo
@@ -28,12 +28,12 @@ export const todoService = {
 
   // Update a todo
   update: (id, todo) => {
-    return axios.put(`/todos/${id}`, todo);
+    return axios.put(`/todos/${id}/`, todo);
   },
 
   // Delete a todo
   delete: (id) => {
-    return axios.delete(`/todos/${id}`);
+    return axios.delete(`/todos/${id}/`);
   },
 
   // Upload a photo to a todo
@@ -41,7 +41,7 @@ export const todoService = {
     const formData = new FormData();
     formData.append('file', file);
     
-    return axios.post(`/todos/${todoId}/photos`, formData, {
+    return axios.post(`/todos/${todoId}/photos/`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -50,7 +50,7 @@ export const todoService = {
 
   // Delete a photo from a todo
   deletePhoto: (todoId, photoId) => {
-    return axios.delete(`/todos/${todoId}/photos/${photoId}`);
+    return axios.delete(`/todos/${todoId}/photos/${photoId}/`);
   }
 };
 
@@ -58,11 +58,11 @@ export const todoService = {
 export const authService = {
   // Get Google OAuth login URL
   getGoogleLoginUrl: () => {
-    return `/auth/google/login`;
+    return `/auth/google/login/`;
   },
 
   // Get current user
   getCurrentUser: () => {
-    return axios.get('/auth/me');
+    return axios.get('/auth/me/');
   }
 };

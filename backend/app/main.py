@@ -8,6 +8,7 @@ from app.config import settings
 from app.database import get_db
 from app.auth import router as auth_router
 from app.todos import router as todos_router
+from app import models
 
 app = FastAPI(
     title="Todo List Xtreme API",
@@ -40,6 +41,17 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/db-test")
+def db_test(db: Session = Depends(get_db)):
+    # Try to query something simple to test database connection
+    try:
+        # Just count users
+        user_count = db.query(models.User).count()
+        return {"status": "connected", "user_count": user_count}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 
 if __name__ == "__main__":

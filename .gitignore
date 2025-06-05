@@ -23,6 +23,7 @@ venv/
 .env
 
 # Node.js / React
+*/node_modules/
 node_modules/
 /build
 .DS_Store

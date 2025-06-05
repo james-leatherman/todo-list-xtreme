@@ -48,16 +48,49 @@ A full-stack to-do list application with photo upload capabilities, responsive d
 
 #### Backend
 ```bash
+# Navigate to the backend directory
 cd backend
-# Create a .env file with necessary environment variables
-docker-compose up -d
+
+# Create a virtual environment and activate it
+python -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r updated_requirements.txt
+
+# Create a .env file with the environment variables listed below
+# Start PostgreSQL database
+docker-compose up -d db
+
+# Initialize database
+python init_db.py
+
+# Run the FastAPI server
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 #### Frontend
 ```bash
+# Navigate to the frontend directory
 cd frontend
+
+# Install dependencies
 npm install
+
+# Create a .env file with the environment variables listed below
+# Start the React development server
 npm start
+```
+
+#### Quick Testing Setup
+```bash
+# Create a test user and get JWT token
+cd backend
+source venv/bin/activate
+python create_test_user.py
+
+# Create sample todo items
+python test_api.py
 ```
 
 ### Environment Variables

@@ -42,6 +42,24 @@ function Login() {
           >
             Sign in with Google
           </Button>
+          
+          {/* Development Testing Button */}
+          {process.env.NODE_ENV === 'development' && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="medium"
+              onClick={() => {
+                const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzQ5MTcyMzExfQ.Xwo6PVcoIgchrd3rWlBDKMWofs18yx0QUqzX0CSefLE';
+                localStorage.setItem('token', token);
+                window.location.reload();
+              }}
+              sx={{ mt: 2 }}
+              fullWidth
+            >
+              Dev: Use Test Account
+            </Button>
+          )}
         </Box>
       </Paper>
     </Container>

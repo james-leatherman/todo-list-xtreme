@@ -35,7 +35,7 @@ Please be respectful and considerate of others when contributing to this project
 cd backend
 python -m venv venv
 source venv/bin/activate
-pip install -r updated_requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Frontend

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import RedirectResponse
@@ -59,77 +60,77 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 @router.get("/google/login")
 async def login_google():
     """Redirect to Google OAuth login page"""
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google OAuth not configured. Please set GOOGLE_CLIENT_ID in environment variables."
+        )
+    
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
         "redirect_uri": settings.GOOGLE_REDIRECT_URI,
         "response_type": "code",
         "scope": "email profile",
+        "access_type": "offline",
+        "prompt": "consent"
     }
     
-    authorize_url = f"{GOOGLE_AUTH_URL}?" + "&".join([f"{k}={v}" for k, v in params.items()])
+    authorize_url = f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
     return RedirectResponse(authorize_url)
 
 
 @router.get("/google/callback")
-async def auth_google_callback(request: Request, db: Session = Depends(get_db)):
-    """Handle Google OAuth callback"""
-    code = request.query_params.get("code")
-    if not code:
-        raise HTTPException(status_code=400, detail="Missing authorization code")
+async def google_callback(code: str, db: Session = Depends(get_db)):
+    """Handle the Google OAuth callback"""
+    token_params = {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "client_secret": settings.GOOGLE_CLIENT_SECRET,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI
+    }
     
-    # Exchange code for token
     async with httpx.AsyncClient() as client:
-        token_response = await client.post(
-            GOOGLE_TOKEN_URL,
-            data={
-                "client_id": settings.GOOGLE_CLIENT_ID,
-                "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                "code": code,
-                "grant_type": "authorization_code",
-                "redirect_uri": settings.GOOGLE_REDIRECT_URI,
-            },
-        )
-        
-        if token_response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to get access token")
-        
+        # Exchange code for token
+        token_response = await client.post(GOOGLE_TOKEN_URL, data=token_params)
         token_data = token_response.json()
-        access_token = token_data["access_token"]
+        
+        if "error" in token_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Google OAuth error: {token_data.get('error')}"
+            )
         
         # Get user info
-        user_response = await client.get(
-            GOOGLE_USER_INFO_URL,
-            headers={"Authorization": f"Bearer {access_token}"},
-        )
+        headers = {"Authorization": f"Bearer {token_data.get('access_token')}"}
+        user_response = await client.get(GOOGLE_USER_INFO_URL, headers=headers)
+        user_data = user_response.json()
         
-        if user_response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to get user info")
+        # Find or create user
+        email = user_data.get("email")
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email not provided by Google"
+            )
         
-        user_info = user_response.json()
-        
-        # Get or create user
-        user = db.query(User).filter(User.email == user_info["email"]).first()
+        user = db.query(User).filter(User.email == email).first()
         if not user:
             user = User(
-                email=user_info["email"],
-                name=user_info.get("name", ""),
-                google_id=user_info.get("sub", ""),
-                is_active=True,
+                email=email,
+                name=user_data.get("name", ""),
+                google_id=user_data.get("sub", "")
             )
             db.add(user)
             db.commit()
             db.refresh(user)
         
         # Create JWT token
-        token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        jwt_token = create_access_token(
-            data={"sub": user.email},
-            expires_delta=token_expires,
-        )
+        access_token = create_access_token(data={"sub": user.email})
         
         # Redirect to frontend with token
-        frontend_url = settings.CORS_ORIGINS[0] if settings.CORS_ORIGINS else "http://localhost:3000"
-        redirect_url = f"{frontend_url}/auth/callback?token={jwt_token}"
+        frontend_url = settings.FRONTEND_URL
+        redirect_url = f"{frontend_url}/auth/callback?token={access_token}"
         return RedirectResponse(redirect_url)
 
 

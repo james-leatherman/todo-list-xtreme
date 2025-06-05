@@ -51,10 +51,11 @@ class Settings(BaseSettings): # type: ignore
     AWS_REGION: str = os.getenv("AWS_REGION", "us-east-1")
     AWS_S3_BUCKET: str = os.getenv("AWS_S3_BUCKET", "todo-list-xtreme")
     
-    # OAuth settings
-    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
-    GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
-    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
+    # Google OAuth settings
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
+    FRONTEND_URL: str = "http://localhost:3000"
 
 
 settings = Settings()

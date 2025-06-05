@@ -1,39 +1,47 @@
 import axios from 'axios';
 
-// Configure axios
-axios.defaults.baseURL = process.env.REACT_APP_API_URL || '';
+// Create axios instance with base URL from environment variable
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000'
+});
 
-// Set up token if exists
-const token = localStorage.getItem('token');
-if (token) {
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
+// Add a request interceptor to include token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Todo service
 export const todoService = {
   // Get all todos
   getAll: () => {
-    return axios.get('/todos/');
+    return api.get('/todos/');
   },
 
   // Get a single todo
   getById: (id) => {
-    return axios.get(`/todos/${id}/`);
+    return api.get(`/todos/${id}/`);
   },
 
   // Create a new todo
   create: (todo) => {
-    return axios.post('/todos', todo);
+    return api.post('/todos', todo);
   },
 
   // Update a todo
   update: (id, todo) => {
-    return axios.put(`/todos/${id}/`, todo);
+    return api.put(`/todos/${id}/`, todo);
   },
 
   // Delete a todo
   delete: (id) => {
-    return axios.delete(`/todos/${id}/`);
+    return api.delete(`/todos/${id}/`);
   },
 
   // Upload a photo to a todo
@@ -41,7 +49,7 @@ export const todoService = {
     const formData = new FormData();
     formData.append('file', file);
     
-    return axios.post(`/todos/${todoId}/photos/`, formData, {
+    return api.post(`/todos/${todoId}/photos/`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -50,7 +58,7 @@ export const todoService = {
 
   // Delete a photo from a todo
   deletePhoto: (todoId, photoId) => {
-    return axios.delete(`/todos/${todoId}/photos/${photoId}/`);
+    return api.delete(`/todos/${todoId}/photos/${photoId}/`);
   }
 };
 
@@ -63,6 +71,8 @@ export const authService = {
 
   // Get current user
   getCurrentUser: () => {
-    return axios.get('/auth/me/');
+    return api.get('/auth/me/');
   }
 };
+
+export default api;

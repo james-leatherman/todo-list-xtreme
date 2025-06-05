@@ -72,7 +72,7 @@ python -m venv venv
 source venv/bin/activate
 
 # Install dependencies
-pip install -r updated_requirements.txt
+pip install -r requirements.txt
 
 # Create a .env file with the environment variables listed below
 # Start PostgreSQL database

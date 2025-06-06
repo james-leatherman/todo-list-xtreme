@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel, Field, HttpUrl
+from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field, HttpUrl, Json
 
 
 class TodoPhotoBase(BaseModel):
@@ -75,8 +75,34 @@ class User(UserBase):
     is_active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
-    todos: List[Todo] = []
 
+    class Config:
+        orm_mode = True
+
+
+class ColumnSettingsBase(BaseModel):
+    """Base schema for column settings"""
+    column_order: Optional[str] = None  # JSON string of column order
+    columns_config: Optional[str] = None  # JSON string of column configurations
+
+
+class ColumnSettingsCreate(ColumnSettingsBase):
+    """Schema for creating column settings"""
+    pass
+
+
+class ColumnSettingsUpdate(ColumnSettingsBase):
+    """Schema for updating column settings"""
+    pass
+
+
+class ColumnSettings(ColumnSettingsBase):
+    """Schema for column settings"""
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
     class Config:
         orm_mode = True
 

@@ -18,6 +18,7 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     todos = relationship("Todo", back_populates="owner", cascade="all, delete-orphan")
+    column_settings = relationship("UserColumnSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 
 class Todo(Base):
@@ -49,3 +50,17 @@ class TodoPhoto(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     todo = relationship("Todo", back_populates="photos")
+
+
+class UserColumnSettings(Base):
+    """User column settings model for storing column configuration"""
+    __tablename__ = "user_column_settings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    column_order = Column(String, nullable=True)  # JSON string of column order
+    columns_config = Column(String, nullable=True)  # JSON string of column configurations
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    user = relationship("User", back_populates="column_settings")

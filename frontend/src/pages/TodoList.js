@@ -18,7 +18,7 @@ import {
   DragIndicator as DragIndicatorIcon
 } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { todoService } from '../services/api';
+import { todoService, columnSettingsService } from '../services/api';
 
 // Styled components
 const VisuallyHiddenInput = styled('input')({
@@ -90,32 +90,61 @@ function TodoList() {
   const [quickAddColumn, setQuickAddColumn] = useState(null);
   const [quickAddTaskTitle, setQuickAddTaskTitle] = useState('');
 
-  // Load columns and fetch todos
+  // Load columns from API and fetch todos
   useEffect(() => {
-    const savedColumns = localStorage.getItem('todoColumns');
-    const savedColumnOrder = localStorage.getItem('todoColumnOrder');
-    
-    // Check if this is a fresh login (no locally saved columns)
-    const isFreshLogin = !savedColumns || !savedColumnOrder;
-    
-    if (savedColumns && !isFreshLogin) {
+    // First try to get column settings from the API
+    const fetchColumnSettings = async () => {
       try {
-        setColumns(JSON.parse(savedColumns));
+        const response = await columnSettingsService.getSettings();
+        const settings = response.data;
+        
+        if (settings.columns_config && settings.column_order) {
+          try {
+            setColumns(JSON.parse(settings.columns_config));
+            setColumnOrder(JSON.parse(settings.column_order));
+            return true;
+          } catch (error) {
+            console.error('Error parsing column settings from API:', error);
+          }
+        }
+        return false;
       } catch (error) {
-        console.error('Error parsing saved columns:', error);
+        console.error('Error fetching column settings:', error);
+        return false;
       }
-    }
+    };
     
-    if (savedColumnOrder && !isFreshLogin) {
-      try {
-        setColumnOrder(JSON.parse(savedColumnOrder));
-      } catch (error) {
-        console.error('Error parsing saved column order:', error);
+    const loadColumns = async () => {
+      // First try to get settings from API
+      const settingsLoaded = await fetchColumnSettings();
+      
+      // If API failed, fall back to localStorage (for backward compatibility)
+      if (!settingsLoaded) {
+        const savedColumns = localStorage.getItem('todoColumns');
+        const savedColumnOrder = localStorage.getItem('todoColumnOrder');
+        
+        if (savedColumns) {
+          try {
+            setColumns(JSON.parse(savedColumns));
+          } catch (error) {
+            console.error('Error parsing saved columns from localStorage:', error);
+          }
+        }
+        
+        if (savedColumnOrder) {
+          try {
+            setColumnOrder(JSON.parse(savedColumnOrder));
+          } catch (error) {
+            console.error('Error parsing saved column order from localStorage:', error);
+          }
+        }
       }
-    }
+      
+      // Fetch todos - this will reconstruct columns if needed
+      fetchTodos();
+    };
     
-    // Fetch todos - this will reconstruct columns if needed
-    fetchTodos();
+    loadColumns();
     
     // Cleanup function to ensure we don't have dangling animations when component unmounts
     return () => {
@@ -124,10 +153,52 @@ function TodoList() {
     };
   }, []);
 
-  // Save columns to localStorage whenever they change
+  // Save columns to localStorage and API whenever they change
   useEffect(() => {
+    // Always save to localStorage for backward compatibility and faster loads
     localStorage.setItem('todoColumns', JSON.stringify(columns));
     localStorage.setItem('todoColumnOrder', JSON.stringify(columnOrder));
+    
+    // Also save to the API for persistence across devices
+    const saveColumnSettingsToAPI = async () => {
+      try {
+        // Convert column data to strings for API storage
+        const settings = {
+          columns_config: JSON.stringify(columns),
+          column_order: JSON.stringify(columnOrder)
+        };
+        
+        // Try to update existing settings first
+        try {
+          await columnSettingsService.updateSettings(settings);
+        } catch (error) {
+          // If update fails (might not exist yet), try to create settings
+          if (error.response && (error.response.status === 404 || error.response.status === 400)) {
+            try {
+              await columnSettingsService.createSettings(settings);
+            } catch (createError) {
+              // If creation also fails (already exists), try updating again
+              if (createError.response && createError.response.status === 400) {
+                await columnSettingsService.updateSettings(settings);
+              } else {
+                console.error('Error creating column settings in API:', createError);
+              }
+            }
+          } else {
+            console.error('Error saving column settings to API:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error saving column settings to API:', error);
+      }
+    };
+    
+    // Debounce the API calls to avoid too many requests when rapidly changing columns
+    const timeoutId = setTimeout(() => {
+      saveColumnSettingsToAPI();
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
   }, [columns, columnOrder]);
   
   // Helper function to ensure columns and columnOrder are in sync

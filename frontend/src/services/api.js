@@ -93,4 +93,22 @@ export const authService = {
   }
 };
 
+// Column settings service
+export const columnSettingsService = {
+  // Get column settings
+  getSettings: () => {
+    return api.get('/column-settings');
+  },
+
+  // Create column settings
+  createSettings: (settings) => {
+    return api.post('/column-settings', settings);
+  },
+
+  // Update column settings
+  updateSettings: (settings) => {
+    return api.put('/column-settings', settings);
+  }
+};
+
 export default api;

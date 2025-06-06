@@ -8,6 +8,7 @@ from app.config import settings
 from app.database import get_db
 from app.auth import router as auth_router
 from app.todos import router as todos_router
+from app.column_settings import router as column_settings_router
 from app import models
 
 app = FastAPI(
@@ -28,6 +29,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(todos_router, prefix="/todos", tags=["todos"])
+app.include_router(column_settings_router, prefix="/column-settings", tags=["column-settings"])
 
 # Mount static files directory for serving uploaded photos
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

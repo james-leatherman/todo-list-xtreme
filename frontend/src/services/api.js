@@ -46,6 +46,14 @@ export const todoService = {
     if (!todoData.status) {
       todoData.status = todoData.is_completed ? 'done' : 'todo';
     }
+    
+    // When updating status, also update is_completed appropriately
+    if (todoData.status === 'done' && todoData.is_completed === undefined) {
+      todoData.is_completed = true;
+    } else if (todoData.status && todoData.status !== 'done' && todoData.is_completed === undefined) {
+      todoData.is_completed = false;
+    }
+    
     return api.put(`/todos/${id}/`, todoData);
   },
 

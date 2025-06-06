@@ -29,6 +29,7 @@ class TodoBase(BaseModel):
     title: str
     description: Optional[str] = None
     is_completed: bool = False
+    status: Optional[str] = "todo"  # Added status field for column position
 
 
 class TodoCreate(TodoBase):
@@ -41,6 +42,7 @@ class TodoUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     is_completed: Optional[bool] = None
+    status: Optional[str] = None  # Added status field for column position
 
 
 class Todo(TodoBase):
@@ -50,6 +52,7 @@ class Todo(TodoBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     photos: List[TodoPhoto] = []
+    status: Optional[str] = "todo"  # Added status field with default value
 
     class Config:
         orm_mode = True

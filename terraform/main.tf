@@ -42,6 +42,8 @@ module "database" {
   subnet_ids   = module.vpc.private_subnets
   db_username  = var.db_username
   db_password  = var.db_password
+  identifier   = "${var.project_name}-db"
+  db_name      = "todolist"
 }
 
 # Random string for unique naming

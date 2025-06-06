@@ -90,12 +90,7 @@ function TodoList() {
   const [quickAddColumn, setQuickAddColumn] = useState(null);
   const [quickAddTaskTitle, setQuickAddTaskTitle] = useState('');
 
-  // Fetch todos on component mount
-  useEffect(() => {
-    fetchTodos();
-  }, []);
-
-  // Load columns from localStorage or use defaults
+  // First load columns from localStorage, then fetch todos
   useEffect(() => {
     const savedColumns = localStorage.getItem('todoColumns');
     const savedColumnOrder = localStorage.getItem('todoColumnOrder');
@@ -107,6 +102,15 @@ function TodoList() {
     if (savedColumnOrder) {
       setColumnOrder(JSON.parse(savedColumnOrder));
     }
+    
+    // Fetch todos after loading columns
+    fetchTodos();
+    
+    // Cleanup function to ensure we don't have dangling animations when component unmounts
+    return () => {
+      // This empty cleanup function helps React clean up any pending animations
+      // from the DnD library when the component unmounts
+    };
   }, []);
 
   // Save columns to localStorage whenever they change
@@ -114,6 +118,25 @@ function TodoList() {
     localStorage.setItem('todoColumns', JSON.stringify(columns));
     localStorage.setItem('todoColumnOrder', JSON.stringify(columnOrder));
   }, [columns, columnOrder]);
+  
+  // Helper function to ensure columns and columnOrder are in sync
+  const validateColumnsState = () => {
+    const columnsKeys = Object.keys(columns);
+    const validColumnOrder = columnOrder.filter(id => columnsKeys.includes(id));
+    
+    // If any column IDs were removed, update columnOrder
+    if (validColumnOrder.length !== columnOrder.length) {
+      setColumnOrder(validColumnOrder);
+    }
+    
+    // Check if all columns in columnOrder exist
+    const missingColumnIds = columnsKeys.filter(id => !columnOrder.includes(id));
+    
+    // If we found columns that aren't in the order, add them
+    if (missingColumnIds.length > 0) {
+      setColumnOrder(current => [...current, ...missingColumnIds]);
+    }
+  };
 
   const fetchTodos = async () => {
     try {
@@ -121,6 +144,9 @@ function TodoList() {
       const response = await todoService.getAll();
       const fetchedTodos = response.data;
       setTodos(fetchedTodos);
+      
+      // Validate column state before organizing todos
+      validateColumnsState();
       
       // Distribute todos into columns
       organizeTodosInColumns(fetchedTodos);
@@ -138,26 +164,108 @@ function TodoList() {
     // Create a copy of the current columns
     const updatedColumns = { ...columns };
     
+    // Keep track of column status IDs that need to be added to column order
+    const newColumnStatuses = [];
+    
     // Clear existing taskIds from all columns
     Object.keys(updatedColumns).forEach(columnId => {
-      updatedColumns[columnId].taskIds = [];
+      if (updatedColumns[columnId]) {
+        updatedColumns[columnId].taskIds = [];
+      }
+    });
+    
+    // Check for any case-insensitive duplicate columns and fix them
+    const normalizedColumns = {};
+    const duplicateColumns = {};
+    
+    // First pass: identify duplicates
+    Object.entries(updatedColumns).forEach(([id, column]) => {
+      const normId = id.toLowerCase();
+      if (normalizedColumns[normId]) {
+        if (!duplicateColumns[normId]) {
+          duplicateColumns[normId] = [];
+        }
+        duplicateColumns[normId].push(id);
+      } else {
+        normalizedColumns[normId] = id;
+      }
+    });
+    
+    // Second pass: merge duplicates if any found
+    Object.entries(duplicateColumns).forEach(([normId, dupeIds]) => {
+      const primaryId = normalizedColumns[normId];
+      dupeIds.forEach(dupeId => {
+        if (dupeId !== primaryId) {
+          // Keep only the first instance and remove others from both columns and columnOrder
+          delete updatedColumns[dupeId];
+          setColumnOrder(prev => prev.filter(id => id !== dupeId));
+        }
+      });
     });
     
     // Distribute todos based on status or completion
     fetchedTodos.forEach(todo => {
       // If todo has a status property that matches a column, use it
       const todoStatus = todo.status || (todo.is_completed ? 'done' : 'todo');
+      const statusLower = todoStatus.toLowerCase();
       
-      // If the column exists, add the todo to it
-      if (updatedColumns[todoStatus]) {
-        updatedColumns[todoStatus].taskIds.push(todo.id);
+      // Find an existing column that matches this status, case insensitive
+      const matchingColumnId = Object.keys(updatedColumns).find(
+        colId => colId.toLowerCase() === statusLower
+      );
+      
+      if (matchingColumnId) {
+        // Use the existing column (with its original case)
+        updatedColumns[matchingColumnId].taskIds.push(todo.id);
+        todo.status = matchingColumnId; // Ensure consistent status naming
       } else {
-        // If not, add to the default 'todo' column
-        updatedColumns['todo'].taskIds.push(todo.id);
+        // Check if we need to create a new column for this status
+        if (todoStatus && todoStatus !== 'todo' && todoStatus !== 'inProgress' && todoStatus !== 'done') {
+          // Create a new column for this status
+          updatedColumns[todoStatus] = {
+            id: todoStatus,
+            title: todoStatus.charAt(0).toUpperCase() + todoStatus.slice(1).replace(/-/g, ' '),
+            taskIds: [todo.id]
+          };
+          
+          // Add to our new columns list if not already in column order
+          if (!columnOrder.includes(todoStatus) && !newColumnStatuses.includes(todoStatus)) {
+            newColumnStatuses.push(todoStatus);
+          }
+        } else {
+          // Fall back to default 'todo' column
+          if (updatedColumns['todo']) {
+            updatedColumns['todo'].taskIds.push(todo.id);
+          } else {
+            // Create todo column if it doesn't exist
+            updatedColumns['todo'] = {
+              id: 'todo',
+              title: 'To Do',
+              taskIds: [todo.id]
+            };
+            if (!columnOrder.includes('todo') && !newColumnStatuses.includes('todo')) {
+              newColumnStatuses.push('todo');
+            }
+          }
+        }
+      }
+      
+      // Ensure todo has its status stored for future reference
+      if (!todo.status) {
+        // Update local todo state with correct status
+        todo.status = todoStatus;
       }
     });
     
+    // Update column order once with all new columns
+    if (newColumnStatuses.length > 0) {
+      setColumnOrder(prev => [...prev, ...newColumnStatuses]);
+    }
+    
     setColumns(updatedColumns);
+    
+    // Save the cleaned up columns to localStorage
+    localStorage.setItem('todoColumns', JSON.stringify(updatedColumns));
   };
 
   const handleCreateTodo = async (e, columnId = 'todo', quickAddTitle = null) => {
@@ -261,12 +369,44 @@ function TodoList() {
     if (!editTodo.title.trim()) return;
 
     try {
+      // Check if status has changed
+      const oldTodo = todos.find(todo => todo.id === editTodo.id);
+      const statusChanged = oldTodo && oldTodo.status !== editTodo.status;
+      
       const response = await todoService.update(editTodo.id, {
         title: editTodo.title.trim(),
         description: editTodo.description ? editTodo.description.trim() : '',
-        status: editTodo.status
+        status: editTodo.status,
+        is_completed: editTodo.status === 'done' // Update is_completed based on status
       });
+      
+      // Update todos state
       setTodos(todos.map(todo => todo.id === editTodo.id ? response.data : todo));
+      
+      // If status changed, update the columns
+      if (statusChanged) {
+        const sourceColumn = getColumnForTask(editTodo.id);
+        const destinationColumn = editTodo.status;
+        
+        if (sourceColumn !== destinationColumn) {
+          const newColumns = { ...columns };
+          
+          // Remove from source column
+          if (sourceColumn) {
+            newColumns[sourceColumn].taskIds = newColumns[sourceColumn].taskIds.filter(
+              taskId => taskId !== editTodo.id
+            );
+          }
+          
+          // Add to destination column
+          if (newColumns[destinationColumn]) {
+            newColumns[destinationColumn].taskIds.push(editTodo.id);
+          }
+          
+          setColumns(newColumns);
+        }
+      }
+      
       handleCloseDialog();
     } catch (err) {
       console.error('Error updating todo:', err);
@@ -274,7 +414,7 @@ function TodoList() {
     }
   };
   
-  // Handle drag end event
+  // Handle drag end event with improved error handling
   const handleDragEnd = async (result) => {
     const { destination, source, draggableId, type } = result;
 
@@ -294,68 +434,96 @@ function TodoList() {
       return;
     }
 
+    // Check if the source and destination columns exist
     const sourceColumn = columns[source.droppableId];
     const destColumn = columns[destination.droppableId];
     
-    // Moving within the same column
-    if (sourceColumn === destColumn) {
-      const newTaskIds = Array.from(sourceColumn.taskIds);
-      newTaskIds.splice(source.index, 1);
-      newTaskIds.splice(destination.index, 0, draggableId);
-      
-      const newColumn = {
-        ...sourceColumn,
-        taskIds: newTaskIds,
-      };
-      
-      setColumns({
-        ...columns,
-        [newColumn.id]: newColumn,
+    // Guard against missing columns
+    if (!sourceColumn || !destColumn) {
+      console.error('Source or destination column not found', { 
+        sourceId: source.droppableId,
+        destId: destination.droppableId,
+        columns: Object.keys(columns)
       });
-    } 
-    // Moving to a different column
-    else {
-      const sourceTaskIds = Array.from(sourceColumn.taskIds);
-      sourceTaskIds.splice(source.index, 1);
-      
-      const destTaskIds = Array.from(destColumn.taskIds);
-      destTaskIds.splice(destination.index, 0, draggableId);
-      
-      const newColumns = {
-        ...columns,
-        [sourceColumn.id]: {
-          ...sourceColumn,
-          taskIds: sourceTaskIds,
-        },
-        [destColumn.id]: {
-          ...destColumn,
-          taskIds: destTaskIds,
-        },
-      };
-      
-      setColumns(newColumns);
-      
-      // Update the task status on the server
-      const todoId = parseInt(draggableId, 10);
-      const todo = todos.find(t => t.id === todoId);
-      
-      if (todo) {
-        try {
-          // Update the todo's status and is_completed flag based on the column
-          const isCompleted = destColumn.id === 'done';
+      return;
+    }
+    
+    try {
+      // Moving within the same column
+      if (sourceColumn === destColumn) {
+        // Create a copy of taskIds to avoid direct state mutation
+        const newTaskIds = Array.from(sourceColumn.taskIds || []);
+        
+        // Ensure we have valid indices
+        if (source.index >= 0 && source.index < newTaskIds.length) {
+          newTaskIds.splice(source.index, 1);
+          newTaskIds.splice(destination.index, 0, draggableId);
+          
+          const newColumn = {
+            ...sourceColumn,
+            taskIds: newTaskIds,
+          };
+          
+          setColumns({
+            ...columns,
+            [newColumn.id]: newColumn,
+          });
+        }
+      } 
+      // Moving to a different column
+      else {
+        // Create copies of taskIds arrays to avoid direct state mutation
+        const sourceTaskIds = Array.from(sourceColumn.taskIds || []);
+        const destTaskIds = Array.from(destColumn.taskIds || []);
+        
+        // Ensure we have valid indices
+        if (source.index >= 0 && source.index < sourceTaskIds.length) {
+          sourceTaskIds.splice(source.index, 1);
+          destTaskIds.splice(destination.index, 0, draggableId);
+          
+          const newColumns = {
+            ...columns,
+            [sourceColumn.id]: {
+              ...sourceColumn,
+              taskIds: sourceTaskIds,
+            },
+            [destColumn.id]: {
+              ...destColumn,
+              taskIds: destTaskIds,
+            },
+          };
+          
+          setColumns(newColumns);
+          
+          // Update the task status on the server
+          const todoId = parseInt(draggableId, 10);
+          const todo = todos.find(t => t.id === todoId);
+          
+          if (todo) {
+            try {
+              // Update the todo's status and is_completed flag based on the column
+              const isCompleted = destColumn.id === 'done';
           
           const response = await todoService.update(todoId, {
             status: destColumn.id,
             is_completed: isCompleted
           });
           
-          // Update the local todos state
-          setTodos(todos.map(t => t.id === todoId ? response.data : t));
+          // Update the local todos state with the full response including status
+          setTodos(todos.map(t => t.id === todoId ? {
+            ...response.data,
+            status: destColumn.id  // Ensure status is set even if backend doesn't return it
+          } : t));
         } catch (err) {
           console.error('Error updating todo status:', err);
           setError('Failed to update task status');
+            }
+          }
         }
       }
+    } catch (err) {
+      console.error('Error handling drag end:', err);
+      setError('An error occurred while dragging. Please try again.');
     }
   };
 
@@ -409,28 +577,60 @@ function TodoList() {
   const handleAddColumn = () => {
     if (!newColumnTitle.trim()) return;
     
-    // Generate a unique ID
-    const columnId = `column-${Date.now()}`;
+    // Convert title to a kebab-case ID to be more consistent with status IDs
+    const title = newColumnTitle.trim();
+    const columnId = title.toLowerCase().replace(/\s+/g, '-');
+    
+    // Check if a column with this ID already exists
+    if (columns[columnId]) {
+      setError(`A column named "${title}" already exists`);
+      return;
+    }
+    
+    // Check if a column with this title exists (case insensitive)
+    const existingColumnWithSimilarTitle = Object.values(columns).find(
+      col => col.title.toLowerCase() === title.toLowerCase()
+    );
+    
+    if (existingColumnWithSimilarTitle) {
+      setError(`A column with title "${existingColumnWithSimilarTitle.title}" already exists`);
+      return;
+    }
     
     // Create the new column
     const newColumn = {
       id: columnId,
-      title: newColumnTitle.trim(),
+      title: title,
       taskIds: []
     };
     
-    // Add the column to state
-    setColumns({
+    // Update columns state
+    const updatedColumns = {
       ...columns,
       [columnId]: newColumn
-    });
+    };
     
-    // Add to column order
-    setColumnOrder([...columnOrder, columnId]);
+    // Update state in a batch to avoid race conditions
+    setColumns(updatedColumns);
+    
+    // Add to column order (only if not already in the order)
+    if (!columnOrder.includes(columnId)) {
+      setColumnOrder(prevOrder => [...prevOrder, columnId]);
+    }
+    
+    // Save to localStorage immediately to prevent duplicates on page refresh
+    localStorage.setItem('todoColumns', JSON.stringify({
+      ...columns,
+      [columnId]: newColumn
+    }));
+    localStorage.setItem('todoColumnOrder', JSON.stringify(
+      columnOrder.includes(columnId) ? columnOrder : [...columnOrder, columnId]
+    ));
     
     // Reset form
     setNewColumnTitle('');
     setIsAddColumnDialogOpen(false);
+    setError(null);
   };
   
   const handleDeleteColumn = (columnId) => {
@@ -560,7 +760,14 @@ function TodoList() {
       </Card>
 
       {/* Kanban board */}
-      <DragDropContext onDragEnd={handleDragEnd}>
+      <DragDropContext 
+        onDragEnd={handleDragEnd}
+        onBeforeDragStart={() => setError(null)} // Clear any previous errors
+        onDragStart={() => {
+          // Validate column state at the start of a drag to ensure consistency
+          validateColumnsState();
+        }}
+      >
         <Box sx={{ 
           display: 'flex', 
           overflowX: 'auto', 

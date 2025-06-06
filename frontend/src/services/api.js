@@ -31,12 +31,22 @@ export const todoService = {
 
   // Create a new todo
   create: (todo) => {
-    return api.post('/todos', todo);
+    // Ensure we're sending the status field along with the todo
+    const todoData = { ...todo };
+    if (!todoData.status) {
+      todoData.status = todoData.is_completed ? 'done' : 'todo';
+    }
+    return api.post('/todos', todoData);
   },
 
   // Update a todo
   update: (id, todo) => {
-    return api.put(`/todos/${id}/`, todo);
+    // Ensure we're sending the status field along with the todo
+    const todoData = { ...todo };
+    if (!todoData.status) {
+      todoData.status = todoData.is_completed ? 'done' : 'todo';
+    }
+    return api.put(`/todos/${id}/`, todoData);
   },
 
   // Delete a todo

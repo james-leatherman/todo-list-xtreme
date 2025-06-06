@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 // Pages
@@ -13,22 +13,31 @@ import Header from './components/Header';
 
 // Contexts
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
-// Theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3f51b5',
-    },
-    secondary: {
-      main: '#f50057',
-    },
-  },
-});
+function AppContent() {
+  const { mode } = useTheme();
 
-function App() {
+  // Create a theme instance based on the current mode
+  const theme = useMemo(() => 
+    createTheme({
+      palette: {
+        mode,
+        primary: {
+          main: mode === 'dark' ? '#7986cb' : '#3f51b5', // Lighter blue in dark mode
+        },
+        secondary: {
+          main: mode === 'dark' ? '#ff4081' : '#f50057', // Brighter pink in dark mode
+        },
+        background: {
+          default: mode === 'dark' ? '#121212' : '#fafafa',
+          paper: mode === 'dark' ? '#1e1e1e' : '#fff',
+        },
+      },
+    }), [mode]);
+
   return (
-    <ThemeProvider theme={theme}>
+    <MuiThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
         <Router>
@@ -47,6 +56,14 @@ function App() {
           </Routes>
         </Router>
       </AuthProvider>
+    </MuiThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
     </ThemeProvider>
   );
 }

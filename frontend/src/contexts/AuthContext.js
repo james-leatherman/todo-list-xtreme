@@ -66,6 +66,9 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem('token');
+    // Also clear column data to prevent duplicates on next login
+    localStorage.removeItem('todoColumns');
+    localStorage.removeItem('todoColumnOrder');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };

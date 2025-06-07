@@ -253,3 +253,72 @@ MIT License
 - FastAPI for the amazing Python web framework
 - React and Material-UI for the frontend components
 - AWS and Terraform for the infrastructure
+
+## Tests & Utilities
+
+### Backend Test Scripts
+- `test_api.py`: End-to-end API test for all main endpoints. Run with `python test_api.py` (requires backend running and test user/token).
+- `test_column_settings.py`, `simple_test_column_settings.py`, `test_comprehensive_column_persistence.py`, `test_empty_column_persistence.py`: Test column settings and persistence logic. See script headers for usage.
+- `test_import.py`: Tests import functionality.
+- `test_settings.py`: Tests backend settings/configuration.
+- `conftest.py`: Pytest fixtures for backend tests.
+- `create_test_user.py`: Creates a test user for development/testing.
+- `wipe_db.py` / `wipe_db.sh`: Wipe/reset the development database.
+- `demo_db_restore.sh`: Restore demo database from snapshot.
+- `init_db.py`: Initialize the database schema.
+
+### Frontend Test Scripts
+- `src/App.test.js`: React component tests (run with `npm test` in `frontend`).
+- `jest-output.txt`, `test-output.txt`: Output logs from frontend test runs.
+- `public/test-token.js`: Example/test JWT token for development.
+
+### Utilities
+- `generate_secrets.sh`: Generate secure random credentials and .env files for dev/prod.
+- `update_todos_status.py`, `add_column_settings.py`, `add_status_column.py`: Backend utilities for managing todos and columns.
+
+## Running Tests
+
+### Backend (Python/FastAPI)
+```bash
+cd backend
+source venv/bin/activate
+# Run all tests with pytest (if using pytest conventions)
+pytest
+# Or run individual scripts:
+python test_api.py
+python test_column_settings.py
+python simple_test_column_settings.py <auth_token>
+```
+
+### Frontend (React)
+```bash
+cd frontend
+npm test
+```
+
+## Updated Setup Instructions
+
+### 1. Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env  # or use generate_secrets.sh
+# Start PostgreSQL (if not running):
+docker-compose up -d db
+python init_db.py
+```
+
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+cp .env.example .env.local  # or use generate_secrets.sh
+npm start
+```
+
+### 3. Utilities & Scripts
+- To generate secrets and .env files: `./generate_secrets.sh`
+- To wipe/reset the database: `cd backend && ./wipe_db.sh`
+- To restore demo data: `cd backend && ./demo_db_restore.sh`

@@ -6,7 +6,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
-  const {  } = useAuth();
+  useAuth();
   
   const handleGoogleLogin = () => {
     // Redirect to backend endpoint that handles Google OAuth

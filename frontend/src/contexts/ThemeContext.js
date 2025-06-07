@@ -1,5 +1,21 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
+// Patch window.matchMedia for Jest/jsdom tests
+if (typeof window !== 'undefined' && process.env.JEST_WORKER_ID !== undefined && !window.matchMedia) {
+  window.matchMedia = function() {
+    return {
+      matches: false,
+      media: '',
+      onchange: null,
+      addListener: function() {}, // deprecated
+      removeListener: function() {}, // deprecated
+      addEventListener: function() {},
+      removeEventListener: function() {},
+      dispatchEvent: function() {},
+    };
+  };
+}
+
 const ThemeContext = createContext(null);
 
 export function useTheme() {
@@ -12,7 +28,9 @@ export function ThemeProvider({ children }) {
     const savedMode = localStorage.getItem('themeMode');
     // Check for system preference if no saved preference
     if (!savedMode) {
-      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const prefersDarkMode = typeof window !== 'undefined' && window.matchMedia
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        : false;
       return prefersDarkMode ? 'dark' : 'light';
     }
     return savedMode;

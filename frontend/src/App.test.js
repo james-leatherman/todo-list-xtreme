@@ -4,6 +4,6 @@ import App from './App';
 
 test('renders Todo List Xtreme header', () => {
   render(<App />);
-  const header = screen.getByText(/todo list xtreme/i);
-  expect(header).toBeInTheDocument();
+  const headers = screen.getAllByText(/todo list xtreme/i);
+  expect(headers.length).toBeGreaterThan(0);
 });

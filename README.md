@@ -1,8 +1,11 @@
-# Todo List Xtreme - MVP
+<table>
+  <tr>
+    <td><img src="https://github.com/james-leatherman/todo-list-xtreme/blob/main/frontend/src/images/tlx-logo.png" alt="TLX Logo" width="64"/></td>
+    <td><h1 style="margin-left: 16px;">Todo List Xtreme - MVP</h1></td>
+  </tr>
+</table>
 
 A full-stack to-do list application with photo upload capabilities, responsive design, OAuth authentication, and robust testing utilities.
-
-![Todo List Xtreme](https://via.placeholder.com/1200x600?text=Todo+List+Xtreme+MVP)
 
 ## MVP Status
 

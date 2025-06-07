@@ -8,9 +8,17 @@ A full-stack to-do list application with photo upload capabilities, responsive d
 
 This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It includes all core functionality and is ready for basic use and testing.
 
+## What's New in v1.2.0 (2025-06-07)
+
+- **Bulk Delete:** You can now delete all tasks in a column at once from the column context menu (with confirmation dialog).
+- **Improved Safety:** Destructive actions are protected by confirmation dialogs and robust error handling.
+- **Code Quality:** All ESLint/code quality issues fixed; CI/CD and build checks pass.
+- **Documentation:** Changelog and release notes updated for this version.
+
 ## Features
 
 - Create, read, update, and delete tasks
+- **Bulk delete all tasks in a column (new in v1.2.0)**
 - Add photos to tasks for visual tracking
 - Google OAuth authentication
 - Responsive design (works on mobile devices)

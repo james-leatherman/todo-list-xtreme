@@ -28,11 +28,11 @@ function Header() {
       <Toolbar>
         <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
           <IconButton edge="start" color="inherit" aria-label="logo" onClick={() => navigate('/')} sx={{ p: 0, mr: 1 }}>
-            <img src={logo} alt="Todo List Xtreme Logo" style={{ height: 40, width: 40, objectFit: 'contain' }} />
+            <img src={logo} alt="Todo List Xtreme Logo" style={{ height: 100, width: 100, objectFit: 'fill' }} />
           </IconButton>
         </Box>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-          Todo List Xtreme
+          Your hella fresh organizer
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

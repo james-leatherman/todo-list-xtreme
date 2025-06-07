@@ -1413,6 +1413,17 @@ function TodoList() {
               </MenuItem>
             ))}
           </TextField>
+          {/* Created/Modified times */}
+          {editTodo?.created_at && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+              Created: {new Date(editTodo.created_at).toLocaleString()}
+            </Typography>
+          )}
+          {editTodo?.updated_at && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              Last Modified: {new Date(editTodo.updated_at).toLocaleString()}
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>

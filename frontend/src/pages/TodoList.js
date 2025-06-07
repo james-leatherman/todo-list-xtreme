@@ -149,6 +149,7 @@ function TodoList() {
       // from the DnD library when the component unmounts
     };
   }, []); // Only run on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   // Helper function to ensure columns and columnOrder are in sync
   const validateColumnsState = () => {

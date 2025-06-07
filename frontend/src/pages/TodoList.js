@@ -163,6 +163,9 @@ function TodoList() {
   const [quickAddColumn, setQuickAddColumn] = useState(null);
   const [quickAddTaskTitle, setQuickAddTaskTitle] = useState('');
   const [hasLoaded, setHasLoaded] = useState(false);
+  // Confirmation dialog state for deleting all tasks in a column
+  const [confirmDeleteAllOpen, setConfirmDeleteAllOpen] = useState(false);
+  const [columnIdToDeleteAll, setColumnIdToDeleteAll] = useState(null);
 
   // Helper utilities for column data validation and sanitization
   const sanitizeColumns = (columnsData) => {
@@ -871,6 +874,49 @@ function TodoList() {
     }
   };
 
+  // Remove all tasks from a column (including from the DB)
+  const handleDeleteAllTasksInColumn = async (columnId) => {
+    if (!columnId || !columns[columnId]) return;
+    setConfirmDeleteAllOpen(true);
+    setColumnIdToDeleteAll(columnId);
+  };
+
+  // Actually perform the deletion after confirmation
+  const confirmDeleteAllTasks = async () => {
+    const columnId = columnIdToDeleteAll;
+    if (!columnId || !columns[columnId]) {
+      setConfirmDeleteAllOpen(false);
+      setColumnIdToDeleteAll(null);
+      return;
+    }
+    try {
+      const taskIds = columns[columnId].taskIds;
+      await Promise.all(taskIds.map(async (taskId) => {
+        try {
+          await todoService.delete(taskId);
+        } catch (err) {
+          console.error(`Failed to delete task ${taskId}:`, err);
+        }
+      }));
+      const updatedColumns = {
+        ...columns,
+        [columnId]: {
+          ...columns[columnId],
+          taskIds: []
+        }
+      };
+      setTodos(todos.filter(todo => !taskIds.includes(todo.id)));
+      await ColumnManager.saveColumnSettings(updatedColumns, columnOrder);
+      setColumns(updatedColumns);
+      setColumnSettingsAnchorEl(null);
+    } catch (err) {
+      setError('Failed to delete all tasks in column');
+    } finally {
+      setConfirmDeleteAllOpen(false);
+      setColumnIdToDeleteAll(null);
+    }
+  };
+
   if (loading) {
     return (
       <Container sx={{ mt: 4, textAlign: 'center' }}>
@@ -1448,7 +1494,29 @@ function TodoList() {
         >
           Delete Column
         </MenuItem>
+        <MenuItem
+          onClick={() => handleDeleteAllTasksInColumn(activeColumn?.id)}
+          disabled={activeColumn && (!columns[activeColumn.id] || columns[activeColumn.id].taskIds.length === 0)}
+        >
+          Delete All Tasks in Column
+        </MenuItem>
       </Menu>
+
+      {/* Confirm delete all tasks dialog */}
+      <Dialog open={confirmDeleteAllOpen} onClose={() => setConfirmDeleteAllOpen(false)}>
+        <DialogTitle>Delete All Tasks in Column?</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete all tasks in this column? This action cannot be undone.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteAllOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteAllTasks} color="error" variant="contained">
+            Delete All
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

@@ -12,10 +12,7 @@ import {
   Edit as EditIcon,
   PhotoCamera as PhotoCameraIcon,
   Close as CloseIcon,
-  MoreVert as MoreVertIcon,
-  Add as PlusIcon,
-  Settings as SettingsIcon,
-  DragIndicator as DragIndicatorIcon
+  MoreVert as MoreVertIcon
 } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { todoService } from '../services/api';
@@ -1076,7 +1073,6 @@ function TodoList() {
                               {...provided.dragHandleProps}
                             >
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <DragIndicatorIcon sx={{ color: 'text.secondary', mr: 1, opacity: 0.5 }} />
                                 <Typography variant="h6" component="h3">
                                   {column.title} ({tasksForColumn.length})
                                 </Typography>
@@ -1088,7 +1084,7 @@ function TodoList() {
                                     size="small"
                                     onClick={() => setQuickAddColumn(column.id)}
                                   >
-                                    <PlusIcon fontSize="small" />
+                                    <AddIcon fontSize="small" />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="Column settings">
@@ -1096,7 +1092,7 @@ function TodoList() {
                                     size="small"
                                     onClick={(e) => handleColumnSettingsClick(e, column)}
                                   >
-                                    <SettingsIcon fontSize="small" />
+                                    <MoreVertIcon fontSize="small" />
                                   </IconButton>
                                 </Tooltip>
                               </Box>

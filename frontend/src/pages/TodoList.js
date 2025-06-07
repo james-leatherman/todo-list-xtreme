@@ -90,6 +90,34 @@ function TodoList() {
   const [confirmDeleteAllOpen, setConfirmDeleteAllOpen] = useState(false);
   const [columnIdToDeleteAll, setColumnIdToDeleteAll] = useState(null);
 
+  // fetchTodos must be defined here to access state and helpers
+  const fetchTodos = async () => {
+    try {
+      setLoading(true);
+      const response = await todoService.getAll();
+      const fetchedTodos = response.data;
+      setTodos(fetchedTodos);
+
+      // Always reload columns from backend before organizing todos
+      const { columns: loadedColumns, columnOrder: loadedOrder } = await ColumnManager.loadColumnSettings();
+      setColumns(loadedColumns);
+      setColumnOrder(loadedOrder);
+
+      // Validate column state before organizing todos
+      validateColumnsState();
+
+      // Distribute todos into columns using latest columns/order from backend
+      organizeTodosInColumns(fetchedTodos, loadedColumns, loadedOrder);
+
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching todos:', err);
+      setError('Failed to load todos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Load columns from API and fetch todos
   useEffect(() => {
     const loadColumns = async () => {
@@ -120,7 +148,7 @@ function TodoList() {
       // This empty cleanup function helps React clean up any pending animations
       // from the DnD library when the component unmounts
     };
-  }, []);
+  }, []); // Only run on mount
 
   // Helper function to ensure columns and columnOrder are in sync
   const validateColumnsState = () => {
@@ -229,33 +257,6 @@ function TodoList() {
     });
   };
 
-  const fetchTodos = async () => {
-    try {
-      setLoading(true);
-      const response = await todoService.getAll();
-      const fetchedTodos = response.data;
-      setTodos(fetchedTodos);
-
-      // Always reload columns from backend before organizing todos
-      const { columns: loadedColumns, columnOrder: loadedOrder } = await ColumnManager.loadColumnSettings();
-      setColumns(loadedColumns);
-      setColumnOrder(loadedOrder);
-
-      // Validate column state before organizing todos
-      validateColumnsState();
-
-      // Distribute todos into columns using latest columns/order from backend
-      organizeTodosInColumns(fetchedTodos, loadedColumns, loadedOrder);
-
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching todos:', err);
-      setError('Failed to load todos');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   const handleCreateTodo = async (e, columnId = 'todo', quickAddTitle = null) => {
     if (e) e.preventDefault();
     

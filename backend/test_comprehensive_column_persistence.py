@@ -7,6 +7,7 @@ import json
 import requests
 import sys
 import time
+import pytest
 
 def test_column_persistence(auth_token):
     """Test column persistence for both empty columns and column order"""
@@ -15,8 +16,6 @@ def test_column_persistence(auth_token):
     
     # Step 1: Clear existing column settings to start fresh
     print("\n=== Step 1: Clearing existing column settings ===")
-    
-    # First get the current settings to see if they exist
     try:
         response = requests.get(f'{base_url}/column-settings', headers=headers)
         if response.status_code == 200:
@@ -42,7 +41,7 @@ def test_column_persistence(auth_token):
             print(f"No existing column settings found: {response.status_code}")
     except Exception as e:
         print(f"Error checking column settings: {e}")
-        return False
+        assert False, f"Error checking column settings: {e}"
     
     # Step 2: Create test columns including an empty column
     print("\n=== Step 2: Creating test columns including empty column ===")
@@ -65,47 +64,25 @@ def test_column_persistence(auth_token):
     try:
         response = requests.put(f'{base_url}/column-settings', headers=headers, json=payload)
         print(f"Create test columns response: {response.status_code}")
-        if response.status_code not in (200, 201):
-            print(f"Failed to create test columns: {response.text}")
-            return False
+        assert response.status_code in (200, 201), f"Failed to create test columns: {response.text}"
     except Exception as e:
         print(f"Error creating test columns: {e}")
-        return False
+        assert False, f"Error creating test columns: {e}"
     
     # Step 3: Verify the column settings were saved correctly
     print("\n=== Step 3: Verifying column settings ===")
     try:
         response = requests.get(f'{base_url}/column-settings', headers=headers)
-        if response.status_code == 200:
-            settings = response.json()
-            saved_columns = json.loads(settings['columns_config'])
-            saved_order = json.loads(settings['column_order'])
-            
-            # Check for empty columns
-            if 'empty-test' in saved_columns and 'another-empty' in saved_columns:
-                print("SUCCESS: Empty test columns found in saved data")
-            else:
-                print("FAILED: Empty test columns NOT found in saved data")
-                print(f"Saved columns: {list(saved_columns.keys())}")
-                return False
-            
-            # Check column order
-            if saved_order == test_column_order:
-                print("SUCCESS: Column order correctly persisted")
-            else:
-                print(f"FAILED: Column order not persisted correctly")
-                print(f"Expected: {test_column_order}")
-                print(f"Got: {saved_order}")
-                return False
-                
-            print("Initial verification successful!")
-        else:
-            print(f"Failed to get column settings: {response.status_code}")
-            print(response.text)
-            return False
+        assert response.status_code == 200, f"Failed to get column settings: {response.status_code}\n{response.text}"
+        settings = response.json()
+        saved_columns = json.loads(settings['columns_config'])
+        saved_order = json.loads(settings['column_order'])
+        assert 'empty-test' in saved_columns and 'another-empty' in saved_columns, f"Empty test columns NOT found in saved data: {list(saved_columns.keys())}"
+        assert saved_order == test_column_order, f"Column order not persisted correctly. Expected: {test_column_order}, Got: {saved_order}"
+        print("Initial verification successful!")
     except Exception as e:
         print(f"Error verifying column settings: {e}")
-        return False
+        assert False, f"Error verifying column settings: {e}"
     
     # Step 4: Create a todo to ensure todos get properly assigned to columns
     print("\n=== Step 4: Creating a test todo ===")
@@ -118,16 +95,12 @@ def test_column_persistence(auth_token):
     
     try:
         response = requests.post(f'{base_url}/todos', headers=headers, json=todo_payload)
-        if response.status_code == 201:
-            todo_id = response.json()['id']
-            print(f"Created test todo with ID: {todo_id}")
-        else:
-            print(f"Failed to create test todo: {response.status_code}")
-            print(response.text)
-            return False
+        assert response.status_code == 201, f"Failed to create test todo: {response.status_code}\n{response.text}"
+        todo_id = response.json()['id']
+        print(f"Created test todo with ID: {todo_id}")
     except Exception as e:
         print(f"Error creating test todo: {e}")
-        return False
+        assert False, f"Error creating test todo: {e}"
     
     # Step 5: Get column settings again to verify empty columns still exist after todo creation
     print("\n=== Step 5: Verifying column persistence after todo creation ===")
@@ -135,67 +108,23 @@ def test_column_persistence(auth_token):
     
     try:
         response = requests.get(f'{base_url}/column-settings', headers=headers)
-        if response.status_code == 200:
-            settings = response.json()
-            saved_columns = json.loads(settings['columns_config'])
-            saved_order = json.loads(settings['column_order'])
-            
-            # Check for empty columns
-            if 'empty-test' in saved_columns and 'another-empty' in saved_columns:
-                print("SUCCESS: Empty test columns still exist after todo creation")
-            else:
-                print("FAILED: Empty test columns were lost after todo creation")
-                print(f"Saved columns: {list(saved_columns.keys())}")
-                return False
-            
-            # Check column order
-            if saved_order == test_column_order:
-                print("SUCCESS: Column order still correct after todo creation")
-            else:
-                print(f"FAILED: Column order changed after todo creation")
-                print(f"Expected: {test_column_order}")
-                print(f"Got: {saved_order}")
-                return False
-                
-            # Verify the todo is in the right column
-            in_progress_tasks = saved_columns['inProgress']['taskIds']
-            if todo_id in in_progress_tasks or str(todo_id) in in_progress_tasks:
-                print(f"SUCCESS: Todo {todo_id} correctly assigned to 'inProgress' column")
-            else:
-                print(f"WARNING: Todo {todo_id} not found in 'inProgress' column tasks: {in_progress_tasks}")
-                
-            print("Column persistence verification after todo creation successful!")
-        else:
-            print(f"Failed to get column settings: {response.status_code}")
-            print(response.text)
-            return False
+        assert response.status_code == 200, f"Failed to get column settings: {response.status_code}\n{response.text}"
+        settings = response.json()
+        saved_columns = json.loads(settings['columns_config'])
+        saved_order = json.loads(settings['column_order'])
+        assert 'empty-test' in saved_columns and 'another-empty' in saved_columns, f"Empty test columns were lost after todo creation: {list(saved_columns.keys())}"
+        assert saved_order == test_column_order, f"Column order changed after todo creation. Expected: {test_column_order}, Got: {saved_order}"
+        in_progress_tasks = saved_columns['inProgress']['taskIds']
+        assert todo_id in in_progress_tasks or str(todo_id) in in_progress_tasks, f"Todo {todo_id} not found in 'inProgress' column tasks: {in_progress_tasks}"
+        print("Column persistence verification after todo creation successful!")
     except Exception as e:
         print(f"Error verifying column settings: {e}")
-        return False
+        assert False, f"Error verifying column settings: {e}"
     
     # Clean up - delete the test todo if needed
     try:
         response = requests.delete(f'{base_url}/todos/{todo_id}/', headers=headers)
-        if response.status_code == 204:
-            print(f"Cleaned up test todo with ID: {todo_id}")
-        else:
-            print(f"Warning: Failed to clean up test todo: {response.status_code}")
+        assert response.status_code == 204, f"Failed to clean up test todo: {response.status_code}"
+        print(f"Cleaned up test todo with ID: {todo_id}")
     except Exception as e:
         print(f"Warning: Error cleaning up test todo: {e}")
-    
-    return True
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <auth_token>")
-        sys.exit(1)
-        
-    auth_token = sys.argv[1]
-    success = test_column_persistence(auth_token)
-    
-    if success:
-        print("\n✓ All tests passed! Column persistence is working correctly.")
-        sys.exit(0)
-    else:
-        print("\n✗ Tests failed! Column persistence issues detected.")
-        sys.exit(1)

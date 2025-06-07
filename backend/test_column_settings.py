@@ -3,6 +3,7 @@
 import requests
 import json
 import sys
+import pytest
 
 """
 This script tests the column settings API endpoints.
@@ -83,11 +84,3 @@ def test_column_settings(auth_token):
             print(f"Saved order: {saved_order}")
     else:
         print(f"Error: {response.text}")
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python test_column_settings.py <auth_token>")
-        sys.exit(1)
-        
-    auth_token = sys.argv[1]
-    test_column_settings(auth_token)

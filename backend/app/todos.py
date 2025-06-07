@@ -5,10 +5,11 @@ import boto3
 from botocore.exceptions import ClientError
 import uuid
 import os
+import json
 
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import User, Todo, TodoPhoto
+from app.models import User, Todo, TodoPhoto, UserColumnSettings
 from app.schemas import Todo as TodoSchema, TodoCreate, TodoUpdate, TodoPhoto as TodoPhotoSchema
 from app.config import settings
 
@@ -50,6 +51,28 @@ def create_todo(
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)
+
+    # --- COLUMN SETTINGS SYNC ---
+    user_settings = db.query(UserColumnSettings).filter(UserColumnSettings.user_id == current_user.id).first()
+    if user_settings:
+        columns_config_str = getattr(user_settings, 'columns_config', None)
+        columns = json.loads(columns_config_str) if columns_config_str else {}
+        status = db_todo.status or "todo"
+        # Remove from all columns first (defensive, shouldn't be needed on create)
+        for col in columns.values():
+            if db_todo.id in col.get("taskIds", []):
+                col["taskIds"] = [tid for tid in col["taskIds"] if tid != db_todo.id]
+        # Add to the correct column
+        if status in columns:
+            if db_todo.id not in columns[status]["taskIds"]:
+                columns[status]["taskIds"].append(db_todo.id)
+        else:
+            columns[status] = {"id": status, "title": status.title(), "taskIds": [db_todo.id]}
+        setattr(user_settings, 'columns_config', json.dumps(columns))
+        db.commit()
+        db.refresh(user_settings)
+    # --- END COLUMN SETTINGS SYNC ---
+
     return db_todo
 
 
@@ -73,13 +96,34 @@ def update_todo(
     todo = db.query(Todo).filter(Todo.id == todo_id, Todo.user_id == current_user.id).first()
     if todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
-    
+    old_status = todo.status or "todo"
     update_data = todo_update.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(todo, key, value)
-    
     db.commit()
     db.refresh(todo)
+
+    # --- COLUMN SETTINGS SYNC ---
+    user_settings = db.query(UserColumnSettings).filter(UserColumnSettings.user_id == current_user.id).first()
+    if user_settings:
+        columns_config_str = getattr(user_settings, 'columns_config', None)
+        columns = json.loads(columns_config_str) if columns_config_str else {}
+        new_status = todo.status or "todo"
+        # Remove from all columns
+        for col in columns.values():
+            if todo.id in col.get("taskIds", []):
+                col["taskIds"] = [tid for tid in col["taskIds"] if tid != todo.id]
+        # Add to the new status column
+        if new_status in columns:
+            if todo.id not in columns[new_status]["taskIds"]:
+                columns[new_status]["taskIds"].append(todo.id)
+        else:
+            columns[new_status] = {"id": new_status, "title": new_status.title(), "taskIds": [todo.id]}
+        setattr(user_settings, 'columns_config', json.dumps(columns))
+        db.commit()
+        db.refresh(user_settings)
+    # --- END COLUMN SETTINGS SYNC ---
+
     return todo
 
 

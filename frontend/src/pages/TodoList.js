@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container, Typography, Box, Button, TextField, List, ListItem,
-  ListItemText, Checkbox, IconButton, Card, CardContent, Dialog,
-  DialogActions, DialogContent, DialogTitle, Grid, CircularProgress,
-  Paper, Tooltip, Divider, Menu, MenuItem, Chip
+  Container, Typography, Box, Button, TextField, Checkbox, IconButton, Card, CardContent, Dialog,
+  DialogActions, DialogContent, DialogTitle, CircularProgress,
+  Paper, Tooltip, Menu, MenuItem
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -65,81 +64,6 @@ const TaskCard = styled(Paper)(({ theme, iscompleted }) => ({
   cursor: 'grab',
 }));
 
-// Helper utilities for column data validation and sanitization
-const sanitizeColumns = (columnsData) => {
-  if (!columnsData || typeof columnsData !== 'object') {
-    console.error('Invalid columns data, resetting to defaults');
-    return {
-      'todo': { id: 'todo', title: 'To Do', taskIds: [] },
-      'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
-      'done': { id: 'done', title: 'Completed', taskIds: [] }
-    };
-  }
-
-  const sanitizedColumns = {};
-  let hasInvalidColumns = false;
-
-  // Validate each column, fix if possible, or exclude if not
-  Object.keys(columnsData).forEach(columnId => {
-    const column = columnsData[columnId];
-    
-    if (!column || typeof column !== 'object') {
-      console.error(`Column ${columnId} is invalid, skipping`);
-      hasInvalidColumns = true;
-      return;
-    }
-
-    // Ensure column has id and title
-    const sanitizedColumn = {
-      id: column.id || columnId,
-      title: column.title || columnId
-    };
-
-    // Ensure taskIds is an array
-    if (!Array.isArray(column.taskIds)) {
-      console.warn(`Column ${columnId} taskIds is not an array, resetting to empty array`);
-      sanitizedColumn.taskIds = [];
-    } else {
-      sanitizedColumn.taskIds = [...column.taskIds];
-    }
-
-    sanitizedColumns[columnId] = sanitizedColumn;
-  });
-
-  // If the sanitized object has no columns, return defaults
-  if (Object.keys(sanitizedColumns).length === 0) {
-    console.error('No valid columns found, resetting to defaults');
-    return {
-      'todo': { id: 'todo', title: 'To Do', taskIds: [] },
-      'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
-      'done': { id: 'done', title: 'Completed', taskIds: [] }
-    };
-  }
-
-  return sanitizedColumns;
-};
-
-const sanitizeColumnOrder = (orderData, availableColumns) => {
-  if (!Array.isArray(orderData)) {
-    console.error('Column order is not an array, resetting to defaults');
-    return Object.keys(availableColumns);
-  }
-
-  // Filter out column IDs that don't exist in the available columns
-  const validOrder = orderData.filter(id => availableColumns[id]);
-  
-  // If no valid columns in order, use all column keys
-  if (validOrder.length === 0) {
-    console.error('No valid column IDs in order, using all column keys');
-    return Object.keys(availableColumns);
-  }
-  
-  // Add any missing columns to the end
-  const missingColumns = Object.keys(availableColumns).filter(id => !validOrder.includes(id));
-  
-  return [...validOrder, ...missingColumns];
-};
-
 function TodoList() {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -162,85 +86,9 @@ function TodoList() {
   const [isEditColumnDialogOpen, setIsEditColumnDialogOpen] = useState(false);
   const [quickAddColumn, setQuickAddColumn] = useState(null);
   const [quickAddTaskTitle, setQuickAddTaskTitle] = useState('');
-  const [hasLoaded, setHasLoaded] = useState(false);
   // Confirmation dialog state for deleting all tasks in a column
   const [confirmDeleteAllOpen, setConfirmDeleteAllOpen] = useState(false);
   const [columnIdToDeleteAll, setColumnIdToDeleteAll] = useState(null);
-
-  // Helper utilities for column data validation and sanitization
-  const sanitizeColumns = (columnsData) => {
-    if (!columnsData || typeof columnsData !== 'object') {
-      console.error('Invalid columns data, resetting to defaults');
-      return {
-        'todo': { id: 'todo', title: 'To Do', taskIds: [] },
-        'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
-        'done': { id: 'done', title: 'Completed', taskIds: [] }
-      };
-    }
-
-    const sanitizedColumns = {};
-    let hasInvalidColumns = false;
-
-    // Validate each column, fix if possible, or exclude if not
-    Object.keys(columnsData).forEach(columnId => {
-      const column = columnsData[columnId];
-      
-      if (!column || typeof column !== 'object') {
-        console.error(`Column ${columnId} is invalid, skipping`);
-        hasInvalidColumns = true;
-        return;
-      }
-
-      // Ensure column has id and title
-      const sanitizedColumn = {
-        id: column.id || columnId,
-        title: column.title || columnId
-      };
-
-      // Ensure taskIds is an array
-      if (!Array.isArray(column.taskIds)) {
-        console.warn(`Column ${columnId} taskIds is not an array, resetting to empty array`);
-        sanitizedColumn.taskIds = [];
-      } else {
-        sanitizedColumn.taskIds = [...column.taskIds];
-      }
-
-      sanitizedColumns[columnId] = sanitizedColumn;
-    });
-
-    // If the sanitized object has no columns, return defaults
-    if (Object.keys(sanitizedColumns).length === 0) {
-      console.error('No valid columns found, resetting to defaults');
-      return {
-        'todo': { id: 'todo', title: 'To Do', taskIds: [] },
-        'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
-        'done': { id: 'done', title: 'Completed', taskIds: [] }
-      };
-    }
-
-    return sanitizedColumns;
-  };
-
-  const sanitizeColumnOrder = (orderData, availableColumns) => {
-    if (!Array.isArray(orderData)) {
-      console.error('Column order is not an array, resetting to defaults');
-      return Object.keys(availableColumns);
-    }
-
-    // Filter out column IDs that don't exist in the available columns
-    const validOrder = orderData.filter(id => availableColumns[id]);
-    
-    // If no valid columns in order, use all column keys
-    if (validOrder.length === 0) {
-      console.error('No valid column IDs in order, using all column keys');
-      return Object.keys(availableColumns);
-    }
-    
-    // Add any missing columns to the end
-    const missingColumns = Object.keys(availableColumns).filter(id => !validOrder.includes(id));
-    
-    return [...validOrder, ...missingColumns];
-  };
 
   // Load columns from API and fetch todos
   useEffect(() => {
@@ -254,10 +102,6 @@ function TodoList() {
         // Set the columns and column order
         setColumns(loadedColumns);
         setColumnOrder(loadedOrder);
-        setHasLoaded(true); // Set after loading
-        
-        console.log(`Loaded columns (${Object.keys(loadedColumns).length}):`, Object.keys(loadedColumns));
-        console.log(`Loaded column order (${loadedOrder.length}):`, loadedOrder);
         
         // Fetch todos after column settings are loaded
         await fetchTodos();

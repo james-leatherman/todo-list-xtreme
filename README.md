@@ -1,6 +1,6 @@
 # Todo List Xtreme - MVP
 
-A full-stack to-do list application with photo upload capabilities, responsive design, and OAuth authentication.
+A full-stack to-do list application with photo upload capabilities, responsive design, OAuth authentication, and robust testing utilities.
 
 ![Todo List Xtreme](https://via.placeholder.com/1200x600?text=Todo+List+Xtreme+MVP)
 
@@ -8,22 +8,25 @@ A full-stack to-do list application with photo upload capabilities, responsive d
 
 This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It includes all core functionality and is ready for basic use and testing.
 
-## What's New in v1.2.0 (2025-06-07)
+## What's New in v1.3.0 (2025-06-07)
 
-- **Bulk Delete:** You can now delete all tasks in a column at once from the column context menu (with confirmation dialog).
-- **Improved Safety:** Destructive actions are protected by confirmation dialogs and robust error handling.
-- **Code Quality:** All ESLint/code quality issues fixed; CI/CD and build checks pass.
-- **Documentation:** Changelog and release notes updated for this version.
+- **TLX Retro 90s Theme:** Selectable, authentic 90s-inspired theme with custom fonts, colors, and jazz-cup header.
+- **Header Improvements:** Tagline now randomly chosen from a user-supplied 90s descriptor list; jazz-cup image added.
+- **UI/UX Fixes:** Drag-and-drop and theme switching bugs resolved.
+- **Code Quality:** All React hook and lint warnings fixed.
+- **Cloud References:** All Google Cloud deployment references removed from code and docs.
+- **Documentation:** README and setup instructions updated for tests/utilities.
 
 ## Features
 
 - Create, read, update, and delete tasks
-- **Bulk delete all tasks in a column (new in v1.2.0)**
+- Bulk delete all tasks in a column
 - Add photos to tasks for visual tracking
 - Google OAuth authentication
 - Responsive design (works on mobile devices)
-- AWS infrastructure managed with Terraform
+- Theme selection, including "TLX Retro 90s"
 - PostgreSQL database for data persistence
+- AWS infrastructure managed with Terraform
 
 ## Tech Stack
 
@@ -40,6 +43,7 @@ This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It include
 - Responsive design
 - JWT token authentication
 - Photo upload capability
+- Theme support (including 90s retro)
 
 ### Infrastructure
 - AWS (Amazon Web Services)
@@ -59,77 +63,74 @@ This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It include
 - Terraform (for infrastructure provisioning)
 
 ### GitHub Repository Setup
-If you're setting up the project on GitHub, you'll need to configure the following secrets:
-
-1. **DB_USER** - PostgreSQL username (default: postgres)
-2. **DB_PASSWORD** - PostgreSQL password (default: postgres)
-3. **SECRET_KEY** - JWT secret key for authentication
-4. **DOCKER_HUB_USERNAME** - Docker Hub username for CI/CD pipeline
-5. **DOCKER_HUB_ACCESS_TOKEN** - Docker Hub access token
-6. **API_URL** - The URL where your API will be hosted (for production build)
+If you're setting up the project on GitHub, configure these secrets:
+- **DB_USER** - PostgreSQL username (default: postgres)
+- **DB_PASSWORD** - PostgreSQL password (default: postgres)
+- **SECRET_KEY** - JWT secret key for authentication
+- **DOCKER_HUB_USERNAME** - Docker Hub username for CI/CD pipeline
+- **DOCKER_HUB_ACCESS_TOKEN** - Docker Hub access token
+- **API_URL** - The URL where your API will be hosted (for production build)
 
 ### Local Development
 
 #### Backend
 ```bash
-# Navigate to the backend directory
 cd backend
-
-# Create a virtual environment and activate it
 python -m venv venv
 source venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Create a .env file with the environment variables listed below
-# Start PostgreSQL database
+# Create a .env file (see below)
 docker-compose up -d db
-
-# Initialize database
 python init_db.py
-
-# Run the FastAPI server
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 #### Frontend
 ```bash
-# Navigate to the frontend directory
 cd frontend
-
-# Install dependencies
 npm install
-
-# Create a .env file with the environment variables listed below
-# Start the React development server
+# Create a .env file (see below)
 npm start
 ```
 
-#### Quick Testing Setup
-```bash
-# Create a test user and get JWT token
-cd backend
-source venv/bin/activate
-python create_test_user.py
+### Utilities & Scripts
 
-# Create sample todo items
-python test_api.py
-```
+#### Credential Generation
+- `./generate_secrets.sh` — Generates secure random credentials and .env files for dev/prod.
 
-### Generating Secure Credentials
-The project includes a script to generate secure random credentials for development and production:
+#### Database Utilities
+- `backend/wipe_db.sh` — Wipes the development database (use with caution).
+- `backend/demo_db_restore.sh` — Restores demo data to the database.
+- `backend/init_db.py` — Initializes the database schema.
+- `backend/create_test_user.py` — Creates a test user for development.
 
-```bash
-# Generate secure random credentials
-./generate_secrets.sh
-```
+### Testing
 
-This script will:
-1. Generate a secure random JWT secret key
-2. Create random database credentials for production
-3. Set up local development .env files with safe defaults
-4. Output the production credentials to add to GitHub Secrets
+#### Backend Manual API Test
+- `backend/test_api.py` — Runs a full suite of API endpoint tests (requires running backend and test user):
+  ```bash
+  cd backend
+  source venv/bin/activate
+  python test_api.py
+  ```
+- Other backend test scripts:
+  - `test_column_settings.py`, `test_comprehensive_column_persistence.py`, `test_empty_column_persistence.py`, `test_import.py`, `test_settings.py` — Specialized tests for columns/settings.
+
+#### Backend Automated Tests
+- Uses `pytest` (see `backend/conftest.py` for fixtures):
+  ```bash
+  cd backend
+  source venv/bin/activate
+  pytest
+  ```
+
+#### Frontend Tests
+- `frontend/src/App.test.js` — React component tests (Jest):
+  ```bash
+  cd frontend
+  npm test
+  ```
+- Test output: see `frontend/jest-output.txt` and `frontend/test-output.txt`.
 
 ### Environment Variables
 
@@ -161,14 +162,8 @@ REACT_APP_API_URL=http://localhost:8000
 
 ```bash
 cd terraform
-
-# Initialize Terraform
 terraform init
-
-# Plan the deployment
 terraform plan -out=tfplan
-
-# Apply the configuration
 terraform apply tfplan
 ```
 
@@ -237,12 +232,13 @@ Contributions are welcome! Here's how you can contribute:
 
 ## Roadmap
 
-- [ ] Implement Google OAuth authentication
-- [ ] Add AWS S3 integration for production photo storage
-- [ ] Create CI/CD pipeline with GitHub Actions
-- [ ] Add unit and integration tests
-- [ ] Implement tagging system for todos
-- [ ] Add user preferences and theme selection
+- [x] Implement Google OAuth authentication
+- [x] Add AWS S3 integration for production photo storage
+- [x] Create CI/CD pipeline with GitHub Actions
+- [x] Add unit and integration tests
+- [x] Implement tagging system for todos
+- [x] Add user preferences and theme selection
+- [x] Add TLX Retro 90s theme
 
 ## License
 

@@ -89,6 +89,8 @@ function TodoList() {
   // Confirmation dialog state for deleting all tasks in a column
   const [confirmDeleteAllOpen, setConfirmDeleteAllOpen] = useState(false);
   const [columnIdToDeleteAll, setColumnIdToDeleteAll] = useState(null);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const [photoDialogUrl, setPhotoDialogUrl] = useState(null);
 
   // Memoized helper to ensure columns and columnOrder are in sync
   const validateColumnsState = useCallback((columnsArg, columnOrderArg, setColumnOrderArg) => {
@@ -1091,17 +1093,18 @@ function TodoList() {
                                                             width: 60,
                                                             height: 60,
                                                             borderRadius: 1,
-                                                            overflow: 'hidden'
+                                                            overflow: 'hidden',
+                                                            cursor: 'pointer',
+                                                          }}
+                                                          onClick={() => {
+                                                            setPhotoDialogUrl(photo.url);
+                                                            setPhotoDialogOpen(true);
                                                           }}
                                                         >
                                                           <img
                                                             src={photo.url}
                                                             alt={photo.filename}
-                                                            style={{
-                                                              width: '100%',
-                                                              height: '100%',
-                                                              objectFit: 'cover'
-                                                            }}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                           />
                                                           <IconButton
                                                             size="small"
@@ -1112,11 +1115,13 @@ function TodoList() {
                                                               bgcolor: 'rgba(0, 0, 0, 0.5)',
                                                               color: 'white',
                                                               padding: '2px',
-                                                              '&:hover': {
-                                                                bgcolor: 'rgba(0, 0, 0, 0.7)'
-                                                              },
+                                                              zIndex: 2,
+                                                              '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
                                                             }}
-                                                            onClick={() => handleDeletePhoto(todo.id, photo.id)}
+                                                            onClick={e => {
+                                                              e.stopPropagation();
+                                                              handleDeletePhoto(todo.id, photo.id);
+                                                            }}
                                                           >
                                                             <CloseIcon sx={{ fontSize: 14 }} />
                                                           </IconButton>
@@ -1336,6 +1341,44 @@ function TodoList() {
             Delete All
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Photo dialog */}
+      <Dialog open={photoDialogOpen} onClose={() => setPhotoDialogOpen(false)} maxWidth="xl" fullWidth>
+        <DialogContent sx={{ p: 0, bgcolor: 'black', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+          {photoDialogUrl && (
+            <>
+              <img
+                src={photoDialogUrl}
+                alt="Full Size"
+                style={{
+                  maxWidth: '100vw',
+                  maxHeight: '100vh',
+                  display: 'block',
+                  margin: 'auto',
+                  background: 'black',
+                }}
+              />
+              <IconButton
+                aria-label="Maximize"
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 48,
+                  color: 'white',
+                  zIndex: 2,
+                  background: 'rgba(0,0,0,0.4)',
+                  '&:hover': { background: 'rgba(0,0,0,0.7)' }
+                }}
+                onClick={() => {
+                  window.open(photoDialogUrl, '_blank', 'noopener,noreferrer');
+                }}
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14v6h6"/><path d="M20 10V4h-6"/><path d="M14 20h6v-6"/><path d="M10 4H4v6"/></svg>
+              </IconButton>
+            </>
+          )}
+        </DialogContent>
       </Dialog>
     </Container>
   );

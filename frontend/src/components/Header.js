@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -15,6 +15,30 @@ import { logo } from '../images';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import PaletteIcon from '@mui/icons-material/Palette';
+
+// List of 90s-style descriptors (user-supplied)
+const ORGANIZER_DESCRIPTORS = [
+  'Phat',
+  'Bomb',
+  'Fly',
+  'Dope',
+  'All That',
+  'Tight',
+  'Fresh',
+  'Sweet',
+  'Rad',
+  "Bangin'",
+  'Off the hook',
+  "Slammin'",
+  'Wicked',
+  'Hype',
+  'Booyah',
+  'Legit'
+];
+
+function getRandomDescriptor() {
+  return ORGANIZER_DESCRIPTORS[Math.floor(Math.random() * ORGANIZER_DESCRIPTORS.length)];
+}
 
 function Header() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -38,6 +62,9 @@ function Header() {
     setThemeMenuAnchorEl(null);
   };
 
+  // Memoize so it doesn't change on every render
+  const descriptor = React.useMemo(() => getRandomDescriptor(), []);
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -46,9 +73,28 @@ function Header() {
             <img src={logo} alt="Todo List Xtreme Logo" style={{ height: 100, width: 100, objectFit: 'fill' }} />
           </IconButton>
         </Box>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-          Your hella fresh organizer
-        </Typography>
+        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          {/* Jazz cup image for retro90s theme only */}
+          {themeName === 'retro90s' && (
+            <img
+              src={require('../images/jazz-cup.png')}
+              alt="90s Jazz Cup Design"
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                height: 60,
+                opacity: 0.7,
+                pointerEvents: 'none',
+                zIndex: 0,
+              }}
+            />
+          )}
+          <Typography variant="h6" component="div" sx={{ fontStyle: 'italic', zIndex: 1, position: 'relative' }}>
+            {`Your ${descriptor} Organizer`}
+          </Typography>
+        </Box>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Theme selection button */}
           <Tooltip title="Select Theme">

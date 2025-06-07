@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -27,7 +27,21 @@ function AppContent() {
         ...palette,
         mode,
       },
-    }), [mode, themeName, palette]);
+      typography: themeConfig.typography || {},
+    }), [mode, themeName, palette, themeConfig.typography]);
+
+  // Set body class for retro theme
+  useEffect(() => {
+    const body = document.body;
+    body.classList.remove('tlx-retro90s-light', 'tlx-retro90s-dark');
+    if (themeName === 'retro90s') {
+      body.classList.add(`tlx-retro90s-${mode}`);
+    }
+    // Optionally, remove on cleanup
+    return () => {
+      body.classList.remove('tlx-retro90s-light', 'tlx-retro90s-dark');
+    };
+  }, [themeName, mode]);
 
   return (
     <MuiThemeProvider theme={theme}>

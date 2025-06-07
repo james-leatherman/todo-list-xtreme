@@ -39,6 +39,38 @@ const THEMES = {
       },
     },
   },
+  retro90s: {
+    name: 'TLX Retro 90s',
+    palette: {
+      light: {
+        primary: { main: '#00BFFF' }, // Vivid Sky Blue
+        secondary: { main: '#FF69B4' }, // Hot Pink
+        accent: { main: '#FFD700' }, // Bright Yellow
+        background: { default: '#F5F5F5', paper: '#FFFFFF' },
+        success: { main: '#39FF14' }, // Neon Green
+        warning: { main: '#FFB347' },
+        error: { main: '#FF1744' },
+        text: { primary: '#23272A', secondary: '#23272A' },
+        card: { main: '#FFFFFF' },
+      },
+      dark: {
+        primary: { main: '#00BFFF' },
+        secondary: { main: '#FF69B4' },
+        accent: { main: '#FFD700' },
+        background: { default: '#23272A', paper: '#2C2F33' },
+        success: { main: '#39FF14' },
+        warning: { main: '#FFB347' },
+        error: { main: '#FF1744' },
+        text: { primary: '#F5F5F5', secondary: '#F5F5F5' },
+        card: { main: '#2C2F33' },
+      },
+    },
+    typography: {
+      fontFamily: `'Trebuchet MS', 'Montserrat', 'Verdana', sans-serif`,
+      fontFamilyHeading: `'Permanent Marker', 'Orbitron', 'Arial Black', sans-serif`,
+    },
+    // Optionally, add custom CSS for geometric shapes, neon glows, etc. in index.css
+  },
   // Add more themes here if needed
 };
 

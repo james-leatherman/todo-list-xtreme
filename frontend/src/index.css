@@ -71,3 +71,63 @@ code {
   display: flex;
   gap: 8px;
 }
+
+/* TLX Retro 90s Theme Styles */
+body.tlx-retro90s-light {
+  font-family: 'Montserrat', Verdana, sans-serif;
+  background: #F5F5F5;
+  color: #23272A;
+}
+body.tlx-retro90s-dark {
+  font-family: 'Montserrat', Verdana, sans-serif;
+  background: #23272A;
+  color: #F5F5F5;
+}
+
+h1, h2, h3, h4, .retro-heading {
+  font-family: 'Orbitron', 'Arial Black', sans-serif;
+  letter-spacing: 1px;
+}
+
+.tlx-retro90s-btn {
+  background: linear-gradient(90deg, #00BFFF 60%, #FF69B4 100%);
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,191,255,0.15);
+  font-weight: bold;
+  transition: box-shadow 0.2s, transform 0.1s;
+}
+.tlx-retro90s-btn:hover {
+  box-shadow: 0 0 8px #FF69B4, 0 4px 16px rgba(0,191,255,0.25);
+  transform: scale(1.05);
+}
+
+.tlx-retro90s-card {
+  border: 2px solid #FFD700;
+  border-radius: 8px;
+  background: var(--card-bg, #FFFFFF);
+}
+
+/* Neon glow for logo */
+.tlx-retro90s-logo {
+  filter: drop-shadow(0 0 8px #00BFFF) drop-shadow(0 0 4px #FF69B4);
+}
+
+/* Geometric shapes background (example) */
+.tlx-retro90s-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+.tlx-retro90s-bg-shape {
+  position: absolute;
+  opacity: 0.15;
+  border-radius: 50%;
+}
+.tlx-retro90s-bg-shape1 {
+  width: 200px; height: 200px; background: #00BFFF; left: 5vw; top: 10vh;}
+.tlx-retro90s-bg-shape2 {
+  width: 120px; height: 120px; background: #FF69B4; right: 10vw; top: 30vh;}
+.tlx-retro90s-bg-shape3 {
+  width: 80px; height: 80px; background: #FFD700; left: 40vw; bottom: 10vh;}

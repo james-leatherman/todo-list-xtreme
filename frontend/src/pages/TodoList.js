@@ -195,7 +195,7 @@ function TodoList() {
     } finally {
       setLoading(false);
     }
-  }, [todoService, ColumnManager, setLoading, setTodos, setColumns, setColumnOrder, setError, validateColumnsState, organizeTodosInColumns]);
+  }, [setLoading, setTodos, setColumns, setColumnOrder, setError, validateColumnsState, organizeTodosInColumns]);
 
   // Load columns from API and fetch todos
   useEffect(() => {
@@ -862,8 +862,8 @@ function TodoList() {
           onDragEnd={handleDragEnd}
           onBeforeDragStart={() => setError(null)} // Clear any previous errors
           onDragStart={() => {
-            // Validate column state at the start of a drag to ensure consistency
-            validateColumnsState();
+            // Fix: Always pass columns, columnOrder, setColumnOrder to validateColumnsState
+            validateColumnsState(columns, columnOrder, setColumnOrder);
           }}
         >
           <Box sx={{ 

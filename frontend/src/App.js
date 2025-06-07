@@ -33,13 +33,15 @@ function AppContent() {
   // Set body class for retro theme
   useEffect(() => {
     const body = document.body;
-    body.classList.remove('tlx-retro90s-light', 'tlx-retro90s-dark');
+    body.classList.remove('tlx-retro90s-light', 'tlx-retro90s-dark', 'tlx-retro80s-light', 'tlx-retro80s-dark');
     if (themeName === 'retro90s') {
       body.classList.add(`tlx-retro90s-${mode}`);
+    } else if (themeName === 'retro80s') {
+      body.classList.add(`tlx-retro80s-${mode}`);
     }
     // Optionally, remove on cleanup
     return () => {
-      body.classList.remove('tlx-retro90s-light', 'tlx-retro90s-dark');
+      body.classList.remove('tlx-retro90s-light', 'tlx-retro90s-dark', 'tlx-retro80s-light', 'tlx-retro80s-dark');
     };
   }, [themeName, mode]);
 

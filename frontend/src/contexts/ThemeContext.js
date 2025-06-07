@@ -71,6 +71,38 @@ const THEMES = {
     },
     // Optionally, add custom CSS for geometric shapes, neon glows, etc. in index.css
   },
+  retro80s: {
+    name: 'TLX Retro 80s',
+    palette: {
+      light: {
+        primary: { main: '#FF0080' }, // Hot Pink
+        secondary: { main: '#7928CA' }, // Purple
+        accent: { main: '#00F0FF' }, // Neon Cyan
+        background: { default: '#FFF8E7', paper: '#FFFFFF' },
+        success: { main: '#39FF14' }, // Neon Green
+        warning: { main: '#FFD700' }, // Bright Yellow
+        error: { main: '#FF1744' },
+        text: { primary: '#1A0033', secondary: '#7928CA' },
+        card: { main: '#FFFFFF' },
+      },
+      dark: {
+        primary: { main: '#FF0080' },
+        secondary: { main: '#7928CA' },
+        accent: { main: '#00F0FF' },
+        background: { default: '#1A0033', paper: '#2D004D' },
+        success: { main: '#39FF14' },
+        warning: { main: '#FFD700' },
+        error: { main: '#FF1744' },
+        text: { primary: '#FFF8E7', secondary: '#00F0FF' },
+        card: { main: '#2D004D' },
+      },
+    },
+    typography: {
+      fontFamily: `'Orbitron', 'Trebuchet MS', 'Montserrat', 'Verdana', sans-serif`,
+      fontFamilyHeading: `'Orbitron', 'Arial Black', 'Permanent Marker', sans-serif`,
+    },
+    // Optionally, add custom CSS for gridlines, neon, and geometric shapes in index.css
+  },
   // Add more themes here if needed
 };
 

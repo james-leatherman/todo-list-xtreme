@@ -15,6 +15,7 @@ import { logo } from '../images';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import PaletteIcon from '@mui/icons-material/Palette';
+import tlxLogo80s from '../images/tlx-logo-80s.png';
 
 // List of 90s-style descriptors (user-supplied)
 const ORGANIZER_DESCRIPTORS = [
@@ -70,7 +71,11 @@ function Header() {
       <Toolbar>
         <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
           <IconButton edge="start" color="inherit" aria-label="logo" onClick={() => navigate('/')} sx={{ p: 0, mr: 1 }}>
-            <img src={logo} alt="Todo List Xtreme Logo" style={{ height: 100, width: 100, objectFit: 'fill' }} />
+            <img
+              src={themeName === 'retro80s' ? tlxLogo80s : logo}
+              alt="Todo List Xtreme Logo"
+              style={{ height: 100, width: 100, objectFit: 'fill' }}
+            />
           </IconButton>
         </Box>
         <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>

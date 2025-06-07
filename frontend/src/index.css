@@ -131,3 +131,67 @@ h1, h2, h3, h4, .retro-heading {
   width: 120px; height: 120px; background: #FF69B4; right: 10vw; top: 30vh;}
 .tlx-retro90s-bg-shape3 {
   width: 80px; height: 80px; background: #FFD700; left: 40vw; bottom: 10vh;}
+
+/* TLX Retro 80s Theme Styles */
+body.tlx-retro80s-light {
+  font-family: 'Orbitron', 'Trebuchet MS', 'Montserrat', Verdana, sans-serif;
+  background: #FFF8E7;
+  color: #1A0033;
+  background-image: linear-gradient(135deg, #FF0080 0%, #7928CA 100%);
+  background-attachment: fixed;
+}
+body.tlx-retro80s-dark {
+  font-family: 'Orbitron', 'Trebuchet MS', 'Montserrat', Verdana, sans-serif;
+  background: #1A0033;
+  color: #FFF8E7;
+  background-image: linear-gradient(135deg, #1A0033 0%, #7928CA 100%);
+  background-attachment: fixed;
+}
+
+.tlx-retro80s-btn {
+  background: linear-gradient(90deg, #FF0080 60%, #00F0FF 100%);
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(255,0,128,0.15);
+  font-weight: bold;
+  transition: box-shadow 0.2s, transform 0.1s;
+}
+.tlx-retro80s-btn:hover {
+  box-shadow: 0 0 8px #00F0FF, 0 4px 16px rgba(255,0,128,0.25);
+  transform: scale(1.05);
+}
+
+.tlx-retro80s-card {
+  border: 2px solid #FFD700;
+  border-radius: 12px;
+  background: var(--card-bg, #FFFFFF);
+  box-shadow: 0 0 16px #00F0FF44, 0 0 8px #FF008044;
+}
+
+.tlx-retro80s-logo {
+  filter: drop-shadow(0 0 12px #FF0080) drop-shadow(0 0 8px #00F0FF);
+}
+
+.tlx-retro80s-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+.tlx-retro80s-bg-shape {
+  position: absolute;
+  opacity: 0.18;
+  border-radius: 0 80% 80% 0 / 80% 0 80% 80%;
+}
+.tlx-retro80s-bg-shape1 {
+  width: 220px; height: 120px; background: #FF0080; left: 6vw; top: 12vh; transform: rotate(-18deg);}
+.tlx-retro80s-bg-shape2 {
+  width: 140px; height: 140px; background: #00F0FF; right: 12vw; top: 28vh; transform: rotate(12deg);}
+.tlx-retro80s-bg-shape3 {
+  width: 100px; height: 60px; background: #FFD700; left: 38vw; bottom: 12vh; transform: rotate(-8deg);}
+
+h1, h2, h3, h4, .retro80s-heading {
+  font-family: 'Orbitron', 'Arial Black', 'Permanent Marker', sans-serif;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px #00F0FF88, 0 1px 2px #FF008088;
+}

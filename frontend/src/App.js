@@ -16,25 +16,18 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 function AppContent() {
-  const { mode } = useTheme();
+  const { mode, themeName, themes, getActivePalette } = useTheme();
+  const themeConfig = themes[themeName] || themes.default;
+  const palette = getActivePalette();
 
-  // Create a theme instance based on the current mode
-  const theme = useMemo(() => 
+  // Always set the palette mode separately from the theme config
+  const theme = useMemo(() =>
     createTheme({
       palette: {
+        ...palette,
         mode,
-        primary: {
-          main: mode === 'dark' ? '#7986cb' : '#3f51b5', // Lighter blue in dark mode
-        },
-        secondary: {
-          main: mode === 'dark' ? '#ff4081' : '#f50057', // Brighter pink in dark mode
-        },
-        background: {
-          default: mode === 'dark' ? '#121212' : '#fafafa',
-          paper: mode === 'dark' ? '#1e1e1e' : '#fff',
-        },
       },
-    }), [mode]);
+    }), [mode, themeName, palette]);
 
   return (
     <MuiThemeProvider theme={theme}>

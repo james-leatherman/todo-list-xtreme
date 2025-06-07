@@ -12,15 +12,30 @@ import { useTheme } from '../contexts/ThemeContext';
 import Brightness4Icon from '@mui/icons-material/Brightness4'; // Moon icon for dark mode
 import Brightness7Icon from '@mui/icons-material/Brightness7'; // Sun icon for light mode
 import { logo } from '../images';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import PaletteIcon from '@mui/icons-material/Palette';
 
 function Header() {
   const { user, isAuthenticated, logout } = useAuth();
-  const { mode, toggleMode } = useTheme();
+  const { mode, toggleMode, themeName, selectTheme, themes } = useTheme();
+  const [themeMenuAnchorEl, setThemeMenuAnchorEl] = React.useState(null);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleThemeMenuOpen = (event) => {
+    setThemeMenuAnchorEl(event.currentTarget);
+  };
+  const handleThemeMenuClose = () => {
+    setThemeMenuAnchorEl(null);
+  };
+  const handleThemeSelect = (name) => {
+    selectTheme(name);
+    setThemeMenuAnchorEl(null);
   };
 
   return (
@@ -34,8 +49,29 @@ function Header() {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
           Your hella fresh organizer
         </Typography>
-        
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {/* Theme selection button */}
+          <Tooltip title="Select Theme">
+            <IconButton color="inherit" onClick={handleThemeMenuOpen} sx={{ mr: 1 }}>
+              <PaletteIcon />
+            </IconButton>
+          </Tooltip>
+          <Menu
+            anchorEl={themeMenuAnchorEl}
+            open={Boolean(themeMenuAnchorEl)}
+            onClose={handleThemeMenuClose}
+          >
+            {Object.entries(themes).map(([key, theme]) => (
+              <MenuItem
+                key={key}
+                selected={themeName === key}
+                onClick={() => handleThemeSelect(key)}
+              >
+                {theme.name}
+              </MenuItem>
+            ))}
+          </Menu>
+          {/* Dark/Light mode button */}
           <Tooltip title={mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
             <IconButton color="inherit" onClick={toggleMode} sx={{ mr: 1 }}>
               {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}

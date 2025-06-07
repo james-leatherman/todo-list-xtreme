@@ -22,6 +22,26 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
+// Define available themes
+const THEMES = {
+  default: {
+    name: 'Default Theme',
+    palette: {
+      light: {
+        primary: { main: '#3f51b5' },
+        secondary: { main: '#f50057' },
+        background: { default: '#fafafa', paper: '#fff' },
+      },
+      dark: {
+        primary: { main: '#7986cb' },
+        secondary: { main: '#ff4081' },
+        background: { default: '#121212', paper: '#1e1e1e' },
+      },
+    },
+  },
+  // Add more themes here if needed
+};
+
 export function ThemeProvider({ children }) {
   // Check if the user has a theme preference in localStorage
   const [mode, setMode] = useState(() => {
@@ -45,6 +65,14 @@ export function ThemeProvider({ children }) {
     });
   };
 
+  const [themeName, setThemeName] = useState(() => localStorage.getItem('themeName') || 'default');
+
+  // Theme selection
+  const selectTheme = (name) => {
+    setThemeName(name);
+    localStorage.setItem('themeName', name);
+  };
+
   // Listen for system preference changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -58,10 +86,19 @@ export function ThemeProvider({ children }) {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  const getActivePalette = () => {
+    const theme = THEMES[themeName] || THEMES.default;
+    return theme.palette[mode] || theme.palette.light;
+  };
+
   const value = {
     mode,
     toggleMode,
-    isDarkMode: mode === 'dark'
+    isDarkMode: mode === 'dark',
+    themeName,
+    selectTheme,
+    themes: THEMES,
+    getActivePalette,
   };
 
   return (

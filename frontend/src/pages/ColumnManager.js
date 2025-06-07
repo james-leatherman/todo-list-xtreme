@@ -25,51 +25,33 @@ class ColumnManager {
       return Promise.reject(new Error('Invalid columnOrder array'));
     }
 
-    // Make sure all columns (even empty ones) are included in column order
+    // Always include all columns (even empty) in the order
     const allColumnIds = Object.keys(columns);
-    let updatedColumnOrder = [...columnOrder];
+    let updatedColumnOrder = columnOrder.filter(id => columns[id]); // Remove deleted columns
     
-    // Add any columns that are not in the order
-    const missingColumns = allColumnIds.filter(id => !updatedColumnOrder.includes(id));
-    if (missingColumns.length > 0) {
-      updatedColumnOrder = [...updatedColumnOrder, ...missingColumns];
-      console.log(`Added missing columns to order: ${missingColumns.join(', ')}`);
-    }
-
-    // Make sure all columns in the order exist (this handles deleted columns)
-    updatedColumnOrder = updatedColumnOrder.filter(id => columns[id]);
-
-    // Ensure column order is updated if it was modified
-    if (JSON.stringify(columnOrder) !== JSON.stringify(updatedColumnOrder)) {
-      console.log('Column order was updated to include all columns');
-      columnOrder = updatedColumnOrder;
-    }
+    // Add any missing columns to the end
+    allColumnIds.forEach(id => {
+      if (!updatedColumnOrder.includes(id)) updatedColumnOrder.push(id);
+    });
     
-    // First, save to localStorage for fast access
+    // Save to localStorage
     localStorage.setItem('todoColumns', JSON.stringify(columns));
-    localStorage.setItem('todoColumnOrder', JSON.stringify(columnOrder));
+    localStorage.setItem('todoColumnOrder', JSON.stringify(updatedColumnOrder));
     
-    // Create settings object for the API
+    // Save to API
     const settings = {
       columns_config: JSON.stringify(columns),
-      column_order: JSON.stringify(columnOrder)
+      column_order: JSON.stringify(updatedColumnOrder)
     };
     
-    console.log('Saving column settings to API:', settings);
-    
     try {
-      // Try to get existing settings first
       const response = await columnSettingsService.getSettings();
-      
-      // If settings exist, update them
       if (response.data && response.data.id) {
         return columnSettingsService.updateSettings(settings);
       } else {
-        // If no settings exist, create them
         return columnSettingsService.createSettings(settings);
       }
     } catch (error) {
-      // If error getting settings or first operation fails, try the other approach
       if (error.response && error.response.status === 404) {
         return columnSettingsService.createSettings(settings);
       } else {
@@ -93,69 +75,35 @@ class ColumnManager {
       'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
       'done': { id: 'done', title: 'Completed', taskIds: [] }
     };
-    
     const defaultColumnOrder = ['todo', 'inProgress', 'done'];
-    
     try {
-      // Try to get settings from the API first
       const response = await columnSettingsService.getSettings();
       const settings = response.data;
-      
       if (settings && settings.columns_config && settings.column_order) {
         try {
-          // Parse the settings
           const columns = JSON.parse(settings.columns_config);
           const columnOrder = JSON.parse(settings.column_order);
-          
-          console.log('Loaded from API - columns:', Object.keys(columns));
-          console.log('Loaded from API - columnOrder:', columnOrder);
-          
-          // Perform validation to ensure all columns have the required structure
+          // Validate all columns have required structure
           let isValid = true;
           Object.keys(columns).forEach(id => {
             if (!columns[id] || !columns[id].id || !columns[id].title || !Array.isArray(columns[id].taskIds)) {
-              console.error(`Invalid column structure for ${id}`, columns[id]);
               isValid = false;
             }
           });
-          
           if (!isValid) {
-            console.error('Invalid column structure detected, falling back to defaults');
             return { columns: defaultColumns, columnOrder: defaultColumnOrder };
           }
-
-          // Ensure all columns are in the order (including empty columns)
-          const allColumnIds = Object.keys(columns);
-          const missingInOrder = allColumnIds.filter(id => !columnOrder.includes(id));
-          
-          // Add any missing columns to the order
-          const updatedOrder = [...columnOrder, ...missingInOrder];
-          
-          // Make sure all columns in the order exist
-          const finalOrder = updatedOrder.filter(id => columns[id]);
-          
-          // If we had to update the order, save it back
-          if (missingInOrder.length > 0 || finalOrder.length !== updatedOrder.length) {
-            console.log('Fixing column order during load:', finalOrder);
-            this.saveColumnSettings(columns, finalOrder);
-          }
-          
-          // Also save to localStorage for faster access next time
-          localStorage.setItem('todoColumns', settings.columns_config);
-          localStorage.setItem('todoColumnOrder', JSON.stringify(finalOrder));
-          
-          return { columns, columnOrder: finalOrder };
+          // Save to localStorage for fast access
+          localStorage.setItem('todoColumns', JSON.stringify(columns));
+          localStorage.setItem('todoColumnOrder', JSON.stringify(columnOrder));
+          return { columns, columnOrder };
         } catch (parseError) {
           console.error('Error parsing column settings:', parseError);
         }
       }
-      
-      // If we reach here, API settings were invalid or incomplete
-      // Try localStorage as fallback
       return this.loadFromLocalStorage();
     } catch (error) {
       console.error('Error loading column settings from API:', error);
-      // API failed, try localStorage
       return this.loadFromLocalStorage();
     }
   }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container, Typography, Box, Button, TextField, Checkbox, IconButton, Card, CardContent, Dialog,
   DialogActions, DialogContent, DialogTitle, CircularProgress,
@@ -90,106 +90,30 @@ function TodoList() {
   const [confirmDeleteAllOpen, setConfirmDeleteAllOpen] = useState(false);
   const [columnIdToDeleteAll, setColumnIdToDeleteAll] = useState(null);
 
-  // fetchTodos must be defined here to access state and helpers
-  const fetchTodos = async () => {
-    try {
-      setLoading(true);
-      const response = await todoService.getAll();
-      const fetchedTodos = response.data;
-      setTodos(fetchedTodos);
-
-      // Always reload columns from backend before organizing todos
-      const { columns: loadedColumns, columnOrder: loadedOrder } = await ColumnManager.loadColumnSettings();
-      setColumns(loadedColumns);
-      setColumnOrder(loadedOrder);
-
-      // Validate column state before organizing todos
-      validateColumnsState();
-
-      // Distribute todos into columns using latest columns/order from backend
-      organizeTodosInColumns(fetchedTodos, loadedColumns, loadedOrder);
-
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching todos:', err);
-      setError('Failed to load todos');
-    } finally {
-      setLoading(false);
+  // Memoized helper to ensure columns and columnOrder are in sync
+  const validateColumnsState = useCallback((columnsArg, columnOrderArg, setColumnOrderArg) => {
+    const columnsKeys = Object.keys(columnsArg);
+    const validColumnOrder = columnOrderArg.filter(id => columnsKeys.includes(id));
+    if (validColumnOrder.length !== columnOrderArg.length) {
+      setColumnOrderArg(validColumnOrder);
+      return true;
     }
-  };
-
-  // Load columns from API and fetch todos
-  useEffect(() => {
-    const loadColumns = async () => {
-      try {
-        setLoading(true);
-        
-        // Use ColumnManager to load column settings
-        const { columns: loadedColumns, columnOrder: loadedOrder } = await ColumnManager.loadColumnSettings();
-        
-        // Set the columns and column order
-        setColumns(loadedColumns);
-        setColumnOrder(loadedOrder);
-        
-        // Fetch todos after column settings are loaded
-        await fetchTodos();
-      } catch (error) {
-        console.error('Error loading column settings:', error);
-        setError('Failed to load column settings');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadColumns();
-    
-    // Cleanup function to ensure we don't have dangling animations when component unmounts
-    return () => {
-      // This empty cleanup function helps React clean up any pending animations
-      // from the DnD library when the component unmounts
-    };
-  }, []); // Only run on mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-
-  // Helper function to ensure columns and columnOrder are in sync
-  const validateColumnsState = () => {
-    const columnsKeys = Object.keys(columns);
-    const validColumnOrder = columnOrder.filter(id => columnsKeys.includes(id));
-    
-    // If any column IDs were removed, update columnOrder
-    if (validColumnOrder.length !== columnOrder.length) {
-      setColumnOrder(validColumnOrder);
-      return true; // State has changed
-    }
-    
-    // Check if all columns in columnOrder exist
-    const missingColumnIds = columnsKeys.filter(id => !columnOrder.includes(id));
-    
-    // If we found columns that aren't in the order, add them
+    const missingColumnIds = columnsKeys.filter(id => !columnOrderArg.includes(id));
     if (missingColumnIds.length > 0) {
-      setColumnOrder(current => [...current, ...missingColumnIds]);
-      return true; // State has changed
+      setColumnOrderArg(current => [...current, ...missingColumnIds]);
+      return true;
     }
-    
-    return false; // No changes made
-  };
+    return false;
+  }, []);
 
-  // Refactored organizeTodosInColumns to accept columns and columnOrder as arguments
-  const organizeTodosInColumns = (fetchedTodos, columnsArg = columns, columnOrderArg = columnOrder) => {
-    // Always start with the columns as loaded from backend or passed in
+  // Memoized organizeTodosInColumns
+  const organizeTodosInColumns = useCallback((fetchedTodos, columnsArg, columnOrderArg, setColumnsArg, setColumnOrderArg) => {
     const updatedColumns = { ...columnsArg };
-
-    // Reset all column taskIds arrays, but do NOT remove any columns
     Object.keys(updatedColumns).forEach(columnId => {
       updatedColumns[columnId].taskIds = [];
     });
-
-    // Create a map for tracking unique column titles (case insensitive)
     const titleMap = new Map();
-    // Keep track of column status IDs that need to be added to column order
     const newColumnStatuses = [];
-
-    // Distribute todos based on status or completion
     fetchedTodos.forEach(todo => {
       const todoStatus = todo.status || (todo.is_completed ? 'done' : 'todo');
       const statusLower = todoStatus.toLowerCase();
@@ -200,7 +124,6 @@ function TodoList() {
         updatedColumns[matchingColumnId].taskIds.push(todo.id);
         todo.status = matchingColumnId;
       } else {
-        // Check if this status might match an existing column title
         const title = todoStatus.charAt(0).toUpperCase() + todoStatus.slice(1).replace(/-/g, ' ');
         const titleLower = title.toLowerCase();
         const existingColumnIdByTitle = titleMap.get(titleLower);
@@ -214,7 +137,7 @@ function TodoList() {
             taskIds: [todo.id]
           };
           titleMap.set(titleLower, todoStatus);
-          if (!columnOrder.includes(todoStatus) && !newColumnStatuses.includes(todoStatus)) {
+          if (!columnOrderArg.includes(todoStatus) && !newColumnStatuses.includes(todoStatus)) {
             newColumnStatuses.push(todoStatus);
           }
         } else {
@@ -226,7 +149,7 @@ function TodoList() {
               title: 'To Do',
               taskIds: [todo.id]
             };
-            if (!columnOrder.includes('todo') && !newColumnStatuses.includes('todo')) {
+            if (!columnOrderArg.includes('todo') && !newColumnStatuses.includes('todo')) {
               newColumnStatuses.push('todo');
             }
           }
@@ -236,27 +159,67 @@ function TodoList() {
         todo.status = todoStatus;
       }
     });
-
-    // Add any missing columns to the order
     const missingColumns = Object.keys(updatedColumns).filter(
-      colId => !columnOrder.includes(colId)
+      colId => !columnOrderArg.includes(colId)
     );
     if (missingColumns.length > 0 || newColumnStatuses.length > 0) {
       const allNewColumns = [...missingColumns, ...newColumnStatuses];
       const uniqueNewColumns = Array.from(new Set(allNewColumns));
-      setColumnOrder([...columnOrder, ...uniqueNewColumns]);
+      setColumnOrderArg([...columnOrderArg, ...uniqueNewColumns]);
     }
-    setColumns(updatedColumns);
-    setColumnOrder(columnOrderArg);
-    // Do NOT persist to backend or localStorage here!
-
-    // Defensive: Ensure all columns from the original columns object are present
+    setColumnsArg(updatedColumns);
+    setColumnOrderArg(columnOrderArg);
     Object.keys(columnsArg).forEach(columnId => {
       if (!updatedColumns[columnId]) {
         updatedColumns[columnId] = { ...columnsArg[columnId], taskIds: [] };
       }
     });
-  };
+  }, []);
+
+  // fetchTodos must be defined here to access state and helpers
+  const fetchTodos = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await todoService.getAll();
+      const fetchedTodos = response.data;
+      setTodos(fetchedTodos);
+      const { columns: loadedColumns, columnOrder: loadedOrder } = await ColumnManager.loadColumnSettings();
+      setColumns(loadedColumns);
+      setColumnOrder(loadedOrder);
+      validateColumnsState(loadedColumns, loadedOrder, setColumnOrder);
+      organizeTodosInColumns(fetchedTodos, loadedColumns, loadedOrder, setColumns, setColumnOrder);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching todos:', err);
+      setError('Failed to load todos');
+    } finally {
+      setLoading(false);
+    }
+  }, [todoService, ColumnManager, setLoading, setTodos, setColumns, setColumnOrder, setError, validateColumnsState, organizeTodosInColumns]);
+
+  // Load columns from API and fetch todos
+  useEffect(() => {
+    const loadColumns = async () => {
+      try {
+        setLoading(true);
+        const { columns: loadedColumns, columnOrder: loadedOrder } = await ColumnManager.loadColumnSettings();
+        setColumns(loadedColumns);
+        setColumnOrder(loadedOrder);
+        await fetchTodos();
+      } catch (error) {
+        console.error('Error loading column settings:', error);
+        setError('Failed to load column settings');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadColumns();
+    return () => {
+      // This empty cleanup function helps React clean up any pending animations
+      // from the DnD library when the component unmounts
+    };
+  }, [fetchTodos]); // Only run on mount and when fetchTodos changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const handleCreateTodo = async (e, columnId = 'todo', quickAddTitle = null) => {
     if (e) e.preventDefault();

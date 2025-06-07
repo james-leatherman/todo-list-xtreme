@@ -28,7 +28,7 @@ function AppContent() {
         mode,
       },
       typography: themeConfig.typography || {},
-    }), [mode, themeName, palette, themeConfig.typography]);
+    }), [mode, palette, themeConfig.typography]);
 
   // Set body class for retro theme
   useEffect(() => {

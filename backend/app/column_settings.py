@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -19,7 +20,18 @@ def get_column_settings(
     settings = db.query(UserColumnSettings).filter(UserColumnSettings.user_id == current_user.id).first()
     if not settings:
         # If settings don't exist, create default ones
-        settings = UserColumnSettings(user_id=current_user.id)
+        default_columns = {
+            'todo': {'id': 'todo', 'title': 'To Do', 'taskIds': []},
+            'inProgress': {'id': 'inProgress', 'title': 'In Progress', 'taskIds': []},
+            'done': {'id': 'done', 'title': 'Completed', 'taskIds': []}
+        }
+        default_column_order = ['todo', 'inProgress', 'done']
+        
+        settings = UserColumnSettings(
+            user_id=current_user.id,
+            columns_config=json.dumps(default_columns),
+            column_order=json.dumps(default_column_order)
+        )
         db.add(settings)
         db.commit()
         db.refresh(settings)
@@ -73,8 +85,19 @@ def update_column_settings(
     """Update column settings for current user"""
     db_settings = db.query(UserColumnSettings).filter(UserColumnSettings.user_id == current_user.id).first()
     if not db_settings:
-        # If settings don't exist, create them
-        db_settings = UserColumnSettings(user_id=current_user.id)
+        # If settings don't exist, create them with defaults first
+        default_columns = {
+            'todo': {'id': 'todo', 'title': 'To Do', 'taskIds': []},
+            'inProgress': {'id': 'inProgress', 'title': 'In Progress', 'taskIds': []},
+            'done': {'id': 'done', 'title': 'Completed', 'taskIds': []}
+        }
+        default_column_order = ['todo', 'inProgress', 'done']
+        
+        db_settings = UserColumnSettings(
+            user_id=current_user.id,
+            columns_config=json.dumps(default_columns),
+            column_order=json.dumps(default_column_order)
+        )
         db.add(db_settings)
     
     # Update settings
@@ -83,15 +106,51 @@ def update_column_settings(
         if key == 'columns_config' or key == 'column_order':
             if value:
                 try:
-                    # Try parsing JSON to validate it
-                    import json
-                    json.loads(value)
+                    # Parse and validate the JSON
+                    parsed_value = json.loads(value)
+                    
+                    # Extra validation for columns_config
+                    if key == 'columns_config':
+                        if not isinstance(parsed_value, dict):
+                            raise HTTPException(
+                                status_code=status.HTTP_400_BAD_REQUEST,
+                                detail=f"columns_config must be a JSON object"
+                            )
+                            
+                        # Validate each column structure
+                        for col_id, col_data in parsed_value.items():
+                            if not isinstance(col_data, dict):
+                                raise HTTPException(
+                                    status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=f"Column {col_id} must be an object"
+                                )
+                                
+                            if 'id' not in col_data or 'title' not in col_data or 'taskIds' not in col_data:
+                                raise HTTPException(
+                                    status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=f"Column {col_id} is missing required fields (id, title, taskIds)"
+                                )
+                                
+                            if not isinstance(col_data['taskIds'], list):
+                                raise HTTPException(
+                                    status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=f"Column {col_id} taskIds must be an array"
+                                )
+                    
+                    # Extra validation for column_order
+                    if key == 'column_order' and not isinstance(parsed_value, list):
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"column_order must be a JSON array"
+                        )
+                        
                 except json.JSONDecodeError:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail=f"Invalid JSON in {key}"
                     )
         
+        # Set the attribute with the validated value
         setattr(db_settings, key, value)
     
     db.commit()

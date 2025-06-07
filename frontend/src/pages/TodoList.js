@@ -18,7 +18,8 @@ import {
   DragIndicator as DragIndicatorIcon
 } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { todoService, columnSettingsService } from '../services/api';
+import { todoService } from '../services/api';
+import ColumnManager from './ColumnManager';
 
 // Styled components
 const VisuallyHiddenInput = styled('input')({
@@ -67,6 +68,81 @@ const TaskCard = styled(Paper)(({ theme, iscompleted }) => ({
   cursor: 'grab',
 }));
 
+// Helper utilities for column data validation and sanitization
+const sanitizeColumns = (columnsData) => {
+  if (!columnsData || typeof columnsData !== 'object') {
+    console.error('Invalid columns data, resetting to defaults');
+    return {
+      'todo': { id: 'todo', title: 'To Do', taskIds: [] },
+      'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+      'done': { id: 'done', title: 'Completed', taskIds: [] }
+    };
+  }
+
+  const sanitizedColumns = {};
+  let hasInvalidColumns = false;
+
+  // Validate each column, fix if possible, or exclude if not
+  Object.keys(columnsData).forEach(columnId => {
+    const column = columnsData[columnId];
+    
+    if (!column || typeof column !== 'object') {
+      console.error(`Column ${columnId} is invalid, skipping`);
+      hasInvalidColumns = true;
+      return;
+    }
+
+    // Ensure column has id and title
+    const sanitizedColumn = {
+      id: column.id || columnId,
+      title: column.title || columnId
+    };
+
+    // Ensure taskIds is an array
+    if (!Array.isArray(column.taskIds)) {
+      console.warn(`Column ${columnId} taskIds is not an array, resetting to empty array`);
+      sanitizedColumn.taskIds = [];
+    } else {
+      sanitizedColumn.taskIds = [...column.taskIds];
+    }
+
+    sanitizedColumns[columnId] = sanitizedColumn;
+  });
+
+  // If the sanitized object has no columns, return defaults
+  if (Object.keys(sanitizedColumns).length === 0) {
+    console.error('No valid columns found, resetting to defaults');
+    return {
+      'todo': { id: 'todo', title: 'To Do', taskIds: [] },
+      'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+      'done': { id: 'done', title: 'Completed', taskIds: [] }
+    };
+  }
+
+  return sanitizedColumns;
+};
+
+const sanitizeColumnOrder = (orderData, availableColumns) => {
+  if (!Array.isArray(orderData)) {
+    console.error('Column order is not an array, resetting to defaults');
+    return Object.keys(availableColumns);
+  }
+
+  // Filter out column IDs that don't exist in the available columns
+  const validOrder = orderData.filter(id => availableColumns[id]);
+  
+  // If no valid columns in order, use all column keys
+  if (validOrder.length === 0) {
+    console.error('No valid column IDs in order, using all column keys');
+    return Object.keys(availableColumns);
+  }
+  
+  // Add any missing columns to the end
+  const missingColumns = Object.keys(availableColumns).filter(id => !validOrder.includes(id));
+  
+  return [...validOrder, ...missingColumns];
+};
+
 function TodoList() {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,58 +166,105 @@ function TodoList() {
   const [quickAddColumn, setQuickAddColumn] = useState(null);
   const [quickAddTaskTitle, setQuickAddTaskTitle] = useState('');
 
+  // Helper utilities for column data validation and sanitization
+  const sanitizeColumns = (columnsData) => {
+    if (!columnsData || typeof columnsData !== 'object') {
+      console.error('Invalid columns data, resetting to defaults');
+      return {
+        'todo': { id: 'todo', title: 'To Do', taskIds: [] },
+        'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+        'done': { id: 'done', title: 'Completed', taskIds: [] }
+      };
+    }
+
+    const sanitizedColumns = {};
+    let hasInvalidColumns = false;
+
+    // Validate each column, fix if possible, or exclude if not
+    Object.keys(columnsData).forEach(columnId => {
+      const column = columnsData[columnId];
+      
+      if (!column || typeof column !== 'object') {
+        console.error(`Column ${columnId} is invalid, skipping`);
+        hasInvalidColumns = true;
+        return;
+      }
+
+      // Ensure column has id and title
+      const sanitizedColumn = {
+        id: column.id || columnId,
+        title: column.title || columnId
+      };
+
+      // Ensure taskIds is an array
+      if (!Array.isArray(column.taskIds)) {
+        console.warn(`Column ${columnId} taskIds is not an array, resetting to empty array`);
+        sanitizedColumn.taskIds = [];
+      } else {
+        sanitizedColumn.taskIds = [...column.taskIds];
+      }
+
+      sanitizedColumns[columnId] = sanitizedColumn;
+    });
+
+    // If the sanitized object has no columns, return defaults
+    if (Object.keys(sanitizedColumns).length === 0) {
+      console.error('No valid columns found, resetting to defaults');
+      return {
+        'todo': { id: 'todo', title: 'To Do', taskIds: [] },
+        'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+        'done': { id: 'done', title: 'Completed', taskIds: [] }
+      };
+    }
+
+    return sanitizedColumns;
+  };
+
+  const sanitizeColumnOrder = (orderData, availableColumns) => {
+    if (!Array.isArray(orderData)) {
+      console.error('Column order is not an array, resetting to defaults');
+      return Object.keys(availableColumns);
+    }
+
+    // Filter out column IDs that don't exist in the available columns
+    const validOrder = orderData.filter(id => availableColumns[id]);
+    
+    // If no valid columns in order, use all column keys
+    if (validOrder.length === 0) {
+      console.error('No valid column IDs in order, using all column keys');
+      return Object.keys(availableColumns);
+    }
+    
+    // Add any missing columns to the end
+    const missingColumns = Object.keys(availableColumns).filter(id => !validOrder.includes(id));
+    
+    return [...validOrder, ...missingColumns];
+  };
+
   // Load columns from API and fetch todos
   useEffect(() => {
-    // First try to get column settings from the API
-    const fetchColumnSettings = async () => {
-      try {
-        const response = await columnSettingsService.getSettings();
-        const settings = response.data;
-        
-        if (settings.columns_config && settings.column_order) {
-          try {
-            setColumns(JSON.parse(settings.columns_config));
-            setColumnOrder(JSON.parse(settings.column_order));
-            return true;
-          } catch (error) {
-            console.error('Error parsing column settings from API:', error);
-          }
-        }
-        return false;
-      } catch (error) {
-        console.error('Error fetching column settings:', error);
-        return false;
-      }
-    };
-    
     const loadColumns = async () => {
-      // First try to get settings from API
-      const settingsLoaded = await fetchColumnSettings();
-      
-      // If API failed, fall back to localStorage (for backward compatibility)
-      if (!settingsLoaded) {
-        const savedColumns = localStorage.getItem('todoColumns');
-        const savedColumnOrder = localStorage.getItem('todoColumnOrder');
+      try {
+        setLoading(true);
         
-        if (savedColumns) {
-          try {
-            setColumns(JSON.parse(savedColumns));
-          } catch (error) {
-            console.error('Error parsing saved columns from localStorage:', error);
-          }
-        }
+        // Use ColumnManager to load column settings
+        const { columns: loadedColumns, columnOrder: loadedOrder } = await ColumnManager.loadColumnSettings();
         
-        if (savedColumnOrder) {
-          try {
-            setColumnOrder(JSON.parse(savedColumnOrder));
-          } catch (error) {
-            console.error('Error parsing saved column order from localStorage:', error);
-          }
-        }
+        // Set the columns and column order
+        setColumns(loadedColumns);
+        setColumnOrder(loadedOrder);
+        
+        console.log(`Loaded columns (${Object.keys(loadedColumns).length}):`, Object.keys(loadedColumns));
+        console.log(`Loaded column order (${loadedOrder.length}):`, loadedOrder);
+        
+        // Fetch todos after column settings are loaded
+        await fetchTodos();
+      } catch (error) {
+        console.error('Error loading column settings:', error);
+        setError('Failed to load column settings');
+      } finally {
+        setLoading(false);
       }
-      
-      // Fetch todos - this will reconstruct columns if needed
-      fetchTodos();
     };
     
     loadColumns();
@@ -155,47 +278,26 @@ function TodoList() {
 
   // Save columns to localStorage and API whenever they change
   useEffect(() => {
-    // Always save to localStorage for backward compatibility and faster loads
-    localStorage.setItem('todoColumns', JSON.stringify(columns));
-    localStorage.setItem('todoColumnOrder', JSON.stringify(columnOrder));
+    // Skip initial render
+    if (Object.keys(columns).length === 0) {
+      return;
+    }
     
-    // Also save to the API for persistence across devices
-    const saveColumnSettingsToAPI = async () => {
+    // Use the ColumnManager to save column settings
+    const saveSettings = async () => {
       try {
-        // Convert column data to strings for API storage
-        const settings = {
-          columns_config: JSON.stringify(columns),
-          column_order: JSON.stringify(columnOrder)
-        };
+        console.log(`Saving columns (${Object.keys(columns).length}):`, Object.keys(columns));
+        console.log(`Saving column order (${columnOrder.length}):`, columnOrder);
         
-        // Try to update existing settings first
-        try {
-          await columnSettingsService.updateSettings(settings);
-        } catch (error) {
-          // If update fails (might not exist yet), try to create settings
-          if (error.response && (error.response.status === 404 || error.response.status === 400)) {
-            try {
-              await columnSettingsService.createSettings(settings);
-            } catch (createError) {
-              // If creation also fails (already exists), try updating again
-              if (createError.response && createError.response.status === 400) {
-                await columnSettingsService.updateSettings(settings);
-              } else {
-                console.error('Error creating column settings in API:', createError);
-              }
-            }
-          } else {
-            console.error('Error saving column settings to API:', error);
-          }
-        }
+        await ColumnManager.saveColumnSettings(columns, columnOrder);
       } catch (error) {
-        console.error('Error saving column settings to API:', error);
+        console.error('Error saving column settings:', error);
       }
     };
     
-    // Debounce the API calls to avoid too many requests when rapidly changing columns
+    // Debounce the save to avoid too many API calls
     const timeoutId = setTimeout(() => {
-      saveColumnSettingsToAPI();
+      saveSettings();
     }, 500);
     
     return () => clearTimeout(timeoutId);
@@ -209,6 +311,7 @@ function TodoList() {
     // If any column IDs were removed, update columnOrder
     if (validColumnOrder.length !== columnOrder.length) {
       setColumnOrder(validColumnOrder);
+      return true; // State has changed
     }
     
     // Check if all columns in columnOrder exist
@@ -217,7 +320,10 @@ function TodoList() {
     // If we found columns that aren't in the order, add them
     if (missingColumnIds.length > 0) {
       setColumnOrder(current => [...current, ...missingColumnIds]);
+      return true; // State has changed
     }
+    
+    return false; // No changes made
   };
 
   const fetchTodos = async () => {
@@ -396,6 +502,30 @@ function TodoList() {
         
     localStorage.setItem('todoColumns', JSON.stringify(updatedColumns));
     localStorage.setItem('todoColumnOrder', JSON.stringify(updatedColumnOrder));
+    
+    // Also save to API to ensure persistence across sessions
+    (async () => {
+      try {
+        const settings = {
+          columns_config: JSON.stringify(updatedColumns),
+          column_order: JSON.stringify(updatedColumnOrder)
+        };
+        
+        try {
+          await columnSettingsService.updateSettings(settings);
+          console.log('Successfully saved organized columns to API');
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            await columnSettingsService.createSettings(settings);
+            console.log('Successfully created organized columns in API');
+          } else {
+            console.error('Error saving organized columns to API:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error in organizeTodosInColumns API save:', error);
+      }
+    })();
   };
 
   const handleCreateTodo = async (e, columnId = 'todo', quickAddTitle = null) => {
@@ -403,6 +533,24 @@ function TodoList() {
     
     const title = quickAddTitle || newTodoTitle;
     if (!title.trim()) return;
+    
+    // Make sure the column exists, or use 'todo' as fallback
+    if (!columns[columnId]) {
+      console.warn(`Column ${columnId} not found, using 'todo' as fallback`);
+      columnId = 'todo';
+      
+      // If the 'todo' column doesn't exist either, find the first available column
+      if (!columns['todo']) {
+        const availableColumns = Object.keys(columns);
+        if (availableColumns.length > 0) {
+          columnId = availableColumns[0];
+          console.warn(`'todo' column not found, using '${columnId}' as fallback`);
+        } else {
+          setError("No columns available to add tasks to.");
+          return;
+        }
+      }
+    }
 
     try {
       const response = await todoService.create({
@@ -417,6 +565,17 @@ function TodoList() {
       
       // Add the new todo to the specified column
       const newColumns = { ...columns };
+      
+      // Make sure the column and taskIds array exist
+      if (!newColumns[columnId]) {
+        console.error(`Column ${columnId} not found when adding task`);
+        return;
+      }
+      
+      if (!Array.isArray(newColumns[columnId].taskIds)) {
+        newColumns[columnId].taskIds = [];
+      }
+      
       newColumns[columnId].taskIds.push(newTodo.id);
       setColumns(newColumns);
       
@@ -557,10 +716,32 @@ function TodoList() {
 
     // Handle column reordering
     if (type === 'column') {
+      // Use ColumnManager to reorder columns
+      (async () => {
+        const result = await ColumnManager.reorderColumns(
+          columns, 
+          columnOrder, 
+          source.index, 
+          destination.index, 
+          draggableId
+        );
+        
+        if (result.error) {
+          setError(result.error);
+        } else {
+          // Update state with the new column order
+          setColumnOrder(result.columnOrder);
+          
+          console.log(`Reordered columns: ${result.columnOrder.join(', ')}`);
+        }
+      })();
+      
+      // Update UI immediately for better user experience
       const newColumnOrder = Array.from(columnOrder);
       newColumnOrder.splice(source.index, 1);
       newColumnOrder.splice(destination.index, 0, draggableId);
       setColumnOrder(newColumnOrder);
+      
       return;
     }
 
@@ -579,10 +760,21 @@ function TodoList() {
     }
     
     try {
+      // Validate taskIds arrays
+      if (!Array.isArray(sourceColumn.taskIds)) {
+        console.error(`Source column ${source.droppableId} has invalid taskIds:`, sourceColumn.taskIds);
+        sourceColumn.taskIds = []; // Reset to empty array
+      }
+      
+      if (!Array.isArray(destColumn.taskIds)) {
+        console.error(`Destination column ${destination.droppableId} has invalid taskIds:`, destColumn.taskIds);
+        destColumn.taskIds = []; // Reset to empty array
+      }
+      
       // Moving within the same column
       if (sourceColumn === destColumn) {
         // Create a copy of taskIds to avoid direct state mutation
-        const newTaskIds = Array.from(sourceColumn.taskIds || []);
+        const newTaskIds = Array.from(sourceColumn.taskIds);
         
         // Ensure we have valid indices
         if (source.index >= 0 && source.index < newTaskIds.length) {
@@ -603,8 +795,8 @@ function TodoList() {
       // Moving to a different column
       else {
         // Create copies of taskIds arrays to avoid direct state mutation
-        const sourceTaskIds = Array.from(sourceColumn.taskIds || []);
-        const destTaskIds = Array.from(destColumn.taskIds || []);
+        const sourceTaskIds = Array.from(sourceColumn.taskIds);
+        const destTaskIds = Array.from(destColumn.taskIds);
         
         // Ensure we have valid indices
         if (source.index >= 0 && source.index < sourceTaskIds.length) {
@@ -623,7 +815,11 @@ function TodoList() {
             },
           };
           
+          // Update the local state
           setColumns(newColumns);
+          
+          // Ensure column settings are persisted with the task changes
+          ColumnManager.saveColumnSettings(newColumns, columnOrder);
           
           // Update the task status on the server
           const todoId = parseInt(draggableId, 10);
@@ -704,95 +900,67 @@ function TodoList() {
   };
   
   // Column management methods
-  const handleAddColumn = () => {
+  const handleAddColumn = async () => {
     if (!newColumnTitle.trim()) return;
     
-    // Convert title to a kebab-case ID to be more consistent with status IDs
-    const title = newColumnTitle.trim();
-    const columnId = title.toLowerCase().replace(/\s+/g, '-');
+    // Use ColumnManager to add the column
+    const result = await ColumnManager.addColumn(columns, columnOrder, newColumnTitle.trim());
     
-    // Check if a column with this ID already exists
-    if (columns[columnId]) {
-      setError(`A column named "${title}" already exists`);
-      return;
+    // Handle the result
+    if (result.error) {
+      setError(result.error);
+    } else {
+      // Update state
+      setColumns(result.columns);
+      setColumnOrder(result.columnOrder);
+      
+      // Reset form
+      setNewColumnTitle('');
+      setIsAddColumnDialogOpen(false);
+      setError(null);
+      
+      console.log(`Added column: ${newColumnTitle.trim()}`);
+      console.log(`Updated columns: ${Object.keys(result.columns).join(', ')}`);
+      console.log(`Updated column order: ${result.columnOrder.join(', ')}`);
     }
-    
-    // Check if a column with this title exists (case insensitive)
-    const existingColumnWithSimilarTitle = Object.values(columns).find(
-      col => col.title.toLowerCase() === title.toLowerCase()
-    );
-    
-    if (existingColumnWithSimilarTitle) {
-      setError(`A column with title "${existingColumnWithSimilarTitle.title}" already exists`);
-      return;
-    }
-    
-    // Create the new column
-    const newColumn = {
-      id: columnId,
-      title: title,
-      taskIds: []
-    };
-    
-    // Update columns state
-    const updatedColumns = {
-      ...columns,
-      [columnId]: newColumn
-    };
-    
-    // Update state in a batch to avoid race conditions
-    setColumns(updatedColumns);
-    
-    // Add to column order (only if not already in the order)
-    if (!columnOrder.includes(columnId)) {
-      setColumnOrder(prevOrder => [...prevOrder, columnId]);
-    }
-    
-    // Save to localStorage immediately to prevent duplicates on page refresh
-    localStorage.setItem('todoColumns', JSON.stringify({
-      ...columns,
-      [columnId]: newColumn
-    }));
-    localStorage.setItem('todoColumnOrder', JSON.stringify(
-      columnOrder.includes(columnId) ? columnOrder : [...columnOrder, columnId]
-    ));
-    
-    // Reset form
-    setNewColumnTitle('');
-    setIsAddColumnDialogOpen(false);
-    setError(null);
   };
   
-  const handleDeleteColumn = (columnId) => {
-    // Don't allow deleting if the column has tasks
-    if (columns[columnId].taskIds.length > 0) {
-      setError("Cannot delete a column that contains tasks. Move tasks to another column first.");
-      return;
+  const handleDeleteColumn = async (columnId) => {
+    // Use ColumnManager to delete the column
+    const result = await ColumnManager.deleteColumn(columns, columnOrder, columnId);
+    
+    // Handle the result
+    if (result.error) {
+      setError(result.error);
+    } else {
+      // Update state
+      setColumns(result.columns);
+      setColumnOrder(result.columnOrder);
+      
+      console.log(`Deleted column: ${columnId}`);
+      console.log(`Updated columns: ${Object.keys(result.columns).join(', ')}`);
+      console.log(`Updated column order: ${result.columnOrder.join(', ')}`);
     }
     
-    // Create a new columns object without the deleted column
-    const newColumns = { ...columns };
-    delete newColumns[columnId];
-    
-    // Update column order
-    const newColumnOrder = columnOrder.filter(id => id !== columnId);
-    
-    setColumns(newColumns);
-    setColumnOrder(newColumnOrder);
     setColumnSettingsAnchorEl(null);
   };
   
-  const handleRenameColumn = () => {
+  const handleRenameColumn = async () => {
     if (!activeColumn || !activeColumn.title.trim()) return;
     
-    // Update the column title
-    setColumns({
-      ...columns,
-      [activeColumn.id]: {
-        ...columns[activeColumn.id],
-        title: activeColumn.title
-      }
-    });
+    // Use ColumnManager to rename the column
+    const result = await ColumnManager.renameColumn(columns, columnOrder, activeColumn.id, activeColumn.title);
+    
+    // Handle the result
+    if (result.error) {
+      setError(result.error);
+    } else {
+      // Update state
+      setColumns(result.columns);
+      
+      console.log(`Renamed column ${activeColumn.id} to: ${activeColumn.title}`);
+      console.log(`Updated columns: ${Object.keys(result.columns).join(', ')}`);
+    }
     
     setIsEditColumnDialogOpen(false);
     setActiveColumn(null);
@@ -809,6 +977,15 @@ function TodoList() {
   };
   
   const handleQuickAddTask = (columnId) => {
+    // Make sure we have a valid column ID and title
+    if (!columnId || !columns[columnId]) {
+      console.error(`Cannot add task: Column with ID ${columnId} not found`);
+      setError(`Cannot add task: Invalid column selected`);
+      setQuickAddColumn(null);
+      setQuickAddTaskTitle('');
+      return;
+    }
+    
     if (quickAddTaskTitle.trim()) {
       handleCreateTodo(null, columnId, quickAddTaskTitle);
       setQuickAddColumn(null);
@@ -842,7 +1019,39 @@ function TodoList() {
 
       {error && (
         <Paper sx={{ p: 2, mb: 2, bgcolor: (theme) => theme.palette.mode === 'dark' ? '#462c2c' : '#ffebee' }}>
-          <Typography color="error">{error}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography color="error">{error}</Typography>
+            {error.includes("column") && (
+              <Button 
+                variant="outlined" 
+                color="error" 
+                size="small"
+                onClick={() => {
+                  // Reset to default columns
+                  const defaultColumns = {
+                    'todo': { id: 'todo', title: 'To Do', taskIds: [] },
+                    'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+                    'done': { id: 'done', title: 'Completed', taskIds: [] }
+                  };
+                  const defaultOrder = ['todo', 'inProgress', 'done'];
+                  
+                  // Clear localStorage
+                  localStorage.removeItem('todoColumns');
+                  localStorage.removeItem('todoColumnOrder');
+                  
+                  // Set state
+                  setColumns(defaultColumns);
+                  setColumnOrder(defaultOrder);
+                  setError(null);
+                  
+                  // Fetch todos to repopulate columns
+                  fetchTodos();
+                }}
+              >
+                Reset Columns
+              </Button>
+            )}
+          </Box>
         </Paper>
       )}
 
@@ -890,16 +1099,42 @@ function TodoList() {
       </Card>
 
       {/* Kanban board */}
-      <DragDropContext 
-        onDragEnd={handleDragEnd}
-        onBeforeDragStart={() => setError(null)} // Clear any previous errors
-        onDragStart={() => {
-          // Validate column state at the start of a drag to ensure consistency
-          validateColumnsState();
-        }}
-      >
-        <Box sx={{ 
-          display: 'flex', 
+      {Object.keys(columns).length === 0 ? (
+        <Paper sx={{ p: 4, textAlign: 'center', mt: 2 }}>
+          <Typography variant="h6" color="text.secondary">
+            No columns available.
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
+            onClick={() => {
+              // Reset to default columns
+              const defaultColumns = {
+                'todo': { id: 'todo', title: 'To Do', taskIds: [] },
+                'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+                'done': { id: 'done', title: 'Completed', taskIds: [] }
+              };
+              const defaultOrder = ['todo', 'inProgress', 'done'];
+              
+              setColumns(defaultColumns);
+              setColumnOrder(defaultOrder);
+            }}
+          >
+            Reset to Default Columns
+          </Button>
+        </Paper>
+      ) : (
+        <DragDropContext 
+          onDragEnd={handleDragEnd}
+          onBeforeDragStart={() => setError(null)} // Clear any previous errors
+          onDragStart={() => {
+            // Validate column state at the start of a drag to ensure consistency
+            validateColumnsState();
+          }}
+        >
+          <Box sx={{ 
+            display: 'flex', 
           overflowX: 'auto', 
           pb: 2,
           gap: 2,
@@ -918,9 +1153,24 @@ function TodoList() {
                   minHeight: 'calc(100vh - 350px)'
                 }}
               >
-                {columnOrder.map((columnId, index) => {
+                {columnOrder.filter(id => columns[id]).map((columnId, index) => {
                   const column = columns[columnId];
-                  const tasksForColumn = column.taskIds.map(taskId =>
+                  // At this point, column should never be undefined because of the filter above
+                  // But add an extra safety check just in case
+                  if (!column) {
+                    console.warn(`Column with ID ${columnId} not found in columns object`);
+                    return null;
+                  }
+                  
+                  // Ensure taskIds is an array
+                  if (!Array.isArray(column.taskIds)) {
+                    console.warn(`Column ${columnId} taskIds is not an array, treating as empty array`);
+                    column.taskIds = [];
+                  }
+                  
+                  // Ensure column.taskIds is an array before using it
+                  const taskIds = Array.isArray(column.taskIds) ? column.taskIds : [];
+                  const tasksForColumn = taskIds.map(taskId =>
                     todos.find(todo => todo.id === parseInt(taskId, 10))
                   ).filter(Boolean);
 
@@ -1206,6 +1456,7 @@ function TodoList() {
           </Droppable>
         </Box>
       </DragDropContext>
+      )}
 
       {/* Edit task dialog */}
       <Dialog open={isDialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="sm">

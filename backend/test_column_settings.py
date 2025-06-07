@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# filepath: /root/todo-list-xtreme/backend/test_column_settings.py
 
 import requests
 import json
@@ -11,7 +10,9 @@ It requires a valid authentication token to be provided.
 """
 
 # Configuration
-BASE_URL = "http://localhost:8000"
+# For local development use http://localhost:8000
+# For Docker container use http://127.0.0.1:8000
+BASE_URL = "http://127.0.0.1:8000"
 AUTH_TOKEN = None  # Will be set from command line argument
 
 # API endpoints

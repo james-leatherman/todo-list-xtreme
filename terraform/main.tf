@@ -242,10 +242,6 @@ resource "aws_ecs_task_definition" "app_task" {
           value = "https://${aws_cloudfront_distribution.frontend_distribution.domain_name}"
         },
         {
-          name  = "GOOGLE_CLIENT_ID"
-          value = var.google_client_id
-        },
-        {
           name  = "GOOGLE_REDIRECT_URI"
           value = "https://${aws_lb.api_lb.dns_name}/auth/google/callback"
         },
@@ -378,16 +374,6 @@ resource "aws_secretsmanager_secret" "app_secrets" {
     Name        = "${var.project_name}-secrets"
     Environment = var.environment
   }
-}
-
-resource "aws_secretsmanager_secret_version" "app_secrets_version" {
-  secret_id = aws_secretsmanager_secret.app_secrets.id
-  
-  secret_string = jsonencode({
-    db_password        = var.db_password
-    secret_key         = var.secret_key
-    google_client_secret = var.google_client_secret
-  })
 }
 
 # Load Balancer

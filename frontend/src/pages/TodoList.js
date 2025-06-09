@@ -877,12 +877,11 @@ function TodoList() {
           }}
         >
           <Box sx={{ 
-            display: 'flex', 
-          overflowX: 'auto', 
-          pb: 2,
-          gap: 2,
-          minHeight: 'calc(100vh - 350px)'
-        }}>
+            display: 'flex',
+            width: '100%',
+            height: 'calc(100vh - 350px)',
+            position: 'relative'
+          }}>
           <Droppable droppableId="all-columns" direction="horizontal" type="column">
             {(provided) => (
               <Box
@@ -891,9 +890,14 @@ function TodoList() {
                 sx={{
                   display: 'flex',
                   overflowX: 'auto',
+                  overflowY: 'hidden',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
                   pb: 2,
-                  gap: 2,
-                  minHeight: 'calc(100vh - 350px)'
+                  gap: 2
                 }}
               >
                 {columnOrder.map((columnId, index) => {

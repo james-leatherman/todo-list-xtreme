@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Button, Container, Paper, Typography, Box 
 } from '@mui/material';
@@ -6,6 +7,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
+  const navigate = useNavigate();
   useAuth();
   
   const handleGoogleLogin = () => {
@@ -19,7 +21,7 @@ const Login = () => {
     const testToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzgwNjU4ODE4fQ.LTQHkvhqBWpFxR7SC9nrOz0mVp9-xEhbr69m6WwHZqs";
     
     localStorage.setItem('token', testToken);
-    window.location.href = '/';
+    navigate('/');
   };
 
   return (

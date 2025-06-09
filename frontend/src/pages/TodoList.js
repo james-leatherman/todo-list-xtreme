@@ -870,19 +870,16 @@ function TodoList() {
       ) : (
         <DragDropContext 
           onDragEnd={handleDragEnd}
-          onBeforeDragStart={() => setError(null)} // Clear any previous errors
+          onBeforeDragStart={() => setError(null)}
           onDragStart={() => {
-            // Fix: Always pass columns, columnOrder, setColumnOrder to validateColumnsState
             validateColumnsState(columns, columnOrder, setColumnOrder);
           }}
         >
           <Box sx={{ 
-            display: 'flex', 
-          overflowX: 'auto', 
-          pb: 2,
-          gap: 2,
-          minHeight: 'calc(100vh - 350px)'
-        }}>
+            display: 'flex',
+            // Remove overflow from parent container
+            minHeight: 'calc(100vh - 350px)'
+          }}>
           <Droppable droppableId="all-columns" direction="horizontal" type="column">
             {(provided) => (
               <Box
@@ -890,10 +887,12 @@ function TodoList() {
                 {...provided.droppableProps}
                 sx={{
                   display: 'flex',
+                  // Make this the only scrollable container
                   overflowX: 'auto',
                   pb: 2,
                   gap: 2,
-                  minHeight: 'calc(100vh - 350px)'
+                  minHeight: 'calc(100vh - 350px)',
+                  width: '100%'
                 }}
               >
                 {columnOrder.map((columnId, index) => {
@@ -1023,8 +1022,8 @@ function TodoList() {
                                       : 'transparent',
                                     borderRadius: 1,
                                     p: 1,
-                                    overflowY: 'auto',
-                                    maxHeight: 'calc(100vh - 250px)',
+                                    // Remove nested scroll
+                                    height: 'calc(100vh - 250px)',
                                     className: 'column-content',
                                   }}
                                 >
@@ -1170,14 +1169,21 @@ function TodoList() {
                                                 sx={{ fontSize: '0.75rem' }}
                                                 id={`add-photo-button-${todo.id}`}
                                                 name={`add-photo-${todo.id}`}
+                                                tabIndex={0}
                                               >
                                                 Add Photo
                                                 <VisuallyHiddenInput
                                                   type="file"
                                                   accept="image/*"
-                                                  onChange={(e) => handlePhotoUpload(todo.id, e)}
+                                                  onChange={(e) => {
+                                                    handlePhotoUpload(todo.id, e);
+                                                    // Blur the input after file selection
+                                                    e.target.blur();
+                                                  }}
                                                   id={`photo-input-${todo.id}`}
                                                   name={`photo-input-${todo.id}`}
+                                                  tabIndex={-1}
+                                                  aria-hidden="false"
                                                 />
                                               </Button>
                                               <Box>
@@ -1452,23 +1458,6 @@ function TodoList() {
                   background: 'black',
                 }}
               />
-              <IconButton
-                aria-label="Maximize"
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 48,
-                  color: 'white',
-                  zIndex: 2,
-                  background: 'rgba(0,0,0,0.4)',
-                  '&:hover': { background: 'rgba(0,0,0,0.7)' }
-                }}
-                onClick={() => {
-                  window.open(photoDialogUrl, '_blank', 'noopener,noreferrer');
-                }}
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14v6h6"/><path d="M20 10V4h-6"/><path d="M14 20h6v-6"/><path d="M10 4H4v6"/></svg>
-              </IconButton>
             </>
           )}
         </DialogContent>

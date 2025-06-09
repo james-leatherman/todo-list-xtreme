@@ -154,9 +154,6 @@ function Header() {
 
           {isAuthenticated ? (
             <>
-              <Typography variant="body1" sx={{ mr: 2 }}>
-                {user?.name || user?.email}
-              </Typography>
               <Button 
                 color="inherit" 
                 onClick={handleLogout}

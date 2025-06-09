@@ -64,11 +64,20 @@ export function AuthProvider({ children }) {
       });
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    // Don't remove column data from localStorage to ensure persistence across sessions
-    delete axios.defaults.headers.common['Authorization'];
+  const logout = async () => {
+    // Clear user data first
     setUser(null);
+    
+    // Remove auth header from axios
+    delete axios.defaults.headers.common['Authorization'];
+    
+    // Clear auth token from localStorage
+    localStorage.removeItem('token');
+    
+    // Don't remove column data from localStorage to ensure persistence across sessions
+    
+    // Return a promise that resolves when cleanup is complete
+    return Promise.resolve();
   };
 
   const value = {

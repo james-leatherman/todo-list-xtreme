@@ -70,7 +70,15 @@ function Header() {
     <AppBar position="static">
       <Toolbar>
         <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-          <IconButton edge="start" color="inherit" aria-label="logo" onClick={() => navigate('/')} sx={{ p: 0, mr: 1 }}>
+          <IconButton 
+            edge="start" 
+            color="inherit" 
+            aria-label="logo" 
+            onClick={() => navigate('/')} 
+            sx={{ p: 0, mr: 1 }}
+            id="header-logo-button"
+            name="header-logo"
+          >
             <img
               src={themeName === 'retro80s' ? tlxLogo80s : logo}
               alt="Todo List Xtreme Logo"
@@ -103,7 +111,13 @@ function Header() {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Theme selection button */}
           <Tooltip title="Select Theme">
-            <IconButton color="inherit" onClick={handleThemeMenuOpen} sx={{ mr: 1 }}>
+            <IconButton 
+              color="inherit" 
+              onClick={handleThemeMenuOpen} 
+              sx={{ mr: 1 }}
+              id="theme-menu-button"
+              name="theme-menu"
+            >
               <PaletteIcon />
             </IconButton>
           </Tooltip>
@@ -111,12 +125,15 @@ function Header() {
             anchorEl={themeMenuAnchorEl}
             open={Boolean(themeMenuAnchorEl)}
             onClose={handleThemeMenuClose}
+            id="theme-selection-menu"
           >
             {Object.entries(themes).map(([key, theme]) => (
               <MenuItem
                 key={key}
                 selected={themeName === key}
                 onClick={() => handleThemeSelect(key)}
+                id={`theme-option-${key}`}
+                name={`theme-${key}`}
               >
                 {theme.name}
               </MenuItem>
@@ -124,7 +141,13 @@ function Header() {
           </Menu>
           {/* Dark/Light mode button */}
           <Tooltip title={mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
-            <IconButton color="inherit" onClick={toggleMode} sx={{ mr: 1 }}>
+            <IconButton 
+              color="inherit" 
+              onClick={toggleMode} 
+              sx={{ mr: 1 }}
+              id="mode-toggle-button"
+              name="mode-toggle"
+            >
               {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
             </IconButton>
           </Tooltip>
@@ -134,10 +157,24 @@ function Header() {
               <Typography variant="body1" sx={{ mr: 2 }}>
                 {user?.name || user?.email}
               </Typography>
-              <Button color="inherit" onClick={handleLogout}>Logout</Button>
+              <Button 
+                color="inherit" 
+                onClick={handleLogout}
+                id="logout-button"
+                name="logout"
+              >
+                Logout
+              </Button>
             </>
           ) : (
-            <Button color="inherit" onClick={() => navigate('/login')}>Login</Button>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/login')}
+              id="login-button"
+              name="login"
+            >
+              Login
+            </Button>
           )}
         </Box>
       </Toolbar>

@@ -40,6 +40,8 @@ const Login = () => {
               startIcon={<GoogleIcon />}
               fullWidth
               onClick={handleGoogleLogin}
+              id="google-signin-button"
+              name="google-signin"
             >
               Sign in with Google
             </Button>
@@ -50,6 +52,8 @@ const Login = () => {
                 color="secondary"
                 fullWidth
                 onClick={handleDevLogin}
+                id="dev-login-button"
+                name="dev-login"
               >
                 Dev: Use Test Account
               </Button>

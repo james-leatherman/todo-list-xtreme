@@ -747,6 +747,8 @@ function TodoList() {
           color="primary" 
           startIcon={<AddIcon />}
           onClick={() => setIsAddColumnDialogOpen(true)}
+          id="main-add-column-button"
+          name="main-add-column"
         >
           Add Column
         </Button>
@@ -806,6 +808,8 @@ function TodoList() {
               margin="normal"
               required
               size="small"
+              id="new-task-title-input"
+              name="new-task-title"
             />
             <TextField
               fullWidth
@@ -817,6 +821,8 @@ function TodoList() {
               multiline
               rows={2}
               size="small"
+              id="new-task-description-input"
+              name="new-task-description"
             />
             <Button
               type="submit"
@@ -826,6 +832,8 @@ function TodoList() {
               sx={{ mt: 2 }}
               disabled={!newTodoTitle.trim()}
               size="small"
+              id="add-task-submit-button"
+              name="add-task-submit"
             >
               Add Task
             </Button>
@@ -940,6 +948,8 @@ function TodoList() {
                                   <IconButton
                                     size="small"
                                     onClick={() => setQuickAddColumn(column.id)}
+                                    id={`quick-add-button-${column.id}`}
+                                    name={`quick-add-${column.id}`}
                                   >
                                     <AddIcon fontSize="small" />
                                   </IconButton>
@@ -948,6 +958,8 @@ function TodoList() {
                                   <IconButton
                                     size="small"
                                     onClick={(e) => handleColumnSettingsClick(e, column)}
+                                    id={`column-settings-button-${column.id}`}
+                                    name={`column-settings-${column.id}`}
                                   >
                                     <MoreVertIcon fontSize="small" />
                                   </IconButton>
@@ -973,6 +985,8 @@ function TodoList() {
                                       setQuickAddTaskTitle('');
                                     }
                                   }}
+                                  id={`quick-add-input-${column.id}`}
+                                  name={`quick-add-task-${column.id}`}
                                   InputProps={{
                                     endAdornment: (
                                       <IconButton
@@ -981,6 +995,8 @@ function TodoList() {
                                           setQuickAddColumn(null);
                                           setQuickAddTaskTitle('');
                                         }}
+                                        id={`quick-add-cancel-${column.id}`}
+                                        name={`quick-add-cancel-${column.id}`}
                                       >
                                         <CloseIcon fontSize="small" />
                                       </IconButton>
@@ -1051,6 +1067,8 @@ function TodoList() {
                                                   color="primary"
                                                   size="small"
                                                   sx={{ mt: -0.5, mr: 1 }}
+                                                  id={`task-complete-${todo.id}`}
+                                                  name={`task-complete-${todo.id}`}
                                                 />
                                                 <Box sx={{ width: '100%' }}>
                                                   <Typography
@@ -1150,19 +1168,33 @@ function TodoList() {
                                                 startIcon={<PhotoCameraIcon fontSize="small" />}
                                                 disabled={photoLoading}
                                                 sx={{ fontSize: '0.75rem' }}
+                                                id={`add-photo-button-${todo.id}`}
+                                                name={`add-photo-${todo.id}`}
                                               >
                                                 Add Photo
                                                 <VisuallyHiddenInput
                                                   type="file"
                                                   accept="image/*"
                                                   onChange={(e) => handlePhotoUpload(todo.id, e)}
+                                                  id={`photo-input-${todo.id}`}
+                                                  name={`photo-input-${todo.id}`}
                                                 />
                                               </Button>
                                               <Box>
-                                                <IconButton size="small" onClick={() => handleOpenEditDialog(todo)}>
+                                                <IconButton 
+                                                  size="small" 
+                                                  onClick={() => handleOpenEditDialog(todo)}
+                                                  id={`edit-task-button-${todo.id}`}
+                                                  name={`edit-task-${todo.id}`}
+                                                >
                                                   <EditIcon fontSize="small" />
                                                 </IconButton>
-                                                <IconButton size="small" onClick={() => handleDeleteTodo(todo.id)}>
+                                                <IconButton 
+                                                  size="small" 
+                                                  onClick={() => handleDeleteTodo(todo.id)}
+                                                  id={`delete-task-button-${todo.id}`}
+                                                  name={`delete-task-${todo.id}`}
+                                                >
                                                   <DeleteIcon fontSize="small" />
                                                 </IconButton>
                                               </Box>
@@ -1202,6 +1234,8 @@ function TodoList() {
             onChange={(e) => setEditTodo({ ...editTodo, title: e.target.value })}
             margin="dense"
             required
+            id="edit-task-title-input"
+            name="edit-task-title"
           />
           <TextField
             fullWidth
@@ -1211,6 +1245,8 @@ function TodoList() {
             margin="dense"
             multiline
             rows={3}
+            id="edit-task-description-input"
+            name="edit-task-description"
           />
           {/* Status/Column selector */}
           <TextField
@@ -1220,9 +1256,16 @@ function TodoList() {
             value={editTodo?.status || 'todo'}
             onChange={(e) => setEditTodo({ ...editTodo, status: e.target.value })}
             margin="dense"
+            id="edit-task-status-select"
+            name="edit-task-status"
           >
             {Object.values(columns).map((column) => (
-              <MenuItem key={column.id} value={column.id}>
+              <MenuItem 
+                key={column.id} 
+                value={column.id}
+                id={`edit-task-status-option-${column.id}`}
+                name={`edit-task-status-${column.id}`}
+              >
                 {column.title}
               </MenuItem>
             ))}
@@ -1240,12 +1283,20 @@ function TodoList() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button 
+            onClick={handleCloseDialog}
+            id="edit-task-cancel-button"
+            name="edit-task-cancel"
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleUpdateTodo}
             color="primary"
             variant="contained"
             disabled={!editTodo?.title?.trim()}
+            id="edit-task-save-button"
+            name="edit-task-save"
           >
             Save Changes
           </Button>
@@ -1264,15 +1315,25 @@ function TodoList() {
             onChange={(e) => setNewColumnTitle(e.target.value)}
             margin="dense"
             required
+            id="add-column-title-input"
+            name="add-column-title"
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsAddColumnDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={() => setIsAddColumnDialogOpen(false)}
+            id="add-column-cancel-button"
+            name="add-column-cancel"
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleAddColumn}
             color="primary"
             variant="contained"
             disabled={!newColumnTitle.trim()}
+            id="add-column-submit-button"
+            name="add-column-submit"
           >
             Add Column
           </Button>
@@ -1291,15 +1352,25 @@ function TodoList() {
             onChange={(e) => setActiveColumn({ ...activeColumn, title: e.target.value })}
             margin="dense"
             required
+            id="edit-column-title-input"
+            name="edit-column-title"
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsEditColumnDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={() => setIsEditColumnDialogOpen(false)}
+            id="edit-column-cancel-button"
+            name="edit-column-cancel"
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleRenameColumn}
             color="primary"
             variant="contained"
             disabled={!activeColumn?.title?.trim()}
+            id="edit-column-save-button"
+            name="edit-column-save"
           >
             Save Changes
           </Button>
@@ -1311,17 +1382,28 @@ function TodoList() {
         anchorEl={columnSettingsAnchorEl}
         open={Boolean(columnSettingsAnchorEl)}
         onClose={() => setColumnSettingsAnchorEl(null)}
+        id="column-settings-menu"
       >
-        <MenuItem onClick={handleOpenEditColumnDialog}>Rename Column</MenuItem>
+        <MenuItem 
+          onClick={handleOpenEditColumnDialog}
+          id="rename-column-menu-item"
+          name="rename-column"
+        >
+          Rename Column
+        </MenuItem>
         <MenuItem 
           onClick={() => handleDeleteColumn(activeColumn?.id)}
           disabled={activeColumn && columns[activeColumn.id]?.taskIds.length > 0}
+          id="delete-column-menu-item"
+          name="delete-column"
         >
           Delete Column
         </MenuItem>
         <MenuItem
           onClick={() => handleDeleteAllTasksInColumn(activeColumn?.id)}
           disabled={activeColumn && (!columns[activeColumn.id] || columns[activeColumn.id].taskIds.length === 0)}
+          id="delete-all-tasks-menu-item"
+          name="delete-all-tasks"
         >
           Delete All Tasks in Column
         </MenuItem>
@@ -1334,10 +1416,21 @@ function TodoList() {
           <Typography>Are you sure you want to delete all tasks in this column? This action cannot be undone.</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDeleteAllOpen(false)} color="primary">
+          <Button 
+            onClick={() => setConfirmDeleteAllOpen(false)} 
+            color="primary"
+            id="confirm-delete-cancel-button"
+            name="confirm-delete-cancel"
+          >
             Cancel
           </Button>
-          <Button onClick={confirmDeleteAllTasks} color="error" variant="contained">
+          <Button 
+            onClick={confirmDeleteAllTasks} 
+            color="error" 
+            variant="contained"
+            id="confirm-delete-submit-button"
+            name="confirm-delete-submit"
+          >
             Delete All
           </Button>
         </DialogActions>

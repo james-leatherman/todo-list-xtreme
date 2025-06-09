@@ -1,13 +1,12 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { 
-  Button, Container, Paper, Typography, Box 
+  Button, Container, Paper, Typography, Box, Alert, Snackbar 
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
   useAuth();
   
   const handleGoogleLogin = () => {
@@ -15,17 +14,32 @@ const Login = () => {
     window.location.href = `${process.env.REACT_APP_API_URL}/auth/google/login`;
   };
 
-  // Update the handleDevLogin function with the new token
   const handleDevLogin = () => {
-    // Use the newly generated token
-    const testToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzgwNjU4ODE4fQ.LTQHkvhqBWpFxR7SC9nrOz0mVp9-xEhbr69m6WwHZqs";
+    const testToken = process.env.REACT_APP_TEST_TOKEN;
+    if (!testToken) {
+      const errorMessage = 'Development token not found. Please run ./scripts/generate-test-token.sh from the project root and restart the development server.';
+      console.error(errorMessage);
+      setError(errorMessage);
+      return;
+    }
     
     localStorage.setItem('token', testToken);
-    navigate('/');
+    window.location.href = '/';
   };
 
   return (
     <Container maxWidth="sm">
+      <Snackbar 
+        open={!!error} 
+        autoHideDuration={6000} 
+        onClose={() => setError('')}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setError('')} sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
+      
       <Box sx={{ mt: 8 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h4" align="center" gutterBottom>

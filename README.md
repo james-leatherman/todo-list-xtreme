@@ -11,8 +11,18 @@ A full-stack to-do list application with photo upload capabilities, responsive d
 
 This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It includes all core functionality and is ready for basic use and testing.
 
-## What's New in v1.3.0 (2025-06-07)
+## What's New in v1.4.0 (2025-06-10)
 
+- **Accessibility First:** Added comprehensive id/name attributes to all interactive elements for better testing and accessibility support.
+- **Development Workflow:** New centralized scripts system with automated test token generation and environment setup.
+- **Navigation Improvements:** Fixed logout caching issues with proper React Router integration and state cleanup.
+- **Asset Organization:** Cleaned up logo files and PWA icons with better file structure.
+- **Developer Experience:** Enhanced setup process with `./scripts/setup-dev.sh` for one-command environment configuration.
+- **Security:** Removed hardcoded tokens in favor of environment-driven development authentication.
+
+## Previous Updates
+
+### v1.3.0 (2025-06-07)
 - **TLX Retro 90s Theme:** Selectable, authentic 90s-inspired theme with custom fonts, colors, and jazz-cup header.
 - **Header Improvements:** Tagline now randomly chosen from a user-supplied 90s descriptor list; jazz-cup image added.
 - **UI/UX Fixes:** Drag-and-drop and theme switching bugs resolved.
@@ -76,7 +86,15 @@ If you're setting up the project on GitHub, configure these secrets:
 
 ### Local Development
 
-#### Backend
+#### Quick Setup (Recommended)
+```bash
+# Set up development environment with one command
+./scripts/setup-dev.sh
+```
+
+#### Manual Setup
+
+##### Backend
 ```bash
 cd backend
 python -m venv venv
@@ -88,7 +106,7 @@ python init_db.py
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### Frontend
+##### Frontend
 ```bash
 cd frontend
 npm install
@@ -96,9 +114,19 @@ npm install
 npm start
 ```
 
-### Utilities & Scripts
+### Development Scripts
 
-#### Credential Generation
+The `scripts/` directory contains utilities for development:
+
+- **`setup-dev.sh`** - Complete development environment setup
+- **`generate-test-token.sh`** - Generate JWT tokens for testing
+- **`demo_db_restore.sh`** - Restore database from snapshot
+- **`wipe_db.sh`** - Clean database
+- **`generate_secrets.sh`** - Generate secret keys
+
+Run from project root: `./scripts/[script-name].sh`
+
+### Environment Configuration
 - `./generate_secrets.sh` — Generates secure random credentials and .env files for dev/prod.
 
 #### Database Utilities

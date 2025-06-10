@@ -5,6 +5,47 @@ All notable changes to the Todo List Xtreme project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-06-10
+### Added
+- **Accessibility Enhancements**: Added id/name attributes to all interactive elements including:
+  - Main task form elements and buttons
+  - Column action buttons and settings menus
+  - Task interaction buttons (edit, delete, complete, photo upload)
+  - Dialog forms and navigation buttons
+  - Menu items and confirmation dialogs
+- **Development Scripts System**: Created centralized scripts directory with:
+  - `generate-test-token.sh`: Automatically generates JWT tokens from backend
+  - `setup-dev.sh`: Complete development environment setup
+  - `demo_db_restore.sh`: Database restoration utility
+  - `wipe_db.sh`: Database cleanup utility
+  - `generate_secrets.sh`: Secret key generation
+- **Script Documentation**: Comprehensive README for all development utilities
+- **Environment Management**: Dynamic test token loading from environment variables
+
+### Changed
+- **Asset Organization**: Moved PWA icons to public folder and cleaned up image imports
+- **Navigation System**: Improved logout flow with proper state cleanup and React Router navigation
+- **Token Management**: Replaced hardcoded test tokens with environment-based system
+- **File Structure**: Reorganized scripts to root-level directory for better project organization
+- **Error Handling**: Enhanced user feedback for missing development tokens
+
+### Fixed
+- **Logo File References**: Fixed broken logo imports and organized asset structure
+- **Navigation Caching**: Resolved logout navigation issues that caused state caching problems
+- **ESLint Issues**: Fixed 'navigate' undefined error in Login component
+- **Path Resolution**: Updated script paths to work from project root directory
+
+### Improved
+- **Developer Experience**: Streamlined setup process with automated token generation
+- **Code Security**: Removed hardcoded credentials in favor of environment variables
+- **Maintainability**: Better organized file structure and documentation
+- **User Interface**: Removed unnecessary maximize button from photo dialog
+
+### Technical
+- **Build Process**: Enhanced development workflow with proper environment file management
+- **Script Robustness**: Scripts now work from any directory using absolute paths
+- **Documentation**: Updated all references to reflect new script locations and usage
+
 ## [1.3.0] - 2025-06-07
 ### Added
 - TLX Retro 90s theme: Authentic 90s-inspired theme with neon colors, geometric shapes, custom fonts, and jazz-cup header art.

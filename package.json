@@ -1,0 +1,33 @@
+{
+  "name": "todo-list-xtreme",
+  "version": "1.4.0",
+  "description": "A full-stack to-do list application with photo upload capabilities, responsive design, OAuth authentication, and robust testing utilities.",
+  "scripts": {
+    "setup-dev": "./scripts/setup-dev.sh",
+    "generate-token": "./scripts/generate-test-token.sh",
+    "start:backend": "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+    "start:frontend": "cd frontend && npm start",
+    "build:frontend": "cd frontend && npm run build",
+    "test:backend": "cd backend && python -m pytest",
+    "test:frontend": "cd frontend && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/james-leatherman/todo-list-xtreme"
+  },
+  "keywords": [
+    "todo",
+    "task-management",
+    "react",
+    "fastapi",
+    "postgresql",
+    "aws",
+    "terraform"
+  ],
+  "author": "James Leatherman",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.11.0"
+  }
+}

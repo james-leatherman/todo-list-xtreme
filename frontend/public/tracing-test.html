@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Tracing Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .button:hover { background: #0056b3; }
+        .log { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; white-space: pre-wrap; font-family: monospace; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Frontend OpenTelemetry Tracing Test</h1>
+    <p>This page tests the OpenTelemetry tracing implementation for frontend API calls.</p>
+    
+    <div>
+        <button class="button" onclick="testBasicFetch()">Test Basic Fetch</button>
+        <button class="button" onclick="testTodoAPI()">Test Todo API (with custom spans)</button>
+        <button class="button" onclick="clearLogs()">Clear Logs</button>
+    </div>
+    
+    <div id="logs"></div>
+
+    <script>
+        // Import OpenTelemetry (simplified for testing)
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+            logs.innerHTML += `<div class="log ${className}">[${timestamp}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        async function testBasicFetch() {
+            log('🔄 Testing basic fetch to backend...');
+            try {
+                const response = await fetch('/todos/');
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Basic fetch successful! Got ${data.length} todos`, 'success');
+                } else {
+                    log(`⚠️ Fetch returned status: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Basic fetch failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testTodoAPI() {
+            log('🔄 Testing Todo API with custom spans...');
+            
+            // This simulates what our instrumented API service does
+            try {
+                // Test GET /todos
+                log('📋 Testing GET /todos/');
+                const todosResponse = await fetch('/todos/');
+                
+                if (todosResponse.ok) {
+                    const todos = await todosResponse.json();
+                    log(`✅ GET /todos/ successful! Found ${todos.length} todos`, 'success');
+                    
+                    // Test creating a todo
+                    log('➕ Testing POST /todos');
+                    const newTodo = {
+                        title: 'Tracing Test Todo',
+                        description: 'This todo was created to test OpenTelemetry tracing',
+                        status: 'todo'
+                    };
+                    
+                    const createResponse = await fetch('/todos', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(newTodo)
+                    });
+                    
+                    if (createResponse.ok) {
+                        const createdTodo = await createResponse.json();
+                        log(`✅ POST /todos successful! Created todo with ID: ${createdTodo.id}`, 'success');
+                        
+                        // Test updating the todo
+                        log(`✏️ Testing PUT /todos/${createdTodo.id}/`);
+                        const updatedTodo = {
+                            ...createdTodo,
+                            status: 'done',
+                            description: 'Updated for tracing test'
+                        };
+                        
+                        const updateResponse = await fetch(`/todos/${createdTodo.id}/`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(updatedTodo)
+                        });
+                        
+                        if (updateResponse.ok) {
+                            const updated = await updateResponse.json();
+                            log(`✅ PUT /todos/${createdTodo.id}/ successful! Status: ${updated.status}`, 'success');
+                            
+                            // Clean up - delete the test todo
+                            const deleteResponse = await fetch(`/todos/${createdTodo.id}/`, {
+                                method: 'DELETE'
+                            });
+                            
+                            if (deleteResponse.ok) {
+                                log(`🗑️ DELETE /todos/${createdTodo.id}/ successful!`, 'success');
+                            } else {
+                                log(`⚠️ DELETE failed: ${deleteResponse.status}`, 'error');
+                            }
+                        } else {
+                            log(`❌ PUT failed: ${updateResponse.status} ${updateResponse.statusText}`, 'error');
+                        }
+                    } else {
+                        log(`❌ POST failed: ${createResponse.status} ${createResponse.statusText}`, 'error');
+                    }
+                } else {
+                    log(`❌ GET /todos/ failed: ${todosResponse.status} ${todosResponse.statusText}`, 'error');
+                }
+                
+                log('🎉 API testing complete! Check OTEL collector logs for traces:', 'success');
+                log('   docker logs backend-otel-collector-1 --tail 20');
+                
+            } catch (error) {
+                log(`❌ API test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize
+        log('🚀 Frontend Tracing Test Page Loaded');
+        log('📊 OpenTelemetry should be automatically instrumenting fetch calls');
+        log('🔧 Click the buttons above to test API calls and generate traces');
+    </script>
+</body>
+</html>

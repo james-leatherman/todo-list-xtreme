@@ -88,7 +88,7 @@ else
 fi
 
 echo ""
-echo "🎛️ Dashboard Status:"
+echo "🎛️  Dashboard Status:"
 echo "-------------------"
 
 # Check dashboard availability

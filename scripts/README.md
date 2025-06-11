@@ -4,6 +4,27 @@ This directory contains various utility scripts for development, testing, and da
 
 ## Available Scripts
 
+### `setup-grafana-dashboards.sh`
+Sets up automated Grafana dashboard configuration:
+- Verifies all dashboard files are in place
+- Checks data source and provider configurations
+- Provides access instructions
+
+```bash
+./scripts/setup-grafana-dashboards.sh
+```
+
+### `download-popular-dashboards.sh`
+Downloads popular community dashboards from Grafana.com:
+- Node Exporter Full (ID: 1860)
+- Prometheus 2.0 Overview (ID: 3662)  
+- Prometheus Stats (ID: 12229)
+- FastAPI Observability (ID: 7587)
+
+```bash
+./scripts/download-popular-dashboards.sh
+```
+
 ### `setup-dev.sh`
 Sets up the development environment:
 - Generates a test token

@@ -1,0 +1,63 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "OpenTelemetry Collector Metrics",
+    "tags": ["otel", "opentelemetry"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "OTLP Receiver - Accepted Spans",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(otelcol_receiver_accepted_spans[5m])",
+            "legendFormat": "{{receiver}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "OTLP Receiver - Refused Spans",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(otelcol_receiver_refused_spans[5m])",
+            "legendFormat": "{{receiver}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Exporter - Exported Metrics",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(otelcol_exporter_sent_metric_points[5m])",
+            "legendFormat": "{{exporter}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Processor Queue Size",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "otelcol_processor_batch_batch_send_size",
+            "legendFormat": "{{processor}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      }
+    ],
+    "time": {
+      "from": "now-1h", 
+      "to": "now"
+    },
+    "refresh": "15s"
+  }
+}

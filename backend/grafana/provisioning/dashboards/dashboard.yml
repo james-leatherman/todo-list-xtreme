@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: 'todo-list-xtreme-dashboards'
+    orgId: 1
+    folder: 'Todo List Xtreme'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

@@ -55,7 +55,6 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
     depends_on:
       - prometheus
 
@@ -67,8 +66,7 @@ services:
     ports:
       - "4317:4317" # OTLP gRPC
       - "4318:4318" # OTLP HTTP
-      - "8888:8888" # Telemetry metrics
-      - "8889:8889" # Prometheus metrics endpoint
+      - "8888:8888" # Prometheus metrics endpoint
     depends_on:
       - db
 

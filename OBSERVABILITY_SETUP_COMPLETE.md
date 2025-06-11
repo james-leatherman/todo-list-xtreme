@@ -22,7 +22,7 @@
 #### **3. Configuration Management**
 - **Automated Provisioning**: Grafana dashboards and data sources
 - **Service Discovery**: Prometheus auto-discovery
-- **Port Management**: Clean port allocation (3000, 8000, 9090, 4317/4318, 8889)
+- **Port Management**: Clean port allocation (3001, 8000, 9090, 4317/4318, 8889)
 - **Volume Persistence**: Data persistence for Grafana and PostgreSQL
 
 #### **4. Dashboard Collection**
@@ -50,7 +50,7 @@ FastAPI App → OpenTelemetry → OTEL Collector → Prometheus → Grafana
 ```
 
 ### **Port Allocation**
-- **3000**: Grafana Dashboard
+- **3001**: Grafana Dashboard
 - **8000**: FastAPI Application
 - **9090**: Prometheus Web UI
 - **4317/4318**: OTEL Collector (gRPC/HTTP)
@@ -81,7 +81,7 @@ cd /root/todo-list-xtreme
 ```
 
 ### **3. Access Points**
-- **Grafana**: http://localhost:3000 (admin/admin)
+- **Grafana**: http://localhost:3001 (admin/admin)
 - **Prometheus**: http://localhost:9090
 - **FastAPI**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
@@ -137,7 +137,7 @@ curl http://localhost:8000/health
 curl http://localhost:9090/api/v1/targets
 
 # Grafana Dashboards
-curl http://admin:admin@localhost:3000/api/search
+curl http://admin:admin@localhost:3001/api/search
 
 # Service Status
 cd /root/todo-list-xtreme/backend && docker-compose ps
@@ -262,4 +262,4 @@ The observability stack is now fully operational and ready for production use wi
 
 **🎉 OBSERVABILITY STACK DEPLOYMENT COMPLETE!**
 
-Login to Grafana at http://localhost:3000 (admin/admin) to start exploring your metrics and dashboards.
+Login to Grafana at http://localhost:3001 (admin/admin) to start exploring your metrics and dashboards.

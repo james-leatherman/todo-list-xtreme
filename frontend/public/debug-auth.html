@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Auth</title>
+</head>
+<body>
+    <h1>Debug Auth Issue</h1>
+    <button onclick="clearStorage()">Clear LocalStorage</button>
+    <button onclick="testAuthRequest()">Test Auth Request</button>
+    <div id="output"></div>
+
+    <script>
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('output').innerHTML += '<p>LocalStorage cleared</p>';
+        }
+
+        function testAuthRequest() {
+            fetch('/auth/me')
+                .then(response => {
+                    document.getElementById('output').innerHTML += `<p>Response Status: ${response.status}</p>`;
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('output').innerHTML += `<p>Response: ${JSON.stringify(data)}</p>`;
+                })
+                .catch(error => {
+                    document.getElementById('output').innerHTML += `<p>Error: ${error}</p>`;
+                });
+        }
+
+        // Check what's in localStorage
+        document.getElementById('output').innerHTML += `<p>Current token: ${localStorage.getItem('token')}</p>`;
+    </script>
+</body>
+</html>

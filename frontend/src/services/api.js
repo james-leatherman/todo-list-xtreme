@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 // Create axios instance with base URL from environment variable
+// In development, use proxy (empty baseURL), in production use full URL
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000'
+  baseURL: process.env.REACT_APP_API_URL || ''
 });
 
 // Add a request interceptor to include token

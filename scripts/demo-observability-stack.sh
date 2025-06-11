@@ -42,7 +42,7 @@ target_count=$(curl -s "http://localhost:9090/api/v1/targets" | grep -o '"health
 echo -e "${GREEN}✓ $target_count targets UP${NC}"
 
 echo -n "Grafana Dashboards: "
-dashboard_count=$(curl -s "http://admin:admin@localhost:3000/api/search" | grep -o '"type":"dash-db"' | wc -l)
+dashboard_count=$(curl -s "http://admin:admin@localhost:3001/api/search" | grep -o '"type":"dash-db"' | wc -l)
 echo -e "${GREEN}✓ $dashboard_count dashboards loaded${NC}"
 
 echo ""
@@ -56,7 +56,7 @@ echo -e "${BLUE}🌐 Access Your Observability Stack:${NC}"
 echo "========================================="
 echo ""
 echo -e "${YELLOW}🎛️  Grafana Dashboard:${NC}"
-echo "   → http://localhost:3000"
+echo "   → http://localhost:3001"
 echo "   → Username: admin"
 echo "   → Password: admin"
 echo ""

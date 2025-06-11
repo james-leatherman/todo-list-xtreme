@@ -56,7 +56,7 @@ check_service "FastAPI Metrics" "http://localhost:8000/metrics" "python_gc_objec
 check_json_service "Prometheus API" "http://localhost:9090/api/v1/targets"
 
 # Check Grafana
-check_json_service "Grafana API" "http://admin:admin@localhost:3000/api/search"
+check_json_service "Grafana API" "http://admin:admin@localhost:3001/api/search"
 
 # Check OpenTelemetry Collector
 echo -n "Checking OTEL Collector... "
@@ -92,7 +92,7 @@ echo "🎛️ Dashboard Status:"
 echo "-------------------"
 
 # Check dashboard availability
-dashboard_count=$(curl -s "http://admin:admin@localhost:3000/api/search" | grep -o '"type":"dash-db"' | wc -l)
+dashboard_count=$(curl -s "http://admin:admin@localhost:3001/api/search" | grep -o '"type":"dash-db"' | wc -l)
 echo "Available dashboards: $dashboard_count"
 
 if [ $dashboard_count -gt 0 ]; then
@@ -107,14 +107,14 @@ echo "--------------"
 echo "FastAPI Swagger UI: http://localhost:8000/docs"
 echo "FastAPI Metrics:    http://localhost:8000/metrics"
 echo "Prometheus:         http://localhost:9090"
-echo "Grafana:            http://localhost:3000 (admin/admin)"
+echo "Grafana:            http://localhost:3001 (admin/admin)"
 echo "OTEL Collector:     http://localhost:8889/metrics"
 
 echo ""
 echo "🎯 Quick Actions:"
 echo "----------------"
 echo "View Prometheus targets: curl http://localhost:9090/api/v1/targets"
-echo "View Grafana dashboards: curl http://admin:admin@localhost:3000/api/search"
+echo "View Grafana dashboards: curl http://admin:admin@localhost:3001/api/search"
 echo "Generate test traffic:   curl http://localhost:8000/health"
 
 echo ""

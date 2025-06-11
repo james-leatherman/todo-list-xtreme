@@ -1,0 +1,55 @@
+# Tempo configuration for monolithic deployment
+# Fixes "empty ring" error by properly disabling metrics generator
+
+target: all
+
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 3201
+  log_level: info
+
+# Disable metrics generator at module level to prevent ring initialization
+metrics_generator:
+  registry:
+    external_labels: {}
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write: []
+  traces_storage:
+    path: /var/tempo/generator/traces
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+ingester:
+  max_block_duration: 5m
+  complete_block_timeout: 5m
+
+querier:
+  # Remove frontend worker configuration for monolithic deployment
+  max_concurrent_queries: 10
+
+compactor:
+  compaction:
+    block_retention: 1h
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+
+# Completely disable metrics generation to avoid empty ring errors
+overrides:
+  defaults:
+    metrics_generator:
+      disable_collection: true
+      processors: []

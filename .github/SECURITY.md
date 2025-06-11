@@ -17,7 +17,7 @@ If you discover a security vulnerability within Todo List Xtreme, please report 
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please email us directly at: `[INSERT PREFERRED SECURITY CONTACT EMAIL HERE - e.g., security@example.com]`
+Instead, please email us directly at: `[security@james-leatherman.link]`
 
 When reporting a vulnerability, please include the following details:
 
@@ -46,4 +46,4 @@ This security policy applies to the Todo List Xtreme application and its core co
 
 ## Questions
 
-If you have any questions about this security policy, please contact us at `[INSERT GENERAL CONTACT EMAIL OR LINK TO ISSUES IF APPROPRIATE FOR NON-SENSITIVE QUERIES]`.
+If you have any questions about this security policy, please contact us at `[general@james-leatherman.link]`.

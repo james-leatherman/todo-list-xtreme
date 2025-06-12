@@ -25,9 +25,10 @@ def test_column_persistence(auth_token):
             default_columns = {
                 'todo': {'id': 'todo', 'title': 'To Do', 'taskIds': []},
                 'inProgress': {'id': 'inProgress', 'title': 'In Progress', 'taskIds': []},
+                'blocked': {'id': 'blocked', 'title': 'Blocked', 'taskIds': []},
                 'done': {'id': 'done', 'title': 'Completed', 'taskIds': []}
             }
-            default_column_order = ['todo', 'inProgress', 'done']
+            default_column_order = ['todo', 'inProgress', 'blocked', 'done']
             
             payload = {
                 'columns_config': json.dumps(default_columns),

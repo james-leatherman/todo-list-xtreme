@@ -16,10 +16,11 @@ def test_empty_column_persistence(auth_token):
     test_columns = {
         'todo': {'id': 'todo', 'title': 'To Do', 'taskIds': []},
         'inProgress': {'id': 'inProgress', 'title': 'In Progress', 'taskIds': []},
+        'blocked': {'id': 'blocked', 'title': 'Blocked', 'taskIds': []},
         'done': {'id': 'done', 'title': 'Completed', 'taskIds': []},
         'empty-test': {'id': 'empty-test', 'title': 'Empty Test Column', 'taskIds': []}
     }
-    test_column_order = ['todo', 'inProgress', 'empty-test', 'done']
+    test_column_order = ['todo', 'inProgress', 'blocked', 'empty-test', 'done']
     
     # Save settings
     settings_payload = {

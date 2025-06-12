@@ -23,9 +23,10 @@ def get_column_settings(
         default_columns = {
             'todo': {'id': 'todo', 'title': 'To Do', 'taskIds': []},
             'inProgress': {'id': 'inProgress', 'title': 'In Progress', 'taskIds': []},
+            'blocked': {'id': 'blocked', 'title': 'Blocked', 'taskIds': []},
             'done': {'id': 'done', 'title': 'Completed', 'taskIds': []}
         }
-        default_column_order = ['todo', 'inProgress', 'done']
+        default_column_order = ['todo', 'inProgress', 'blocked', 'done']
         
         settings = UserColumnSettings(
             user_id=current_user.id,
@@ -89,9 +90,10 @@ def update_column_settings(
         default_columns = {
             'todo': {'id': 'todo', 'title': 'To Do', 'taskIds': []},
             'inProgress': {'id': 'inProgress', 'title': 'In Progress', 'taskIds': []},
+            'blocked': {'id': 'blocked', 'title': 'Blocked', 'taskIds': []},
             'done': {'id': 'done', 'title': 'Completed', 'taskIds': []}
         }
-        default_column_order = ['todo', 'inProgress', 'done']
+        default_column_order = ['todo', 'inProgress', 'blocked', 'done']
         
         db_settings = UserColumnSettings(
             user_id=current_user.id,

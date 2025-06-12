@@ -73,9 +73,10 @@ class ColumnManager {
     const defaultColumns = {
       'todo': { id: 'todo', title: 'To Do', taskIds: [] },
       'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+      'blocked': { id: 'blocked', title: 'Blocked', taskIds: [] },
       'done': { id: 'done', title: 'Completed', taskIds: [] }
     };
-    const defaultColumnOrder = ['todo', 'inProgress', 'done'];
+    const defaultColumnOrder = ['todo', 'inProgress', 'blocked', 'done'];
     try {
       const response = await columnSettingsService.getSettings();
       const settings = response.data;
@@ -372,9 +373,10 @@ class ColumnManager {
     const defaultColumns = {
       'todo': { id: 'todo', title: 'To Do', taskIds: [] },
       'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+      'blocked': { id: 'blocked', title: 'Blocked', taskIds: [] },
       'done': { id: 'done', title: 'Completed', taskIds: [] }
     };
-    const defaultColumnOrder = ['todo', 'inProgress', 'done'];
+    const defaultColumnOrder = ['todo', 'inProgress', 'blocked', 'done'];
     
     try {
       await this.saveColumnSettings(defaultColumns, defaultColumnOrder);

@@ -76,9 +76,10 @@ function TodoList() {
   const [columns, setColumns] = useState({
     'todo': { id: 'todo', title: 'To Do', taskIds: [] },
     'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+    'blocked': { id: 'blocked', title: 'Blocked', taskIds: [] },
     'done': { id: 'done', title: 'Completed', taskIds: [] }
   });
-  const [columnOrder, setColumnOrder] = useState(['todo', 'inProgress', 'done']);
+  const [columnOrder, setColumnOrder] = useState(['todo', 'inProgress', 'blocked', 'done']);
   const [isAddColumnDialogOpen, setIsAddColumnDialogOpen] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
   const [columnSettingsAnchorEl, setColumnSettingsAnchorEl] = useState(null);
@@ -773,9 +774,10 @@ function TodoList() {
                   const defaultColumns = {
                     'todo': { id: 'todo', title: 'To Do', taskIds: [] },
                     'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+                    'blocked': { id: 'blocked', title: 'Blocked', taskIds: [] },
                     'done': { id: 'done', title: 'Completed', taskIds: [] }
                   };
-                  const defaultOrder = ['todo', 'inProgress', 'done'];
+                  const defaultOrder = ['todo', 'inProgress', 'blocked', 'done'];
                   
                   // Clear localStorage
                   localStorage.removeItem('todoColumns');

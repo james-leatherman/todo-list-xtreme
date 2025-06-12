@@ -105,15 +105,32 @@ def _update_connection_pool_metrics(engine: Engine):
     """Update connection pool metrics"""
     try:
         pool = engine.pool
-        if hasattr(pool, 'size'):
-            # For QueuePool and similar
-            db_connections_total.set(pool.size())
-            db_connections_active.set(pool.checkedout())
-            db_connections_idle.set(pool.checkedin())
-        elif hasattr(pool, '_pool'):
-            # For other pool types
-            total = len(pool._pool.queue) if hasattr(pool._pool, 'queue') else 0
-            db_connections_total.set(total)
+        
+        # Try to get pool metrics safely using getattr
+        try:
+            # For QueuePool and similar pools
+            size_method = getattr(pool, 'size', None)
+            if size_method and callable(size_method):
+                size_value = size_method()
+                if isinstance(size_value, (int, float)):
+                    db_connections_total.set(float(size_value))
+                
+            checkedout_method = getattr(pool, 'checkedout', None)
+            if checkedout_method and callable(checkedout_method):
+                checkedout_value = checkedout_method()
+                if isinstance(checkedout_value, (int, float)):
+                    db_connections_active.set(float(checkedout_value))
+                
+            checkedin_method = getattr(pool, 'checkedin', None)
+            if checkedin_method and callable(checkedin_method):
+                checkedin_value = checkedin_method()
+                if isinstance(checkedin_value, (int, float)):
+                    db_connections_idle.set(float(checkedin_value))
+                
+        except (AttributeError, TypeError, ValueError):
+            # Fall back to basic metrics if specific pool methods aren't available
+            pass
+            
     except Exception as e:
         # Silently handle any pool introspection issues
         pass
@@ -159,11 +176,22 @@ def get_current_db_metrics() -> dict:
     Returns:
         Dictionary with current metric values
     """
-    return {
-        'active_connections': db_connections_active._value._value,
-        'total_connections': db_connections_total._value._value,
-        'idle_connections': db_connections_idle._value._value,
-        'connections_created': db_connections_created_total._value._value,
-        'connections_closed': db_connections_closed_total._value._value,
-        'total_queries': sum(db_query_total._metrics.values()) if db_query_total._metrics else 0
-    }
+    try:
+        return {
+            'active_connections': db_connections_active._value.get() if hasattr(db_connections_active._value, 'get') else 0,
+            'total_connections': db_connections_total._value.get() if hasattr(db_connections_total._value, 'get') else 0,
+            'idle_connections': db_connections_idle._value.get() if hasattr(db_connections_idle._value, 'get') else 0,
+            'connections_created': db_connections_created_total._value.get() if hasattr(db_connections_created_total._value, 'get') else 0,
+            'connections_closed': db_connections_closed_total._value.get() if hasattr(db_connections_closed_total._value, 'get') else 0,
+            'total_queries': sum(metric._value.get() for metric in db_query_total._metrics.values()) if db_query_total._metrics else 0
+        }
+    except Exception as e:
+        # Return safe defaults if metric access fails
+        return {
+            'active_connections': 0,
+            'total_connections': 0,
+            'idle_connections': 0,
+            'connections_created': 0,
+            'connections_closed': 0,
+            'total_queries': 0
+        }

@@ -4,27 +4,13 @@
 echo "🧪 Comprehensive Column Restoration Test"
 echo "========================================"
 
-# Set proper token
-TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzgxMjMwNjk1fQ.H3HJYE7tUBfBmYklv-IMmwGzt-Vf3hdJzM7OuNlV-RI"
+# Load common test functions
+source "$(dirname "$0")/common-test-functions.sh"
 
-# Function to make API calls
-api_call() {
-    local method=$1
-    local endpoint=$2
-    local data=$3
-    
-    if [ -n "$data" ]; then
-        curl -s -X "$method" \
-             -H "Content-Type: application/json" \
-             -H "Authorization: Bearer $TOKEN" \
-             -d "$data" \
-             "http://localhost:8000$endpoint"
-    else
-        curl -s -X "$method" \
-             -H "Authorization: Bearer $TOKEN" \
-             "http://localhost:8000$endpoint"
-    fi
-}
+# Setup test environment
+if ! setup_test_environment; then
+    exit 1
+fi
 
 echo "🔄 Setting up empty column state to trigger frontend restoration..."
 
@@ -40,7 +26,7 @@ echo "✅ Empty column state created"
 echo
 echo "🌐 MANUAL TEST REQUIRED:"
 echo "========================"
-echo "1. Open http://localhost:3000 in a new browser tab/window"
+echo "1. Open $FRONTEND_URL in a new browser tab/window"
 echo "2. Open browser Developer Tools (F12) and go to Console tab"
 echo "3. Refresh the page (F5) to load with empty column state"
 echo "4. Look for these console messages:"

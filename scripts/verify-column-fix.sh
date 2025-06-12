@@ -6,8 +6,13 @@ echo "=================================="
 echo "This script simulates the exact scenarios that were causing issues"
 echo
 
-# Set proper token
-TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzgxMjMwNjk1fQ.H3HJYE7tUBfBmYklv-IMmwGzt-Vf3hdJzM7OuNlV-RI"
+# Load common test functions
+source "$(dirname "$0")/common-test-functions.sh"
+
+# Setup test environment
+if ! setup_test_environment; then
+    exit 1
+fi
 
 # Function to make API calls
 api_call() {
@@ -18,13 +23,13 @@ api_call() {
     if [ -n "$data" ]; then
         curl -s -X "$method" \
              -H "Content-Type: application/json" \
-             -H "Authorization: Bearer $TOKEN" \
+             -H "Authorization: Bearer $TEST_JWT_TOKEN" \
              -d "$data" \
-             "http://localhost:8000$endpoint"
+             "$API_BASE_URL$endpoint"
     else
         curl -s -X "$method" \
-             -H "Authorization: Bearer $TOKEN" \
-             "http://localhost:8000$endpoint"
+             -H "Authorization: Bearer $TEST_JWT_TOKEN" \
+             "$API_BASE_URL$endpoint"
     fi
 }
 

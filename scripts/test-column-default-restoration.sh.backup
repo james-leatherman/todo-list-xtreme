@@ -6,13 +6,24 @@
 echo "🧪 Testing Default Column Restoration Functionality..."
 echo "================================================="
 
-# Load common test functions
-source "$(dirname "$0")/common-test-functions.sh"
-
-# Setup test environment
-if ! setup_test_environment; then
-    exit 1
-fi \
+# Function to make API calls with proper authentication
+api_call() {
+    local method=$1
+    local endpoint=$2
+    local data=$3
+    
+    # Use the actual test token
+    local token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzgxMjMwNjk1fQ.H3HJYE7tUBfBmYklv-IMmwGzt-Vf3hdJzM7OuNlV-RI"
+    
+    if [ -n "$data" ]; then
+        curl -s -X "$method" \
+             -H "Content-Type: application/json" \
+             -H "Authorization: Bearer $token" \
+             -d "$data" \
+             "http://localhost:8000$endpoint"
+    else
+        curl -s -X "$method" \
+             -H "Authorization: Bearer $token" \
              "http://localhost:8000$endpoint"
     fi
 }

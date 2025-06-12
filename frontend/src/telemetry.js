@@ -1,6 +1,6 @@
 // OpenTelemetry Web SDK setup
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { resourceFromAttributes } from '@opentelemetry/resources';
+import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-web';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
@@ -9,7 +9,7 @@ import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { trace } from '@opentelemetry/api';
 
 // Create a resource with service information
-const resource = resourceFromAttributes({
+const resource = new Resource({
   'service.name': 'todo-list-xtreme-frontend',
   'service.version': '1.4.0',
   'service.instance.id': `frontend-${Date.now()}`,

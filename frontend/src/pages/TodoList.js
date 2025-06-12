@@ -625,28 +625,18 @@ function TodoList() {
     if (result.error) {
       setError(result.error);
     } else {
-      // Check if all columns have been deleted
-      if (Object.keys(result.columns).length === 0) {
-        console.log('All columns deleted, restoring defaults...');
-        
-        // Use ColumnManager to restore defaults
-        const restoreResult = await ColumnManager.restoreDefaultColumns();
-        if (restoreResult.error) {
-          setError(restoreResult.error);
-        } else {
-          setColumns(restoreResult.columns);
-          setColumnOrder(restoreResult.columnOrder);
-          console.log('Default columns restored successfully');
-        }
-      } else {
-        // Update state with remaining columns
-        setColumns(result.columns);
-        setColumnOrder(result.columnOrder);
-      }
+      // Update state with remaining columns (no automatic restoration)
+      setColumns(result.columns);
+      setColumnOrder(result.columnOrder);
       
       console.log(`Deleted column: ${columnId}`);
       console.log(`Updated columns: ${Object.keys(result.columns).join(', ')}`);
       console.log(`Updated column order: ${result.columnOrder.join(', ')}`);
+      
+      // If all columns deleted, user will see "Add Default Columns" button
+      if (Object.keys(result.columns).length === 0) {
+        console.log('All columns deleted. User can click "Add Default Columns" button to restore.');
+      }
     }
     
     setColumnSettingsAnchorEl(null);
@@ -866,20 +856,22 @@ function TodoList() {
             variant="contained"
             color="primary"
             sx={{ mt: 2 }}
-            onClick={() => {
-              // Reset to default columns
-              const defaultColumns = {
-                'todo': { id: 'todo', title: 'To Do', taskIds: [] },
-                'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
-                'done': { id: 'done', title: 'Completed', taskIds: [] }
-              };
-              const defaultOrder = ['todo', 'inProgress', 'done'];
-              
-              setColumns(defaultColumns);
-              setColumnOrder(defaultOrder);
+            onClick={async () => {
+              // Use ColumnManager to restore default columns with backend persistence
+              const restoreResult = await ColumnManager.restoreDefaultColumns();
+              if (restoreResult.error) {
+                setError(restoreResult.error);
+              } else {
+                setColumns(restoreResult.columns);
+                setColumnOrder(restoreResult.columnOrder);
+                setError(null);
+                console.log('Default columns restored successfully via button');
+              }
             }}
+            id="add-default-columns-button"
+            name="add-default-columns"
           >
-            Reset to Default Columns
+            Add Default Columns
           </Button>
         </Paper>
       ) : (

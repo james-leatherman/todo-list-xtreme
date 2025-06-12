@@ -86,15 +86,12 @@ class ColumnManager {
           
           // Check if columns is empty (no columns at all)
           if (Object.keys(columns).length === 0) {
-            console.log('Empty columns detected in API response, restoring defaults...');
-            // Save defaults to backend
-            try {
-              await this.saveColumnSettings(defaultColumns, defaultColumnOrder);
-              console.log('Default columns restored and saved successfully');
-            } catch (saveError) {
-              console.error('Failed to save restored default columns:', saveError);
-            }
-            return { columns: defaultColumns, columnOrder: defaultColumnOrder };
+            console.log('Empty columns detected in API response - user deleted all columns');
+            // Don't auto-restore, let user click the "Add Default Columns" button
+            // Save to localStorage for consistency
+            localStorage.setItem('todoColumns', JSON.stringify(columns));
+            localStorage.setItem('todoColumnOrder', JSON.stringify(columnOrder));
+            return { columns, columnOrder };
           }
           
           // Validate all columns have required structure

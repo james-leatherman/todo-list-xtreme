@@ -15,11 +15,12 @@ from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExport
 from opentelemetry import trace
 
 from app.config import settings
-from app.database import get_db
+from app.database import get_db, engine
 from app.auth import router as auth_router
 from app.todos import router as todos_router
 from app.column_settings import router as column_settings_router
 from app import models
+from app.metrics import setup_database_metrics
 
 app = FastAPI(
     title="Todo List Xtreme API",
@@ -40,6 +41,9 @@ RequestsInstrumentor().instrument()
 
 # Prometheus metrics
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
+
+# Database metrics setup
+setup_database_metrics(engine)
 
 # CORS middleware for frontend communication
 app.add_middleware(

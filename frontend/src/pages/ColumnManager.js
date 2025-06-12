@@ -83,6 +83,20 @@ class ColumnManager {
         try {
           const columns = JSON.parse(settings.columns_config);
           const columnOrder = JSON.parse(settings.column_order);
+          
+          // Check if columns is empty (no columns at all)
+          if (Object.keys(columns).length === 0) {
+            console.log('Empty columns detected in API response, restoring defaults...');
+            // Save defaults to backend
+            try {
+              await this.saveColumnSettings(defaultColumns, defaultColumnOrder);
+              console.log('Default columns restored and saved successfully');
+            } catch (saveError) {
+              console.error('Failed to save restored default columns:', saveError);
+            }
+            return { columns: defaultColumns, columnOrder: defaultColumnOrder };
+          }
+          
           // Validate all columns have required structure
           let isValid = true;
           Object.keys(columns).forEach(id => {
@@ -349,6 +363,31 @@ class ColumnManager {
         columns, 
         columnOrder: updatedColumnOrder, 
         error: 'Failed to save column settings to the server'
+      };
+    }
+  }
+  
+  /**
+   * Restore default columns when all columns have been deleted
+   * @returns {Promise<Object>} - { columns, columnOrder, error }
+   */
+  static async restoreDefaultColumns() {
+    const defaultColumns = {
+      'todo': { id: 'todo', title: 'To Do', taskIds: [] },
+      'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
+      'done': { id: 'done', title: 'Completed', taskIds: [] }
+    };
+    const defaultColumnOrder = ['todo', 'inProgress', 'done'];
+    
+    try {
+      await this.saveColumnSettings(defaultColumns, defaultColumnOrder);
+      return { columns: defaultColumns, columnOrder: defaultColumnOrder, error: null };
+    } catch (error) {
+      console.error('Error restoring default columns:', error);
+      return { 
+        columns: defaultColumns, 
+        columnOrder: defaultColumnOrder, 
+        error: 'Failed to save default columns to the server'
       };
     }
   }

@@ -1,0 +1,123 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 4,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "text"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "content": "# 🕵️ Distributed Tracing with Tempo\n\nThis dashboard provides quick access to trace exploration and analysis. Click the buttons below to jump to specific trace queries in Tempo.\n\n**Tip:** Use TraceQL queries to filter traces by service, duration, HTTP method, and more!",
+        "mode": "markdown"
+      },
+      "title": "Tracing Overview",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "text"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 4
+      },
+      "id": 2,
+      "options": {
+        "content": "## 🔍 Common Trace Queries\n\n**API Service Traces:**\n```traceql\n{ .service.name = \"todo-list-xtreme-api\" }\n```\n\n**Frontend Service Traces:**\n```traceql\n{ .service.name = \"todo-list-xtreme-frontend\" }\n```\n\n**Slow Requests:**\n```traceql\n{ duration > 100ms }\n```",
+        "mode": "markdown"
+      },
+      "title": "Quick Trace Queries",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "text"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 4
+      },
+      "id": 3,
+      "options": {
+        "content": "## 🚨 Error Analysis\n\n**Error Traces:**\n```traceql\n{ .status = error }\n```\n\n**HTTP Errors:**\n```traceql\n{ .http.status_code >= 400 }\n```\n\n**Server Errors:**\n```traceql\n{ .http.status_code >= 500 }\n```",
+        "mode": "markdown"
+      },
+      "title": "Error Tracking",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "text"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 4
+      },
+      "id": 4,
+      "options": {
+        "content": "## 🎯 Business Logic\n\n**DELETE Operations:**\n```traceql\n{ .http.method = \"DELETE\" }\n```\n\n**POST Operations:**\n```traceql\n{ .http.method = \"POST\" }\n```\n\n**Todo Operations:**\n```traceql\n{ name =~ \".*todo.*\" }\n```",
+        "mode": "markdown"
+      },
+      "title": "Business Operations",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "text"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 5,
+      "options": {
+        "content": "## 🚀 Quick Access Links\n\n### Explore Traces by Service\n- [API Service Traces](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.service.name%20%3D%20%5C%22todo-list-xtreme-api%5C%22%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - All traces from the FastAPI backend\n- [Frontend Service Traces](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.service.name%20%3D%20%5C%22todo-list-xtreme-frontend%5C%22%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - All traces from the React frontend\n\n### Performance Analysis\n- [Slow Requests (>100ms)](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20duration%20%3E%20100ms%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Find performance bottlenecks\n- [API Slow Requests](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.service.name%20%3D%20%5C%22todo-list-xtreme-api%5C%22%20%26%26%20duration%20%3E%2050ms%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Slow API operations\n\n### HTTP Methods\n- [GET Requests](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.http.method%20%3D%20%5C%22GET%5C%22%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Read operations\n- [POST Requests](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.http.method%20%3D%20%5C%22POST%5C%22%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Create operations\n- [DELETE Requests](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.http.method%20%3D%20%5C%22DELETE%5C%22%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Delete operations\n- [PUT Requests](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.http.method%20%3D%20%5C%22PUT%5C%22%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Update operations\n\n### Error Analysis\n- [Error Traces](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.status%20%3D%20error%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - All error traces\n- [HTTP 4xx Errors](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.http.status_code%20%3E%3D%20400%20%26%26%20.http.status_code%20%3C%20500%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Client errors\n- [HTTP 5xx Errors](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20.http.status_code%20%3E%3D%20500%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Server errors\n\n### Business Operations\n- [Todo Operations](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20name%20%3D~%20%5C%22.*todo.*%5C%22%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - All todo-related traces\n- [Authentication Operations](http://localhost:3001/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22%7B%20name%20%3D~%20%5C%22.*auth.*%5C%22%20%7D%22,%22queryType%22:%22%22%7D%5D%7D) - Auth-related traces\n\n---\n\n**💡 Pro Tips:**\n- Combine filters: `{ .service.name = \"todo-list-xtreme-api\" && .http.method = \"DELETE\" && duration > 50ms }`\n- Use regex patterns: `{ name =~ \".*pattern.*\" }`\n- Filter by time range using the time picker in Grafana\n- Click on trace IDs to see detailed span information",
+        "mode": "markdown"
+      },
+      "title": "Trace Exploration Links",
+      "type": "text"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "tempo",
+    "tracing",
+    "observability"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Todo List Xtreme - Distributed Tracing Explorer",
+  "uid": "tracing-explorer-dashboard",
+  "version": 1,
+  "weekStart": ""
+}

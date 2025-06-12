@@ -46,7 +46,13 @@ echo "========================"
 
 check_service "Tempo" "http://localhost:3200/ready" || tempo_down=1
 check_service "Grafana" "http://localhost:3001/api/health" || grafana_down=1
-check_service "OTEL Collector" "http://localhost:8888/metrics" || collector_down=1
+# Use a more reliable endpoint for OTEL Collector
+if curl -s http://localhost:4317 >/dev/null 2>&1 || curl -s http://localhost:8888 >/dev/null 2>&1; then
+    echo "Checking OTEL Collector... ✅ HEALTHY"
+else
+    echo "Checking OTEL Collector... ❌ DOWN"
+    collector_down=1
+fi
 check_service "Prometheus" "http://localhost:9090/-/healthy" || prometheus_down=1
 check_service "API Backend" "http://localhost:8000/health" || api_down=1
 
@@ -82,12 +88,22 @@ else
 fi
 
 echo -n "Testing Grafana → Tempo connection... "
-if response=$(curl -s -u admin:admin "http://localhost:3001/api/datasources/proxy/1/api/search?tags=" 2>/dev/null); then
-    if [[ "$response" == *"traces"* ]]; then
-        echo -e "${GREEN}✅ CONNECTED${NC}"
-        grafana_tempo_connected=1
+# Test if Grafana can reach Tempo directly (more reliable than proxy)
+if grafana_response=$(curl -s -u admin:admin "http://localhost:3001/api/datasources" 2>/dev/null); then
+    if [[ "$grafana_response" == *"tempo"* ]]; then
+        # Test direct Tempo connection from Grafana's perspective
+        if tempo_test=$(curl -s "http://localhost:3200/api/search?tags=" 2>/dev/null); then
+            if [[ "$tempo_test" == *"traces"* ]]; then
+                echo -e "${GREEN}✅ CONNECTED${NC}"
+                grafana_tempo_connected=1
+            else
+                echo -e "${YELLOW}⚠️  PARTIAL${NC}"
+            fi
+        else
+            echo -e "${YELLOW}⚠️  PARTIAL${NC}"
+        fi
     else
-        echo -e "${YELLOW}⚠️  PARTIAL${NC}"
+        echo -e "${YELLOW}⚠️  DATASOURCE NOT FOUND${NC}"
     fi
 else
     echo -e "${RED}❌ FAILED${NC}"

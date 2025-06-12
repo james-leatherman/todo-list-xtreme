@@ -625,9 +625,24 @@ function TodoList() {
     if (result.error) {
       setError(result.error);
     } else {
-      // Update state
-      setColumns(result.columns);
-      setColumnOrder(result.columnOrder);
+      // Check if all columns have been deleted
+      if (Object.keys(result.columns).length === 0) {
+        console.log('All columns deleted, restoring defaults...');
+        
+        // Use ColumnManager to restore defaults
+        const restoreResult = await ColumnManager.restoreDefaultColumns();
+        if (restoreResult.error) {
+          setError(restoreResult.error);
+        } else {
+          setColumns(restoreResult.columns);
+          setColumnOrder(restoreResult.columnOrder);
+          console.log('Default columns restored successfully');
+        }
+      } else {
+        // Update state with remaining columns
+        setColumns(result.columns);
+        setColumnOrder(result.columnOrder);
+      }
       
       console.log(`Deleted column: ${columnId}`);
       console.log(`Updated columns: ${Object.keys(result.columns).join(', ')}`);

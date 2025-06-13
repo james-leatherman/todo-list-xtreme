@@ -60,15 +60,15 @@ services:
       - prometheus
 
   otel-collector:
-    image: grafana/tempo:latest
+    image: otel/opentelemetry-collector-contrib:latest
     ports:
       - "4317:4317"
       - "4318:4318"
+      - "8889:8889"
     volumes:
-      - ./tempo.yml:/etc/tempo/tempo.yml
-    command: --config.file=/etc/tempo/tempo.yml
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    command: ["--config=/etc/otel-collector-config.yml"]
     depends_on:
-      - db
       - tempo
 
   tempo:

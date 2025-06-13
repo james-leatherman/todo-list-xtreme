@@ -1,8 +1,75 @@
 # Project Scripts
 
-This directory contains various utility scripts for development, testing, and database management.
+This directory contains various utility scripts for development, testing, database management, and observability verification.
 
-## Available Scripts
+## Observability Verification Scripts
+
+### 🚀 `quick-status-check.sh`
+**Quick 5-second health check of all services**
+- Fastest way to check if all services are running
+- Shows basic service status with color coding
+- Provides quick access URLs and common commands
+
+```bash
+bash scripts/quick-status-check.sh
+```
+
+### 🔍 `verify-observability-stack.sh`
+**Comprehensive observability stack verification (recommended)**
+- Updated and improved primary verification script
+- Tests all core services with retry logic and timeouts
+- Verifies data flow from API → OTEL Collector → Prometheus/Tempo → Grafana
+- Generates test traffic and validates metrics/traces collection
+- Provides detailed troubleshooting hints and access URLs
+- Tests dashboard availability and data source configuration
+
+```bash
+bash scripts/verify-observability-stack.sh
+```
+
+### 📊 `verify-complete-observability-stack.sh`
+**Original comprehensive end-to-end verification**
+- Tests database metrics, JWT tokens, and dashboard functionality
+- Includes frontend OpenTelemetry integration checks
+- More detailed testing of specific components
+- Useful for development and debugging
+
+```bash
+bash scripts/verify-complete-observability-stack.sh
+```
+
+### 📈 `verify-complete-observability-stack-v2.sh`
+**Modern comprehensive verification (alternative)**
+- Streamlined version of comprehensive testing
+- Focus on core functionality without external dependencies
+- Better error handling and integer expression fixes
+
+```bash
+bash scripts/verify-complete-observability-stack-v2.sh
+```
+
+## What Gets Tested in Observability Scripts
+
+### Core Services
+- ✅ **FastAPI** - Health endpoint and metrics endpoint
+- ✅ **Prometheus** - API accessibility and target scraping
+- ✅ **Grafana** - Dashboard access and data source configuration
+- ✅ **OpenTelemetry Collector** - OTLP HTTP/gRPC receivers and metrics export
+- ✅ **Tempo** - Trace storage and readiness
+
+### Data Flow
+- ✅ **Metrics Collection** - API metrics → Prometheus → Grafana
+- ✅ **Trace Collection** - API traces → OTEL Collector → Tempo → Grafana
+- ✅ **Dashboard Functionality** - Grafana dashboard provisioning and accessibility
+
+### Expected Output
+All scripts provide:
+- ✅ **Green checkmarks** for successful tests
+- ⚠️ **Yellow warnings** for minor issues
+- ❌ **Red errors** for critical failures
+- 💡 **Blue hints** for troubleshooting
+
+## Other Available Scripts
 
 ### `setup-grafana-dashboards.sh`
 Sets up automated Grafana dashboard configuration:

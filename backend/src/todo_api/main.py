@@ -23,7 +23,7 @@ from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry import trace
 
 from .config.settings import settings
@@ -57,8 +57,7 @@ def setup_opentelemetry() -> None:
         provider = TracerProvider(resource=resource)
         
         otlp_exporter = OTLPSpanExporter(
-            endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT, 
-            insecure=True
+            endpoint=f"{settings.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces"
         )
         span_processor = BatchSpanProcessor(otlp_exporter)
         provider.add_span_processor(span_processor)

@@ -25,7 +25,7 @@
     {
       "datasource": {
         "type": "tempo",
-        "uid": "tempo"
+        "uid": "P214B5B846CF3925F"
       },
       "fieldConfig": {
         "defaults": {
@@ -73,7 +73,7 @@
         {
           "datasource": {
             "type": "tempo",
-            "uid": "tempo"
+            "uid": "P214B5B846CF3925F"
           },
           "query": "{ service.name = \"todo-list-xtreme-api\" }",
           "queryType": "nativeSearch",
@@ -86,7 +86,7 @@
     {
       "datasource": {
         "type": "tempo",
-        "uid": "tempo"
+        "uid": "P214B5B846CF3925F"
       },
       "fieldConfig": {
         "defaults": {
@@ -134,7 +134,7 @@
         {
           "datasource": {
             "type": "tempo",
-            "uid": "tempo"
+            "uid": "P214B5B846CF3925F"
           },
           "query": "{ service.name = \"todo-list-xtreme-frontend\" }",
           "queryType": "nativeSearch",
@@ -147,7 +147,7 @@
     {
       "datasource": {
         "type": "tempo",
-        "uid": "tempo"
+        "uid": "P214B5B846CF3925F"
       },
       "fieldConfig": {
         "defaults": {
@@ -202,7 +202,7 @@
         {
           "datasource": {
             "type": "tempo",
-            "uid": "tempo"
+            "uid": "P214B5B846CF3925F"
           },
           "query": "{ duration > 100ms }",
           "queryType": "nativeSearch",
@@ -215,7 +215,7 @@
     {
       "datasource": {
         "type": "tempo",
-        "uid": "tempo"
+        "uid": "P214B5B846CF3925F"
       },
       "fieldConfig": {
         "defaults": {
@@ -293,7 +293,7 @@
         {
           "datasource": {
             "type": "tempo",
-            "uid": "tempo"
+            "uid": "P214B5B846CF3925F"
           },
           "query": "{ .service.name = \"todo-list-xtreme-api\" }",
           "queryType": "",
@@ -306,7 +306,7 @@
     {
       "datasource": {
         "type": "tempo",
-        "uid": "tempo"
+        "uid": "P214B5B846CF3925F"
       },
       "fieldConfig": {
         "defaults": {
@@ -360,7 +360,7 @@
         {
           "datasource": {
             "type": "tempo",
-            "uid": "tempo"
+            "uid": "P214B5B846CF3925F"
           },
           "query": "{ .status = error }",
           "queryType": "",
@@ -373,7 +373,7 @@
     {
       "datasource": {
         "type": "tempo",
-        "uid": "tempo"
+        "uid": "P214B5B846CF3925F"
       },
       "fieldConfig": {
         "defaults": {
@@ -421,7 +421,7 @@
         {
           "datasource": {
             "type": "tempo",
-            "uid": "tempo"
+            "uid": "P214B5B846CF3925F"
           },
           "query": "{ .http.method != \"\" }",
           "queryType": "",

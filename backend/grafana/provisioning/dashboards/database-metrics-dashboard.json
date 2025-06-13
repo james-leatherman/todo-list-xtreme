@@ -102,7 +102,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "db_connections_active",
+          "expr": "db_connections_active{job='database'}",
           "legendFormat": "Active Connections",
           "refId": "A"
         },
@@ -314,7 +314,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "rate(db_query_duration_seconds_sum[1m]) / rate(db_query_duration_seconds_count[1m])",
+          "expr": "rate(db_query_duration_seconds_sum{job='database'}[1m]) / rate(db_query_duration_seconds_count{job='database'}[1m])",
           "legendFormat": "Average",
           "refId": "C"
         }

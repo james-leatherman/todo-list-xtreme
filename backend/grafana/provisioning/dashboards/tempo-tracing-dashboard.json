@@ -83,7 +83,7 @@
           },
           "queryType": "nativeSearch",
           "refId": "A",
-          "query": "{service.name=\"todo-list-xtreme-frontend\" || service.name=\"todo-list-xtreme-api\"}"
+          "query": "{ service.name = \"todo-list-xtreme-frontend\" || service.name = \"todo-list-xtreme-api\" }"
         }
       ],
       "title": "Traces by Service",
@@ -162,7 +162,7 @@
           },
           "queryType": "nativeSearch",
           "refId": "A",
-          "query": "{service.name=\"todo-list-xtreme-frontend\"}"
+          "query": "{ service.name = \"todo-list-xtreme-frontend\" }"
         }
       ],
       "title": "Frontend Trace Duration",

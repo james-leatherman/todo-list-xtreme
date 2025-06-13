@@ -117,7 +117,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(http_requests_total[1m])",
+          "expr": "rate(http_requests_total{job='api'}[1m])",
           "refId": "A",
           "legendFormat": "{{method}} {{handler}}"
         }
@@ -208,7 +208,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, rate(http_request_duration_highr_seconds_bucket[1m]))",
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job='api'}[1m]))",
           "refId": "A",
           "legendFormat": "95th percentile"
         },
@@ -217,7 +217,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.50, rate(http_request_duration_highr_seconds_bucket[1m]))",
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job='api'}[1m]))",
           "refId": "B",
           "legendFormat": "50th percentile"
         }
@@ -675,7 +675,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[1m]))",
+          "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket{job='api'}[1m]))",
           "legendFormat": "95th percentile",
           "refId": "A"
         },
@@ -684,7 +684,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket[1m]))",
+          "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket{job='api'}[1m]))",
           "legendFormat": "50th percentile (median)",
           "refId": "B"
         },

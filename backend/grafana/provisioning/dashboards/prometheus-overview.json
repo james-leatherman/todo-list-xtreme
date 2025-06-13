@@ -57,7 +57,7 @@
       "type": "graph",
       "targets": [
         {
-          "expr": "rate(prometheus_tsdb_symbol_table_size_bytes[5m])",
+          "expr": "rate(prometheus_tsdb_symbol_table_size_bytes{job='prometheus'}[5m])",
           "legendFormat": "Symbol Table Size"
         }
       ],
@@ -69,7 +69,7 @@
       "type": "graph",
       "targets": [
         {
-          "expr": "rate(prometheus_engine_query_duration_seconds[5m])",
+          "expr": "rate(prometheus_engine_query_duration_seconds{job='prometheus'}[5m])",
           "legendFormat": "Query Duration"
         }
       ],

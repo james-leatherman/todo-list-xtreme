@@ -75,8 +75,8 @@
             "type": "tempo",
             "uid": "tempo"
           },
-          "query": "{ .service.name = \"todo-list-xtreme-api\" }",
-          "queryType": "",
+          "query": "{ service.name = \"todo-list-xtreme-api\" }",
+          "queryType": "nativeSearch",
           "refId": "A"
         }
       ],
@@ -136,8 +136,8 @@
             "type": "tempo",
             "uid": "tempo"
           },
-          "query": "{ .service.name = \"todo-list-xtreme-frontend\" }",
-          "queryType": "",
+          "query": "{ service.name = \"todo-list-xtreme-frontend\" }",
+          "queryType": "nativeSearch",
           "refId": "A"
         }
       ],
@@ -205,7 +205,7 @@
             "uid": "tempo"
           },
           "query": "{ duration > 100ms }",
-          "queryType": "",
+          "queryType": "nativeSearch",
           "refId": "A"
         }
       ],

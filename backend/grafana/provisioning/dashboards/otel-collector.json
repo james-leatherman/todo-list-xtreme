@@ -57,5 +57,6 @@
     "from": "now-1h", 
     "to": "now"
   },
-  "refresh": "15s"
+  "refresh": "15s",
+  "uid": "otel-collector-metrics"
 }

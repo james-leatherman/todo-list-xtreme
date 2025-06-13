@@ -103,5 +103,6 @@
   },
   "refresh": "10s",
   "schemaVersion": 30,
-  "version": 1
+  "version": 1,
+  "uid": "todo-list-xtreme-overview"
 }

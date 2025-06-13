@@ -1,7 +1,7 @@
 apiVersion: 1
 
 providers:
-  - name: 'Tempo Dashboards'
+  - name: 'todo-list-xtreme-dashboards'
     orgId: 1
     folder: 'Todo List Xtreme'
     folderUid: 'todo-list-xtreme'

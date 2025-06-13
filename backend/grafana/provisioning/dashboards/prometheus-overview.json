@@ -80,5 +80,6 @@
     "from": "now-1h",
     "to": "now"
   },
-  "refresh": "30s"
+  "refresh": "30s",
+  "uid": "prometheus-overview"
 }

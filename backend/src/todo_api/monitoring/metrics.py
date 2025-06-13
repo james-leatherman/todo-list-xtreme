@@ -4,7 +4,7 @@ Database metrics module for monitoring connection pool usage.
 This module provides comprehensive database monitoring capabilities
 for the Todo List Xtreme API using Prometheus metrics.
 """
-from prometheus_client import Gauge, Counter, Histogram
+from prometheus_client import Gauge, Counter, Histogram, REGISTRY
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlalchemy.pool import Pool
@@ -12,42 +12,49 @@ import time
 import threading
 
 # Database connection metrics
-db_connections_active = Gauge(
-    'db_connections_active',
-    'Number of active database connections'
-)
+if 'db_connections_active' not in REGISTRY._names_to_collectors:
+    db_connections_active = Gauge(
+        'db_connections_active',
+        'Number of active database connections'
+    )
 
-db_connections_total = Gauge(
-    'db_connections_total',
-    'Total number of database connections in pool'
-)
+if 'db_connections_total' not in REGISTRY._names_to_collectors:
+    db_connections_total = Gauge(
+        'db_connections_total',
+        'Total number of database connections in pool'
+    )
 
-db_connections_idle = Gauge(
-    'db_connections_idle', 
-    'Number of idle database connections'
-)
+if 'db_connections_idle' not in REGISTRY._names_to_collectors:
+    db_connections_idle = Gauge(
+        'db_connections_idle', 
+        'Number of idle database connections'
+    )
 
-db_connections_created_total = Counter(
-    'db_connections_created_total',
-    'Total number of database connections created'
-)
+if 'db_connections_created_total' not in REGISTRY._names_to_collectors:
+    db_connections_created_total = Counter(
+        'db_connections_created_total',
+        'Total number of database connections created'
+    )
 
-db_connections_closed_total = Counter(
-    'db_connections_closed_total',
-    'Total number of database connections closed'
-)
+if 'db_connections_closed_total' not in REGISTRY._names_to_collectors:
+    db_connections_closed_total = Counter(
+        'db_connections_closed_total',
+        'Total number of database connections closed'
+    )
 
-db_query_duration_seconds = Histogram(
-    'db_query_duration_seconds',
-    'Time spent executing database queries',
-    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
-)
+if 'db_query_duration_seconds' not in REGISTRY._names_to_collectors:
+    db_query_duration_seconds = Histogram(
+        'db_query_duration_seconds',
+        'Time spent executing database queries',
+        buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
+    )
 
-db_query_total = Counter(
-    'db_query_total',
-    'Total number of database queries executed',
-    ['operation']
-)
+if 'db_query_total' not in REGISTRY._names_to_collectors:
+    db_query_total = Counter(
+        'db_query_total',
+        'Total number of database queries executed',
+        ['operation']
+    )
 
 # Thread-local storage for query timing
 _local = threading.local()

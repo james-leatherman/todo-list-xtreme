@@ -9,10 +9,10 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import Column, DateTime, Integer
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 
-# Base class for all models
+# Update to new declarative_base
 Base = declarative_base()
 
 

@@ -21,7 +21,7 @@ class TodoPhoto(TodoPhotoBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TodoBase(BaseModel):
@@ -55,7 +55,7 @@ class Todo(TodoBase):
     status: Optional[str] = "todo"  # Added status field with default value
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserBase(BaseModel):
@@ -77,7 +77,7 @@ class User(UserBase):
     updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ColumnSettingsBase(BaseModel):
@@ -104,7 +104,7 @@ class ColumnSettings(ColumnSettingsBase):
     updated_at: Optional[datetime] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Token(BaseModel):

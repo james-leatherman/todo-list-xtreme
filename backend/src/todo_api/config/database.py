@@ -11,8 +11,7 @@ from typing import Generator
 
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker, declarative_base
 from sqlalchemy.pool import QueuePool
 
 from .settings import get_settings

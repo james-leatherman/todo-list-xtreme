@@ -17,8 +17,8 @@ from sqlalchemy.orm import Session
 import httpx
 from pydantic import BaseModel
 
-# Import from old structure for now during transition
-from app.database import get_db
+# Update legacy import
+from todo_api.config.database import get_db
 from app.config import settings
 from app.models import User
 
@@ -41,7 +41,8 @@ class UserSchema(BaseModel):
     is_active: bool = True
     
     class Config:
-        orm_mode = True
+        # Replace deprecated `orm_mode` with `from_attributes`
+        from_attributes = True
 
 
 class AuthToken(BaseModel):

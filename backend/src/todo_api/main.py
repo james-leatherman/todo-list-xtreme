@@ -7,6 +7,8 @@ middleware, routers, and observability components.
 
 import logging
 from contextlib import asynccontextmanager
+import sys
+from pathlib import Path
 
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +31,9 @@ from .config.database import get_db, engine, check_database_connection, create_t
 from .monitoring.metrics import setup_database_metrics
 from .models import User
 from .api.v1.router import api_router
+
+# Update sys.path logic to include `src` explicitly
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 # Configure logging
 logging.basicConfig(

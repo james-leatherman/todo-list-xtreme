@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 # Import from old structure during transition
 from app.auth import get_current_user
-from app.database import get_db
+from todo_api.config.database import get_db
 from app.models import User, Todo, TodoPhoto, UserColumnSettings
 from app.schemas import Todo as TodoSchema, TodoCreate, TodoUpdate, TodoPhoto as TodoPhotoSchema
 from app.config import settings

@@ -20,3 +20,4 @@ opentelemetry-exporter-otlp
 opentelemetry-instrumentation-fastapi
 opentelemetry-instrumentation-requests
 prometheus_fastapi_instrumentator
+email-validator>=1.0.0

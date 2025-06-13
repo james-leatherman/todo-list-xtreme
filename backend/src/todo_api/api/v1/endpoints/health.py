@@ -16,7 +16,7 @@ try:
     from todo_api.monitoring.metrics import get_current_db_metrics
 except ImportError:
     # Fallback to old structure during transition
-    from app.database import get_db
+    from todo_api.config.database import get_db
     from app.config import settings as app_settings
     from app.models import User
     get_settings = lambda: app_settings

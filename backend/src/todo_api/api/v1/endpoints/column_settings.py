@@ -26,7 +26,7 @@ try:
 except ImportError:
     # Fallback to old structure during transition
     from app.auth import get_current_user
-    from app.database import get_db
+    from todo_api.config.database import get_db
     from app.models import User, UserColumnSettings
     from app.schemas import ColumnSettings as ColumnSettingsSchema
     from app.schemas import ColumnSettingsCreate, ColumnSettingsUpdate

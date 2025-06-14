@@ -102,7 +102,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "db_connections_active{job='database'}",
+          "expr": "db_connections_active{job=\"fastapi\"}",
           "legendFormat": "Active Connections",
           "refId": "A"
         },
@@ -111,7 +111,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "db_connections_idle",
+          "expr": "db_connections_idle{job=\"fastapi\"}",
           "legendFormat": "Idle Connections",
           "refId": "B"
         },
@@ -120,7 +120,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "db_connections_total",
+          "expr": "db_connections_total{job=\"fastapi\"}",
           "legendFormat": "Total Pool Size",
           "refId": "C"
         }
@@ -208,7 +208,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(db_query_total[1m])",
+          "expr": "rate(db_query_total{job=\"fastapi\"}[1m])",
           "legendFormat": "Query Rate - {{operation}}",
           "refId": "A"
         }
@@ -296,7 +296,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[1m]))",
+          "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket{job=\"fastapi\"}[1m]))",
           "legendFormat": "95th percentile",
           "refId": "A"
         },
@@ -305,7 +305,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket[1m]))",
+          "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket{job=\"fastapi\"}[1m]))",
           "legendFormat": "50th percentile (median)",
           "refId": "B"
         },
@@ -314,7 +314,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(db_query_duration_seconds_sum{job='database'}[1m]) / rate(db_query_duration_seconds_count{job='database'}[1m])",
+          "expr": "rate(db_query_duration_seconds_sum{job=\"fastapi\"}[1m]) / rate(db_query_duration_seconds_count{job=\"fastapi\"}[1m])",
           "legendFormat": "Average",
           "refId": "C"
         }
@@ -402,7 +402,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(db_connections_created_total[1m])",
+          "expr": "rate(db_connections_created_total{job=\"fastapi\"}[1m])",
           "legendFormat": "Connections Created/sec",
           "refId": "A"
         },
@@ -411,7 +411,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(db_connections_closed_total[1m])",
+          "expr": "rate(db_connections_closed_total{job=\"fastapi\"}[1m])",
           "legendFormat": "Connections Closed/sec",
           "refId": "B"
         }
@@ -475,7 +475,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "db_connections_created_total",
+          "expr": "db_connections_created_total{job=\"fastapi\"}",
           "legendFormat": "Total Created",
           "refId": "A"
         }
@@ -539,7 +539,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "db_connections_closed_total",
+          "expr": "db_connections_closed_total{job=\"fastapi\"}",
           "legendFormat": "Total Closed",
           "refId": "A"
         }
@@ -603,7 +603,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(db_query_total)",
+          "expr": "sum(db_query_total{job=\"fastapi\"})",
           "legendFormat": "Total Queries",
           "refId": "A"
         }
@@ -671,7 +671,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(db_query_duration_seconds_sum[1m]) / rate(db_query_duration_seconds_count[1m])",
+          "expr": "rate(db_query_duration_seconds_sum{job=\"fastapi\"}[1m]) / rate(db_query_duration_seconds_count{job=\"fastapi\"}[1m])",
           "legendFormat": "Avg Query Duration",
           "refId": "A"
         }

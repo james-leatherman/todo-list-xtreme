@@ -19,7 +19,7 @@
           "legendFormat": "FastAPI API",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         },
         {
@@ -27,7 +27,7 @@
           "legendFormat": "Prometheus",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         },
         {
@@ -35,7 +35,7 @@
           "legendFormat": "OTEL Collector",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         }
       ],
@@ -88,7 +88,7 @@
           "legendFormat": "Up",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         },
         {
@@ -96,7 +96,7 @@
           "legendFormat": "Down",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         }
       ],
@@ -129,7 +129,7 @@
           "legendFormat": "Queries/sec",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         }
       ],
@@ -153,7 +153,7 @@
           "legendFormat": "{{job}} - {{instance}}",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         }
       ],
@@ -205,7 +205,7 @@
           "legendFormat": "{{method}} {{handler}}",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         }
       ],
@@ -234,7 +234,7 @@
           "legendFormat": "95th percentile",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         },
         {
@@ -242,7 +242,7 @@
           "legendFormat": "50th percentile",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         }
       ],
@@ -266,7 +266,7 @@
           "legendFormat": "Samples Appended",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         },
         {
@@ -274,7 +274,7 @@
           "legendFormat": "Active Series",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         }
       ],
@@ -297,7 +297,7 @@
           "legendFormat": "Active Connections",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         },
         {
@@ -305,7 +305,7 @@
           "legendFormat": "Idle Connections",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "prometheus"
           }
         }
       ],

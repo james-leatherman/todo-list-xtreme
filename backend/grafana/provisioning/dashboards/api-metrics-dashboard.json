@@ -117,7 +117,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(http_requests_total{job='api'}[1m])",
+          "expr": "rate(http_requests_total{job='fastapi'}[1m])",
           "refId": "A",
           "legendFormat": "{{method}} {{handler}}"
         }

@@ -8,10 +8,18 @@
       "id": 1,
       "title": "Service Status",
       "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
         {
           "expr": "up",
-          "legendFormat": "{{job}} - {{instance}}"
+          "legendFormat": "{{job}} - {{instance}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0},
@@ -35,10 +43,18 @@
       "id": 2,
       "title": "HTTP Requests per Second",
       "type": "graph",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
         {
           "expr": "rate(http_requests_total[5m])",
-          "legendFormat": "{{method}} {{handler}}"
+          "legendFormat": "{{method}} {{handler}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "gridPos": {"h": 8, "w": 12, "x": 8, "y": 0},
@@ -51,10 +67,18 @@
       "id": 3,
       "title": "Response Time (95th percentile)",
       "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
         {
           "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
-          "legendFormat": "95th percentile"
+          "legendFormat": "95th percentile",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "gridPos": {"h": 6, "w": 4, "x": 20, "y": 0},
@@ -76,10 +100,18 @@
       "id": 4,
       "title": "HTTP Status Codes",
       "type": "graph",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
         {
           "expr": "rate(http_requests_total[5m])",
-          "legendFormat": "{{status}} - {{method}}"
+          "legendFormat": "{{status}} - {{method}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
@@ -88,10 +120,18 @@
       "id": 5,
       "title": "Database Connections",
       "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
         {
           "expr": "pg_stat_database_numbackends",
-          "legendFormat": "Active Connections"
+          "legendFormat": "Active Connections",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}

@@ -448,7 +448,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Todo List Xtreme - Distributed Tracing Dashboard",
+  "title": "Distributed Tracing Dashboard",
   "uid": "tempo-dashboard",
   "version": 1,
   "weekStart": ""

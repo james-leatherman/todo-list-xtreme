@@ -1,5 +1,5 @@
 # Tempo configuration for monolithic deployment
-# Fixes "empty ring" error by properly disabling metrics generator
+# Enable basic metrics generation for TraceQL support
 
 target: all
 
@@ -8,15 +8,28 @@ server:
   grpc_listen_port: 3201
   log_level: info
 
-# Disable metrics generator at module level to prevent ring initialization
+# Configure metrics generator for TraceQL metrics support
 metrics_generator:
-  registry:
-    external_labels: {}
+  ring:
+    kvstore:
+      store: memberlist
+  processor:
+    span_metrics:
+      histogram_buckets: [0.1, 0.5, 1, 2, 5]
+      dimensions:
+        - service_name
+        - operation
+        - status_code
+    local_blocks:
+      flush_check_period: 10s
+      trace_idle_period: 10s
+      max_block_duration: 1m
+      max_block_bytes: 500000000
+      complete_block_timeout: 1h
+      flush_to_storage: true
   storage:
     path: /var/tempo/generator/wal
     remote_write: []
-  traces_storage:
-    path: /var/tempo/generator/traces
 
 distributor:
   receivers:
@@ -47,9 +60,10 @@ storage:
     wal:
       path: /var/tempo/wal
 
-# Completely disable metrics generation to avoid empty ring errors
+# Enable metrics-generator for all tenants  
 overrides:
   defaults:
     metrics_generator:
-      disable_collection: true
-      processors: []
+      processors:
+        - span-metrics
+        - local-blocks

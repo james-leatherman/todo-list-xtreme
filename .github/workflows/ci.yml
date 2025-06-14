@@ -82,8 +82,6 @@ jobs:
         # Generate the token
         TEST_TOKEN=$(python3 generate_token.py)
         echo "TEST_AUTH_TOKEN=$TEST_TOKEN" >> $GITHUB_ENV
-      env:
-        SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
     - name: Run backend tests
       working-directory: ./backend

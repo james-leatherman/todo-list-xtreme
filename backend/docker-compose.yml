@@ -13,6 +13,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=todolist
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/todolist
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
       - CORS_ORIGINS=http://localhost:3000
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}

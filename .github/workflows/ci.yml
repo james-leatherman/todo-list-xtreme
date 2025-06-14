@@ -31,6 +31,8 @@ jobs:
 
     - name: Start backend and DB
       working-directory: ./backend
+      env:
+        SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-secret-key-for-ci-only-do-not-use-in-production' }}
       run: |
         docker-compose up -d db
         docker-compose up -d api
@@ -38,6 +40,8 @@ jobs:
 
     - name: Generate test JWT token
       working-directory: ./backend
+      env:
+        SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-secret-key-for-ci-only-do-not-use-in-production' }}
       run: |
         # Install PyJWT for token generation
         pip install PyJWT
@@ -90,7 +94,7 @@ jobs:
         POSTGRES_PORT: 5432
         POSTGRES_DB: todolist
         DATABASE_URL: postgresql://${{ secrets.DB_USER || 'postgres' }}:${{ secrets.DB_PASSWORD || 'postgres' }}@localhost:5432/todolist
-        SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+        SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-secret-key-for-ci-only-do-not-use-in-production' }}
         CORS_ORIGINS: "http://localhost:3000"
         TEST_AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
       run: pytest

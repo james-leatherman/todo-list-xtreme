@@ -15,7 +15,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 import httpx
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 # Update legacy import
 from todo_api.config.database import get_db
@@ -40,9 +40,7 @@ class UserSchema(BaseModel):
     name: Optional[str] = None
     is_active: bool = True
     
-    class Config:
-        # Replace deprecated `orm_mode` with `from_attributes`
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuthToken(BaseModel):

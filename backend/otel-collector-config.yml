@@ -12,6 +12,12 @@ receivers:
           allowed_headers:
             - "*"
 
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
 exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
@@ -23,12 +29,24 @@ exporters:
     endpoint: tempo:4317
     tls:
       insecure: true
+    timeout: 60s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 2s
+      max_interval: 60s
+      max_elapsed_time: 600s
+    sending_queue:
+      enabled: true
+      num_consumers: 20
+      queue_size: 5000
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
+      processors: [batch]
       exporters: [debug, otlp]
     metrics:
       receivers: [otlp]
+      processors: [batch]
       exporters: [prometheus]

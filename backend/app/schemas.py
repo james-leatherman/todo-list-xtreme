@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field, HttpUrl, Json
+from pydantic import BaseModel, Field, HttpUrl, Json, ConfigDict
 
 
 class TodoPhotoBase(BaseModel):
@@ -20,8 +20,7 @@ class TodoPhoto(TodoPhotoBase):
     todo_id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TodoBase(BaseModel):
@@ -54,8 +53,7 @@ class Todo(TodoBase):
     photos: List[TodoPhoto] = []
     status: Optional[str] = "todo"  # Added status field with default value
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserBase(BaseModel):
@@ -76,8 +74,7 @@ class User(UserBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ColumnSettingsBase(BaseModel):
@@ -103,8 +100,7 @@ class ColumnSettings(ColumnSettingsBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Token(BaseModel):

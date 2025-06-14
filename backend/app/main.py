@@ -31,8 +31,23 @@ app = FastAPI(
 # OpenTelemetry setup
 resource = Resource.create({"service.name": "todo-list-xtreme-api"})
 provider = TracerProvider(resource=resource)
-otlp_exporter = OTLPSpanExporter(endpoint="http://otel-collector:4317", insecure=True)
-span_processor = BatchSpanProcessor(otlp_exporter)
+
+# Configure OTLP exporter with increased timeout and retry settings
+otlp_exporter = OTLPSpanExporter(
+    endpoint="http://otel-collector:4317", 
+    insecure=True,
+    timeout=60  # Increase timeout to 60 seconds
+)
+
+# Configure batch processor with larger batches and longer timeouts
+span_processor = BatchSpanProcessor(
+    otlp_exporter,
+    max_queue_size=8192,      # Increase queue size
+    schedule_delay_millis=5000,  # Wait 5 seconds before sending
+    max_export_batch_size=512,   # Send up to 512 spans at once
+    export_timeout_millis=60000  # 60 second export timeout
+)
+
 provider.add_span_processor(span_processor)
 trace.set_tracer_provider(provider)
 

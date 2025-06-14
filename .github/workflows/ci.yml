@@ -49,11 +49,12 @@ jobs:
         import os
         import sys
 
-        # JWT configuration - use environment variable
+        # JWT configuration - use environment variable with fallback
         secret_key = os.environ.get('SECRET_KEY')
         if not secret_key:
-            print('ERROR: SECRET_KEY environment variable not set', file=sys.stderr)
-            sys.exit(1)
+            # Fallback for CI environments where secret might not be set
+            print('WARNING: SECRET_KEY not found, using default for testing', file=sys.stderr)
+            secret_key = 'test-secret-key-for-ci-only-do-not-use-in-production'
 
         algorithm = 'HS256'
 

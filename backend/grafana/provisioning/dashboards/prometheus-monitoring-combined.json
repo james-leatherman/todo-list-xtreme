@@ -125,7 +125,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "rate(prometheus_engine_queries_total[5m])",
+          "expr": "rate(prometheus_engine_queries[5m])",
           "legendFormat": "Queries/sec",
           "datasource": {
             "type": "prometheus",

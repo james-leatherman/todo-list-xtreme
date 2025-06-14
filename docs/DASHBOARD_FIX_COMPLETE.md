@@ -76,6 +76,36 @@ curl -s "http://localhost:9090/api/v1/query?query=sum(rate(http_requests_total[1
 
 3. **Grafana Restart Automation**: Ensured configuration changes are applied immediately
 
+---
+
+## 🔧 **LATEST UPDATE: Prometheus Engine Queries Metric Fix**
+
+### **Issue Identified**
+The Prometheus Monitoring Dashboard was showing blank panels due to an incorrect metric name.
+
+**Problem**: Dashboard was querying `prometheus_engine_queries_total` which doesn't exist  
+**Solution**: Updated to `prometheus_engine_queries`
+
+### **Fix Applied**
+```json
+// Before (Broken)
+"expr": "rate(prometheus_engine_queries_total[5m])"
+
+// After (Fixed)  
+"expr": "rate(prometheus_engine_queries[5m])"
+```
+
+### **Verification Results**
+- ✅ **188 Prometheus internal metrics** available
+- ✅ **3 service targets** UP and healthy  
+- ✅ **16 HTTP request series** from FastAPI
+- ✅ **60 HTTP duration series** for latency metrics
+- ✅ **Database connection metrics** working
+
+### **Status: All Dashboards Now Functional** ✅
+
+All dashboard panels should now display data correctly after Grafana restart.
+
 ## 🎉 Final Status: DASHBOARD FULLY OPERATIONAL
 
 The dashboard now displays **real-time API metrics** with:

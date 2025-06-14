@@ -2,6 +2,10 @@
 
 This document explains how to set up the required GitHub repository secrets for the CI/CD pipeline.
 
+## 🚨 **Current Status**
+
+**FALLBACK MODE**: The CI pipeline currently uses a fallback test secret when `JWT_SECRET_KEY` is not set. For production security, please set up the GitHub secret as described below.
+
 ## Required Secrets
 
 ### JWT_SECRET_KEY
@@ -9,13 +13,16 @@ This secret is used to generate JWT tokens for authentication during testing.
 
 **Setting up JWT_SECRET_KEY:**
 
-1. **Get the secret key from your local environment:**
+1. **Generate a secure secret key:**
    ```bash
-   # Navigate to the backend directory
-   cd backend
+   # Option 1: Using Python (recommended)
+   python3 -c "import secrets; print(secrets.token_urlsafe(32))"
    
-   # View the SECRET_KEY from your .env file
-   grep SECRET_KEY .env
+   # Option 2: Using OpenSSL
+   openssl rand -base64 32
+   
+   # Option 3: Use existing local secret
+   cd backend && grep SECRET_KEY .env | cut -d'=' -f2
    ```
 
 2. **Add the secret to GitHub:**
@@ -23,8 +30,15 @@ This secret is used to generate JWT tokens for authentication during testing.
    - Navigate to: **Settings** → **Secrets and variables** → **Actions**
    - Click **"New repository secret"**
    - **Name:** `JWT_SECRET_KEY`
-   - **Value:** The SECRET_KEY value from your backend/.env file
+   - **Value:** The secure secret key from step 1
    - Click **"Add secret"**
+
+## ✅ **Verification After Setup**
+
+Once the secret is configured, the CI logs should show:
+- ✅ No "WARNING: SECRET_KEY not found" message
+- ✅ JWT token generation uses the secure secret
+- ✅ All tests pass with proper authentication
 
 ## Optional Secrets
 

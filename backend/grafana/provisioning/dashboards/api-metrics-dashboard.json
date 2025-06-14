@@ -208,18 +208,18 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job='api'}[1m]))",
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job='fastapi'}[1m]))",
           "refId": "A",
-          "legendFormat": "95th percentile"
+          "legendFormat": "{{method}} {{handler}} (95th percentile)"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job='api'}[1m]))",
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job='fastapi'}[1m]))",
           "refId": "B",
-          "legendFormat": "50th percentile"
+          "legendFormat": "{{method}} {{handler}} (50th percentile)"
         }
       ],
       "title": "API Response Time",
@@ -675,7 +675,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket{job='api'}[1m]))",
+          "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket{job='fastapi'}[1m]))",
           "legendFormat": "95th percentile",
           "refId": "A"
         },
@@ -684,7 +684,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket{job='api'}[1m]))",
+          "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket{job='fastapi'}[1m]))",
           "legendFormat": "50th percentile (median)",
           "refId": "B"
         },

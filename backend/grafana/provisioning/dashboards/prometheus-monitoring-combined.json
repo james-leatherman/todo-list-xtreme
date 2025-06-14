@@ -201,7 +201,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(http_requests_total[5m])",
+          "expr": "rate(http_requests_total{job='fastapi'}[5m])",
           "legendFormat": "{{method}} {{handler}}",
           "datasource": {
             "type": "prometheus",
@@ -230,16 +230,16 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
-          "legendFormat": "95th percentile",
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job='fastapi'}[5m]))",
+          "legendFormat": "{{method}} {{handler}} (95th percentile)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           }
         },
         {
-          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
-          "legendFormat": "50th percentile",
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job='fastapi'}[5m]))",
+          "legendFormat": "{{method}} {{handler}} (50th percentile)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"

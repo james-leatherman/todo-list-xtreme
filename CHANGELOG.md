@@ -5,6 +5,47 @@ All notable changes to the Todo List Xtreme project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Changelog
+
+All notable changes to the Todo List Xtreme project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.5.0] - 2025-06-17
+### Changed
+- **BREAKING**: Metrics Module API changes
+  - Refactored Prometheus metrics initialization to use safer fallback mechanisms
+  - Changed internal metric handling to avoid accessing private attributes
+  - Updated metric collection methods to use proper public API
+  - Modified error handling patterns for metric operations
+
+### Fixed
+- **Metrics Module**: Resolved Pylance errors and unknown attribute issues in `metrics.py`
+  - Fixed type safety issues with Prometheus metrics
+  - Replaced internal attribute access with proper public API methods
+  - Added null safety checks for metric operations
+  - Improved error handling and fallback mechanisms
+- **OAuth Authentication**: Enhanced Google OAuth flow debugging and error handling
+  - Improved callback endpoint routing
+  - Enhanced logging for OAuth troubleshooting
+  - Added better error messages for OAuth configuration issues
+- **Development Tools**: Enhanced debugging and development workflow
+  - Added `debug_init.py` script for database initialization debugging
+  - Fixed Pylance import resolution errors in debug scripts
+  - Improved script path handling and error reporting
+  - Fixed import resolution issues in development scripts
+
+### Improved
+- **Code Quality**: Enhanced type safety and static analysis compliance
+  - Added proper type annotations throughout metrics module
+  - Resolved all Pylance import resolution warnings
+  - Improved error handling patterns across the codebase
+- **Documentation**: Updated development documentation and setup guides
+  - Enhanced script usage documentation
+  - Improved troubleshooting guides for OAuth setup
+  - Added better code comments and type hints
+
 ## [1.4.0] - 2025-06-10
 ### Added
 - **Accessibility Enhancements**: Added id/name attributes to all interactive elements including:
@@ -14,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dialog forms and navigation buttons
   - Menu items and confirmation dialogs
 - **Development Scripts System**: Created centralized scripts directory with:
-  - `generate-test-token.sh`: Automatically generates JWT tokens from backend
+  - `create-test-user.sh`: Creates test users and generates JWT tokens, automatically setting them in frontend environment
   - `setup-dev.sh`: Complete development environment setup
   - `demo_db_restore.sh`: Database restoration utility
   - `wipe_db.sh`: Database cleanup utility

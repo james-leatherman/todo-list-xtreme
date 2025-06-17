@@ -194,6 +194,13 @@ def create_application() -> FastAPI:
                 }
             )
     
+    # Add Google OAuth callback route (outside API prefix for Google OAuth compatibility)
+    @app.get("/auth/google/callback")
+    async def google_callback_redirect(code: str, db: Session = Depends(get_db)):
+        """Redirect Google OAuth callback to the proper API endpoint."""
+        from .api.v1.endpoints.auth import google_callback
+        return await google_callback(code, db)
+    
     return app
 
 

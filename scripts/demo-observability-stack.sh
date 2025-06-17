@@ -10,9 +10,13 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# Get project root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 echo -e "${BLUE}📊 Service Status Check:${NC}"
 echo "----------------------------"
-cd /root/todo-list-xtreme/backend
+cd "$PROJECT_ROOT/backend"
 docker-compose ps
 echo ""
 
@@ -78,5 +82,3 @@ echo "  1. Open Grafana and explore the dashboards"
 echo "  2. Create custom queries in Prometheus"
 echo "  3. Monitor your application performance"
 echo "  4. Set up alerts for critical metrics"
-echo ""
-echo "📚 Full documentation: /root/todo-list-xtreme/OBSERVABILITY_SETUP_COMPLETE.md"

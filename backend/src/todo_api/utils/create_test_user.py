@@ -57,13 +57,25 @@ def create_test_user():
         to_encode = {"sub": test_user.email, "exp": expire}
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         
+        # Write token to frontend environment file
+        project_root = os.path.abspath(os.path.join(current_dir, '..', '..', '..', '..'))
+        frontend_env_file = os.path.join(project_root, 'frontend', '.env.development.local')
+        
+        try:
+            # Update the REACT_APP_TEST_TOKEN in the frontend env file
+            with open(frontend_env_file, 'w') as f:
+                f.write(f"REACT_APP_TEST_TOKEN={encoded_jwt}\n")
+            print(f"✓ Updated frontend token in: {frontend_env_file}")
+        except Exception as e:
+            print(f"⚠ Could not update frontend token: {e}")
+        
         print("\n=== Test Auth Information ===")
         print(f"User ID: {user_id}")
         print(f"Email: {test_user.email}")
         print(f"JWT Token: {encoded_jwt}")
         print("============================\n")
         print("You can use this token for testing purposes.")
-        print("Add it to your frontend local storage with key 'token' or use as Authorization: Bearer <token> header.")
+        print("Token has been automatically set in frontend/.env.development.local for development.")
         
     finally:
         db.close()

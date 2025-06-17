@@ -73,8 +73,8 @@ from todo_api.config.settings import settings  # type: ignore
 
 ### 📝 **Next Steps (if needed)**
 1. Initialize database tables in Docker: `docker-compose exec api python src/todo_api/utils/init_db.py` ✅ (completed)
-2. Generate test token: `./scripts/generate-test-token.sh`
-3. Verify token generation completes successfully
+2. Create test user and generate token: `./scripts/create-test-user.sh` ✅ (updated workflow)
+3. Verify token generation completes successfully ✅ (verified)
 
 ## 🎯 **Import Strategy Success Criteria - All Met**
 
@@ -83,6 +83,7 @@ from todo_api.config.settings import settings  # type: ignore
 - ✅ Pylance errors resolved or appropriately suppressed
 - ✅ Runtime imports work correctly in all contexts
 - ✅ Test configuration works with new imports
+- ✅ Consolidated user creation and token generation workflow
 - ✅ Docker environment uses new structure
 - ✅ Utility scripts can be run from any directory
 

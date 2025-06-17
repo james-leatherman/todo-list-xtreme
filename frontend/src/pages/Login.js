@@ -11,13 +11,13 @@ const Login = () => {
   
   const handleGoogleLogin = () => {
     // Redirect to backend endpoint that handles Google OAuth
-    window.location.href = `${process.env.REACT_APP_API_URL}/auth/google/login`;
+    window.location.href = `${process.env.REACT_APP_API_URL}/api/v1/auth/google/login`;
   };
 
   const handleDevLogin = () => {
     const testToken = process.env.REACT_APP_TEST_TOKEN;
     if (!testToken) {
-      const errorMessage = 'Development token not found. Please run ./scripts/generate-test-token.sh from the project root and restart the development server.';
+      const errorMessage = 'Development token not found. Please run ./scripts/create-test-user.sh from the project root and restart the development server.';
       console.error(errorMessage);
       setError(errorMessage);
       return;

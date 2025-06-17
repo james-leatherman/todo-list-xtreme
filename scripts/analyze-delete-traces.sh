@@ -5,6 +5,9 @@
 
 set -e
 
+# Load common test functions
+source "$(dirname "$0")/common-test-functions.sh"
+
 echo "🗑️  DELETE Traces Analysis"
 echo "=========================="
 
@@ -15,6 +18,12 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
+
+# Setup test environment
+if ! setup_test_environment; then
+    echo "❌ Failed to setup test environment"
+    exit 1
+fi
 
 # Function to analyze delete traces
 analyze_delete_traces() {
@@ -89,7 +98,15 @@ generate_delete_traces() {
         echo -e "${GREEN}✅ Got authentication token${NC}"
     else
         echo -e "${YELLOW}⚠️  Authentication failed, trying to create test user...${NC}"
-        cd /root/todo-list-xtreme/backend && python create_test_user.py >/dev/null 2>&1
+        # Try to create test user using relative path
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+        cd "$PROJECT_ROOT/backend" && PYTHONPATH="src:$PYTHONPATH" python3 -c "
+import sys
+sys.path.insert(0, 'src')
+from todo_api.utils.create_test_user import create_test_user
+create_test_user()
+" >/dev/null 2>&1
         TOKEN_RESPONSE=$(curl -s -X POST "http://localhost:8000/auth/token" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=testuser&password=testpass" 2>/dev/null)

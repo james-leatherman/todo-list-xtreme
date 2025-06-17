@@ -4,9 +4,13 @@
 echo "🔐 JWT Token Environment Variable Implementation Test"
 echo "====================================================="
 
+# Get project root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Test the token generation system
 echo "1. Testing JWT token generation..."
-cd /root/todo-list-xtreme
+cd "$PROJECT_ROOT"
 
 if python3 scripts/generate-test-jwt-token.py; then
     echo "✅ JWT token generation works"
@@ -41,7 +45,7 @@ echo
 echo "3. Testing common test functions..."
 
 # Test the common functions
-source scripts/common-test-functions.sh
+source "$SCRIPT_DIR/common-test-functions.sh"
 
 if setup_test_environment; then
     echo "✅ Common test functions work"
@@ -70,12 +74,12 @@ for script in "${scripts_to_test[@]}"; do
     echo "  Testing $script..."
     
     # Run script with timeout to test initialization only
-    if timeout 5s bash -c "cd /root/todo-list-xtreme && ./scripts/$script" >/dev/null 2>&1; then
+    if timeout 5s bash -c "cd '$PROJECT_ROOT' && ./scripts/$script" >/dev/null 2>&1; then
         echo "    ✅ $script: Initialization successful"
         ((success_count++))
     else
         # Check if it failed due to timeout (which means it started successfully)
-        if timeout 2s bash -c "cd /root/todo-list-xtreme && ./scripts/$script" 2>&1 | head -3 | grep -q "Loading environment variables"; then
+        if timeout 2s bash -c "cd '$PROJECT_ROOT' && ./scripts/$script" 2>&1 | head -3 | grep -q "Loading environment variables"; then
             echo "    ✅ $script: Environment loading works (timed out during execution - normal)"
             ((success_count++))
         else

@@ -19,7 +19,7 @@ from .settings import get_settings
 # Import metrics setup - handle gracefully if not available
 try:
     from ..monitoring.metrics import setup_database_metrics
-    _metrics_available = True
+    _metrics_available = False  # Temporarily disable to avoid conflicts
 except ImportError:
     _metrics_available = False
     def setup_database_metrics(engine):
@@ -27,8 +27,8 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# Create base class for SQLAlchemy models
-Base = declarative_base()
+# Import the shared base class from models.base
+from ..models.base import Base
 
 
 @lru_cache()

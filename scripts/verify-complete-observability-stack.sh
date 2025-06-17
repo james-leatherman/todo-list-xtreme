@@ -18,31 +18,17 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Load common test functions
+source "$(dirname "$0")/common-test-functions.sh"
+
 # Configuration
 TIMEOUT=10
 
-# Check if environment file exists
-ENV_FILE="/root/todo-list-xtreme/.env.development.local"
-if [ -f "$ENV_FILE" ]; then
-    echo "📝 Loading environment variables..."
-    source "$ENV_FILE"
-    echo "✅ Environment loaded"
-else
-    echo "⚠️  Environment file not found at $ENV_FILE"
+# Setup test environment
+if ! setup_test_environment; then
+    echo "❌ Failed to setup test environment"
+    exit 1
 fi
-
-# Simple API call function
-api_call() {
-    local method=$1
-    local endpoint=$2
-    local auth_header=""
-    
-    if [ -n "$TEST_JWT_TOKEN" ]; then
-        auth_header="-H \"Authorization: Bearer $TEST_JWT_TOKEN\""
-    fi
-    
-    eval "curl -s -X $method $auth_header http://localhost:8000$endpoint"
-}
 
 # Test functions
 test_step() {
@@ -90,8 +76,12 @@ fi
 test_step "3. Testing frontend OpenTelemetry integration..."
 
 # Check if frontend directory exists and has the required packages
-if [ -d "/root/todo-list-xtreme/frontend" ]; then
-    cd /root/todo-list-xtreme/frontend
+# Check if we're in a frontend directory structure
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+if [ -d "$PROJECT_ROOT/frontend" ]; then
+    cd "$PROJECT_ROOT/frontend"
     
     # Check if node_modules exists and contains OpenTelemetry packages
     if [ -d "node_modules/@opentelemetry" ]; then
@@ -108,7 +98,7 @@ if [ -d "/root/todo-list-xtreme/frontend" ]; then
         test_warning "OpenTelemetry dependencies not found in package.json"
     fi
     
-    cd /root/todo-list-xtreme
+    cd "$PROJECT_ROOT"
 else
     test_error "Frontend directory not found"
 fi

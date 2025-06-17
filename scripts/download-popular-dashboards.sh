@@ -3,7 +3,10 @@
 # Download additional popular Grafana dashboards
 # Usage: ./download-popular-dashboards.sh
 
-DASHBOARDS_DIR="/root/todo-list-xtreme/backend/grafana/provisioning/dashboards"
+# Get project root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DASHBOARDS_DIR="$PROJECT_ROOT/backend/grafana/provisioning/dashboards"
 
 echo "📥 Downloading popular community dashboards..."
 

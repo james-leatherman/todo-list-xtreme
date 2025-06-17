@@ -128,6 +128,18 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
+@router.get("/google/login")
+def google_login():
+    """
+    Initiate Google OAuth authentication flow.
+    Alias for /google endpoint to match frontend expectations.
+    
+    Returns:
+        Redirect to Google OAuth authorization URL
+    """
+    return google_auth()
+
+
 @router.get("/google")
 def google_auth():
     """

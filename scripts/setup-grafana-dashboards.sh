@@ -3,7 +3,10 @@
 # Automated Grafana Dashboard Setup Script
 # This script sets up Grafana dashboards automatically for the Todo List Xtreme project
 
-BACKEND_DIR="/root/todo-list-xtreme/backend"
+# Get project root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+BACKEND_DIR="$PROJECT_ROOT/backend"
 GRAFANA_DIR="$BACKEND_DIR/grafana/provisioning"
 
 echo "🚀 Setting up Grafana dashboards automatically..."

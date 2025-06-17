@@ -119,7 +119,7 @@ npm start
 The `scripts/` directory contains utilities for development:
 
 - **`setup-dev.sh`** - Complete development environment setup
-- **`generate-test-token.sh`** - Generate JWT tokens for testing
+- **`create-test-user.sh`** - Create test user and generate JWT tokens for testing
 - **`demo_db_restore.sh`** - Restore database from snapshot
 - **`wipe_db.sh`** - Clean database
 - **`generate_secrets.sh`** - Generate secret keys

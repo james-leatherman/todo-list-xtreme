@@ -102,14 +102,15 @@ Sets up the development environment:
 ./scripts/setup-dev.sh
 ```
 
-### `generate-test-token.sh`
-Generates a JWT token for development testing:
-- Runs the backend's create_test_user.py script
-- Extracts the JWT token
-- Saves it to `frontend/.env.development.local`
+### `create-test-user.sh`
+Creates a test user and generates a JWT token for development testing:
+- Creates a test user account (test@example.com)
+- Generates a long-lasting JWT token (365 days)
+- Automatically saves the token to `frontend/.env.development.local`
+- Provides comprehensive authentication setup for development
 
 ```bash
-./scripts/generate-test-token.sh
+./scripts/create-test-user.sh
 ```
 
 ### `demo_db_restore.sh`

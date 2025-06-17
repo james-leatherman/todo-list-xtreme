@@ -4,10 +4,18 @@
 
 echo "Starting database wipe for Todo List Xtreme..."
 
+# Get project root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Load environment variables from .env if it exists
-if [ -f .env ]; then
-    echo "Loading environment variables from .env"
-    source .env
+ENV_FILE="$PROJECT_ROOT/.env"
+if [ -f "$ENV_FILE" ]; then
+    echo "Loading environment variables from $ENV_FILE"
+    source "$ENV_FILE"
+elif [ -f "$PROJECT_ROOT/backend/.env" ]; then
+    echo "Loading environment variables from backend/.env"
+    source "$PROJECT_ROOT/backend/.env"
 fi
 
 # Default database connection parameters if not set in environment

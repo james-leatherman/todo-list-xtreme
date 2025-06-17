@@ -5,7 +5,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Generate the test token
 echo "Generating test token..."
-"$PROJECT_ROOT/scripts/generate-test-token.sh"
+"$PROJECT_ROOT/scripts/create-test-user.sh"
 
 # Check if .env file exists, if not create it
 if [ ! -f "$PROJECT_ROOT/frontend/.env" ]; then

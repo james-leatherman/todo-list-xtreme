@@ -13,6 +13,17 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check for token in URL parameters (from OAuth callback)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    
+    if (urlToken) {
+      // Token from OAuth callback, store it and clear URL
+      localStorage.setItem('token', urlToken);
+      // Clear the token from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
     // Check if user is already logged in
     const token = localStorage.getItem('token');
     if (token) {
@@ -30,7 +41,7 @@ export function AuthProvider({ children }) {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
           // Get user info
-          axios.get('/auth/me')
+          axios.get('/api/v1/auth/me')
             .then(response => {
               setUser(response.data);
             })
@@ -57,7 +68,7 @@ export function AuthProvider({ children }) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     
     // Get user info
-    return axios.get('/auth/me')
+    return axios.get('/api/v1/auth/me')
       .then(response => {
         setUser(response.data);
         return response.data;

@@ -4,57 +4,112 @@ Database metrics module for monitoring connection pool usage.
 This module provides comprehensive database monitoring capabilities
 for the Todo List Xtreme API using Prometheus metrics.
 """
-from prometheus_client import Gauge, Counter, Histogram, REGISTRY
+from prometheus_client import Gauge, Counter, Histogram, REGISTRY, CollectorRegistry
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlalchemy.pool import Pool
 import time
 import threading
+from typing import Union, Optional, List, Tuple
 
-# Database connection metrics
-if 'db_connections_active' not in REGISTRY._names_to_collectors:
-    db_connections_active = Gauge(
-        'db_connections_active',
-        'Number of active database connections'
-    )
+# Global references to metrics - properly typed
+db_connections_active: Optional[Gauge] = None
+db_connections_total: Optional[Gauge] = None
+db_connections_idle: Optional[Gauge] = None
+db_connections_created_total: Optional[Counter] = None
+db_connections_closed_total: Optional[Counter] = None
+db_query_duration_seconds: Optional[Histogram] = None
+db_query_total: Optional[Counter] = None
 
-if 'db_connections_total' not in REGISTRY._names_to_collectors:
-    db_connections_total = Gauge(
-        'db_connections_total',
-        'Total number of database connections in pool'
-    )
+def _get_or_create_gauge(name: str, description: str) -> Gauge:
+    """Get existing gauge or create new one."""
+    try:
+        return Gauge(name, description)
+    except ValueError:
+        # Metric already exists, use a simple fallback
+        # Create with a prefix to avoid conflicts
+        return Gauge(f"{name}_fallback", description)
 
-if 'db_connections_idle' not in REGISTRY._names_to_collectors:
-    db_connections_idle = Gauge(
-        'db_connections_idle', 
-        'Number of idle database connections'
-    )
+def _get_or_create_counter(name: str, description: str, labelnames: Optional[List[str]] = None) -> Counter:
+    """Get existing counter or create new one."""
+    try:
+        if labelnames:
+            return Counter(name, description, labelnames)
+        else:
+            return Counter(name, description)
+    except ValueError:
+        # Metric already exists, use a simple fallback
+        if labelnames:
+            return Counter(f"{name}_fallback", description, labelnames)
+        else:
+            return Counter(f"{name}_fallback", description)
 
-if 'db_connections_created_total' not in REGISTRY._names_to_collectors:
-    db_connections_created_total = Counter(
-        'db_connections_created_total',
-        'Total number of database connections created'
-    )
+def _get_or_create_histogram(name: str, description: str, buckets: Optional[Tuple[float, ...]] = None) -> Histogram:
+    """Get existing histogram or create new one."""
+    try:
+        if buckets:
+            return Histogram(name, description, buckets=buckets)
+        else:
+            return Histogram(name, description)
+    except ValueError:
+        # Metric already exists, use a simple fallback
+        if buckets:
+            return Histogram(f"{name}_fallback", description, buckets=buckets)
+        else:
+            return Histogram(f"{name}_fallback", description)
 
-if 'db_connections_closed_total' not in REGISTRY._names_to_collectors:
-    db_connections_closed_total = Counter(
-        'db_connections_closed_total',
-        'Total number of database connections closed'
-    )
+def _initialize_metrics():
+    """Initialize all metrics safely."""
+    global db_connections_active, db_connections_total, db_connections_idle
+    global db_connections_created_total, db_connections_closed_total
+    global db_query_duration_seconds, db_query_total
+    
+    if db_connections_active is None:
+        db_connections_active = _get_or_create_gauge(
+            'db_connections_active', 
+            'Number of active database connections'
+        )
 
-if 'db_query_duration_seconds' not in REGISTRY._names_to_collectors:
-    db_query_duration_seconds = Histogram(
-        'db_query_duration_seconds',
-        'Time spent executing database queries',
-        buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
-    )
+    if db_connections_total is None:
+        db_connections_total = _get_or_create_gauge(
+            'db_connections_total',
+            'Total number of database connections in pool'  
+        )
 
-if 'db_query_total' not in REGISTRY._names_to_collectors:
-    db_query_total = Counter(
-        'db_query_total',
-        'Total number of database queries executed',
-        ['operation']
-    )
+    if db_connections_idle is None:
+        db_connections_idle = _get_or_create_gauge(
+            'db_connections_idle',
+            'Number of idle database connections'
+        )
+
+    if db_connections_created_total is None:
+        db_connections_created_total = _get_or_create_counter(
+            'db_connections_created_total',
+            'Total number of database connections created'
+        )
+
+    if db_connections_closed_total is None:
+        db_connections_closed_total = _get_or_create_counter(
+            'db_connections_closed_total',
+            'Total number of database connections closed'
+        )
+
+    if db_query_duration_seconds is None:
+        db_query_duration_seconds = _get_or_create_histogram(
+            'db_query_duration_seconds',
+            'Time spent executing database queries',
+            buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
+        )
+
+    if db_query_total is None:
+        db_query_total = _get_or_create_counter(
+            'db_query_total',
+            'Total number of database queries executed',
+            ['operation']
+        )
+
+# Initialize metrics on module load
+_initialize_metrics()
 
 # Thread-local storage for query timing
 _local = threading.local()
@@ -67,17 +122,21 @@ def setup_database_metrics(engine: Engine):
     Args:
         engine: SQLAlchemy engine instance
     """
+    # Ensure metrics are initialized
+    _initialize_metrics()
     
     @event.listens_for(engine, "connect")
     def receive_connect(dbapi_connection, connection_record):
         """Called when a connection is created"""
-        db_connections_created_total.inc()
+        if db_connections_created_total:
+            db_connections_created_total.inc()
         _update_connection_pool_metrics(engine)
     
     @event.listens_for(engine, "close")
     def receive_close(dbapi_connection, connection_record):
         """Called when a connection is closed"""
-        db_connections_closed_total.inc()
+        if db_connections_closed_total:
+            db_connections_closed_total.inc()
         _update_connection_pool_metrics(engine)
     
     @event.listens_for(engine, "checkout")
@@ -104,11 +163,13 @@ def setup_database_metrics(engine: Engine):
         """Called after SQL execution"""
         if hasattr(_local, 'query_start_time'):
             duration = time.time() - _local.query_start_time
-            db_query_duration_seconds.observe(duration)
+            if db_query_duration_seconds:
+                db_query_duration_seconds.observe(duration)
             
             # Count the query by operation type
             operation = getattr(context, '_query_operation', 'unknown')
-            db_query_total.labels(operation=operation).inc()
+            if db_query_total:
+                db_query_total.labels(operation=operation).inc()
 
 
 def _update_connection_pool_metrics(engine: Engine):
@@ -122,19 +183,19 @@ def _update_connection_pool_metrics(engine: Engine):
             size_method = getattr(pool, 'size', None)
             if size_method and callable(size_method):
                 size_value = size_method()
-                if isinstance(size_value, (int, float)):
+                if isinstance(size_value, (int, float)) and db_connections_total:
                     db_connections_total.set(float(size_value))
                 
             checkedout_method = getattr(pool, 'checkedout', None)
             if checkedout_method and callable(checkedout_method):
                 checkedout_value = checkedout_method()
-                if isinstance(checkedout_value, (int, float)):
+                if isinstance(checkedout_value, (int, float)) and db_connections_active:
                     db_connections_active.set(float(checkedout_value))
                 
             checkedin_method = getattr(pool, 'checkedin', None)
             if checkedin_method and callable(checkedin_method):
                 checkedin_value = checkedin_method()
-                if isinstance(checkedin_value, (int, float)):
+                if isinstance(checkedin_value, (int, float)) and db_connections_idle:
                     db_connections_idle.set(float(checkedin_value))
                 
         except (AttributeError, TypeError, ValueError):
@@ -187,14 +248,80 @@ def get_current_db_metrics() -> dict:
         Dictionary with current metric values
     """
     try:
-        return {
-            'active_connections': db_connections_active._value.get() if hasattr(db_connections_active._value, 'get') else 0,
-            'total_connections': db_connections_total._value.get() if hasattr(db_connections_total._value, 'get') else 0,
-            'idle_connections': db_connections_idle._value.get() if hasattr(db_connections_idle._value, 'get') else 0,
-            'connections_created': db_connections_created_total._value.get() if hasattr(db_connections_created_total._value, 'get') else 0,
-            'connections_closed': db_connections_closed_total._value.get() if hasattr(db_connections_closed_total._value, 'get') else 0,
-            'total_queries': sum(metric._value.get() for metric in db_query_total._metrics.values()) if db_query_total._metrics else 0
+        # Use safe metric access - these methods should work without accessing private attributes
+        result = {
+            'active_connections': 0,
+            'total_connections': 0, 
+            'idle_connections': 0,
+            'connections_created': 0,
+            'connections_closed': 0,
+            'total_queries': 0
         }
+        
+        # Try to get values through collect() method which is the proper way
+        if db_connections_active:
+            try:
+                for sample in db_connections_active.collect():
+                    for metric in sample.samples:
+                        if metric.name == 'db_connections_active':
+                            result['active_connections'] = int(metric.value)
+                            break
+            except Exception:
+                pass
+                
+        if db_connections_total:
+            try:
+                for sample in db_connections_total.collect():
+                    for metric in sample.samples:
+                        if metric.name == 'db_connections_total':
+                            result['total_connections'] = int(metric.value)
+                            break
+            except Exception:
+                pass
+                
+        if db_connections_idle:
+            try:
+                for sample in db_connections_idle.collect():
+                    for metric in sample.samples:
+                        if metric.name == 'db_connections_idle':
+                            result['idle_connections'] = int(metric.value)
+                            break
+            except Exception:
+                pass
+                
+        if db_connections_created_total:
+            try:
+                for sample in db_connections_created_total.collect():
+                    for metric in sample.samples:
+                        if metric.name == 'db_connections_created_total':
+                            result['connections_created'] = int(metric.value)
+                            break
+            except Exception:
+                pass
+                
+        if db_connections_closed_total:
+            try:
+                for sample in db_connections_closed_total.collect():
+                    for metric in sample.samples:
+                        if metric.name == 'db_connections_closed_total':
+                            result['connections_closed'] = int(metric.value)
+                            break
+            except Exception:
+                pass
+                
+        if db_query_total:
+            try:
+                total_queries = 0
+                for sample in db_query_total.collect():
+                    for metric in sample.samples:
+                        if metric.name == 'db_query_total':
+                            total_queries += metric.value
+                result['total_queries'] = int(total_queries)
+            except Exception:
+                pass
+                
+        return result
+        
     except Exception as e:
         # Return safe defaults if metric access fails
         return {

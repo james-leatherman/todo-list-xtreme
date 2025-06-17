@@ -4,6 +4,10 @@
 echo "🔄 Updating all scripts to use environment variables instead of hardcoded JWT tokens"
 echo "================================================================================="
 
+# Get project root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Scripts to update
 scripts=(
     "test-column-default-restoration.sh"
@@ -12,7 +16,7 @@ scripts=(
 )
 
 for script in "${scripts[@]}"; do
-    script_path="/root/todo-list-xtreme/scripts/$script"
+    script_path="$SCRIPT_DIR/$script"
     
     if [ -f "$script_path" ]; then
         echo "📝 Updating $script..."

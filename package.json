@@ -1,10 +1,10 @@
 {
   "name": "todo-list-xtreme",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "A full-stack to-do list application with photo upload capabilities, responsive design, OAuth authentication, and robust testing utilities.",
   "scripts": {
     "setup-dev": "./scripts/setup-dev.sh",
-    "generate-token": "./scripts/generate-test-token.sh",
+    "generate-token": "./scripts/create-test-user.sh",
     "start:backend": "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
     "start:frontend": "cd frontend && npm start",
     "build:frontend": "cd frontend && npm run build",

@@ -30,7 +30,7 @@ export const todoService = {
         'component': 'frontend',
         'service': 'todo-service'
       });
-      const result = await api.get('/todos/');
+      const result = await api.get('/api/v1/todos/');
       span.setAttributes({
         'todos.count': result.data.length || 0,
         'http.status_code': result.status
@@ -56,7 +56,7 @@ export const todoService = {
         'service': 'todo-service',
         'todo.id': id
       });
-      const result = await api.get(`/todos/${id}/`);
+      const result = await api.get(`/api/v1/todos/${id}/`);
       span.setAttributes({
         'http.status_code': result.status,
         'todo.title': result.data.title || 'unknown'
@@ -89,7 +89,7 @@ export const todoService = {
         todoData.status = todoData.is_completed ? 'done' : 'todo';
       }
       
-      const result = await api.post('/todos', todoData);
+      const result = await api.post('/api/v1/todos', todoData);
       span.setAttributes({
         'http.status_code': result.status,
         'todo.created_id': result.data.id
@@ -130,7 +130,7 @@ export const todoService = {
         todoData.is_completed = false;
       }
       
-      const result = await api.put(`/todos/${id}/`, todoData);
+      const result = await api.put(`/api/v1/todos/${id}/`, todoData);
       span.setAttributes({
         'http.status_code': result.status,
         'todo.status': todoData.status
@@ -156,7 +156,7 @@ export const todoService = {
         'service': 'todo-service',
         'todo.id': id
       });
-      const result = await api.delete(`/todos/${id}/`);
+      const result = await api.delete(`/api/v1/todos/${id}/`);
       span.setAttributes({
         'http.status_code': result.status
       });
@@ -188,7 +188,7 @@ export const todoService = {
       const formData = new FormData();
       formData.append('file', file);
       
-      const result = await api.post(`/todos/${todoId}/photos/`, formData, {
+      const result = await api.post(`/api/v1/todos/${todoId}/photos/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -220,7 +220,7 @@ export const todoService = {
         'todo.id': todoId,
         'photo.id': photoId
       });
-      const result = await api.delete(`/todos/${todoId}/photos/${photoId}/`);
+      const result = await api.delete(`/api/v1/todos/${todoId}/photos/${photoId}/`);
       span.setAttributes({
         'http.status_code': result.status
       });
@@ -247,7 +247,7 @@ export const authService = {
         'component': 'frontend',
         'service': 'auth-service'
       });
-      const result = `/auth/google/login/`;
+      const result = `/api/v1/auth/google/login/`;
       span.setStatus({ code: 1, message: 'Success' });
       return result;
     } catch (error) {
@@ -268,7 +268,7 @@ export const authService = {
         'component': 'frontend',
         'service': 'auth-service'
       });
-      const result = await api.get('/auth/me/');
+      const result = await api.get('/api/v1/auth/me/');
       span.setAttributes({
         'http.status_code': result.status,
         'user.id': result.data.id,
@@ -297,7 +297,7 @@ export const columnSettingsService = {
         'component': 'frontend',
         'service': 'column-settings-service'
       });
-      const result = await api.get('/column-settings');
+      const result = await api.get('/api/v1/column-settings');
       span.setAttributes({
         'http.status_code': result.status,
         'settings.columns_count': result.data.columns?.length || 0
@@ -323,7 +323,7 @@ export const columnSettingsService = {
         'service': 'column-settings-service',
         'settings.columns_count': settings.columns?.length || 0
       });
-      const result = await api.post('/column-settings', settings);
+      const result = await api.post('/api/v1/column-settings', settings);
       span.setAttributes({
         'http.status_code': result.status,
         'settings.id': result.data.id
@@ -349,7 +349,7 @@ export const columnSettingsService = {
         'service': 'column-settings-service',
         'settings.columns_count': settings.columns?.length || 0
       });
-      const result = await api.put('/column-settings', settings);
+      const result = await api.put('/api/v1/column-settings', settings);
       span.setAttributes({
         'http.status_code': result.status
       });

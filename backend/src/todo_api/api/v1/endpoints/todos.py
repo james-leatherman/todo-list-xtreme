@@ -14,14 +14,16 @@ from botocore.exceptions import ClientError
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
 
-# Import from old structure during transition
-from app.auth import get_current_user
+from todo_api.api.v1.endpoints.auth import get_current_user
 from todo_api.config.database import get_db
-from app.models import User, Todo, TodoPhoto, UserColumnSettings
-from app.schemas import Todo as TodoSchema, TodoCreate, TodoUpdate, TodoPhoto as TodoPhotoSchema
-from app.config import settings
+from todo_api.config.settings import settings
+from todo_api.config.logging import get_logger, log_api_call, log_database_operation, log_error
+from todo_api.models import User, Todo, TodoPhoto, UserColumnSettings
+from todo_api.schemas.todo import TodoSchema, TodoCreate, TodoUpdate
+from todo_api.schemas.photo import TodoPhotoSchema
 
 router = APIRouter()
+logger = get_logger("todos")
 
 
 def get_s3_client():
@@ -64,12 +66,18 @@ def get_todos(
     Returns:
         List of todo items for the current user
     """
+    log_api_call(logger, "/", "GET", user_id=current_user.id, skip=skip, limit=limit, status=status)
+    
     query = db.query(Todo).filter(Todo.user_id == current_user.id)
     
     if status:
         query = query.filter(Todo.status == status)
     
     todos = query.offset(skip).limit(limit).all()
+    
+    log_database_operation(logger, "SELECT", "todos", user_id=current_user.id, count=len(todos))
+    logger.info(f"Retrieved {len(todos)} todos", extra={"user_id": current_user.id, "status_filter": status})
+    
     return todos
 
 
@@ -90,11 +98,25 @@ def create_todo(
     Returns:
         Created todo item
     """
-    db_todo = Todo(**todo.dict(), user_id=current_user.id)
-    db.add(db_todo)
-    db.commit()
-    db.refresh(db_todo)
-    return db_todo
+    log_api_call(logger, "/", "POST", user_id=current_user.id, todo_title=todo.title)
+    
+    try:
+        db_todo = Todo(**todo.dict(), user_id=current_user.id)
+        db.add(db_todo)
+        db.commit()
+        db.refresh(db_todo)
+        
+        log_database_operation(logger, "INSERT", "todos", user_id=current_user.id, todo_id=db_todo.id)
+        logger.info(f"Created new todo", extra={"user_id": current_user.id, "todo_id": db_todo.id, "title": todo.title})
+        
+        return db_todo
+    except Exception as e:
+        log_error(logger, e, "create_todo")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create todo"
+        )
 
 
 @router.get("/{todo_id}", response_model=TodoSchema)

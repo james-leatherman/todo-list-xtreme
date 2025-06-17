@@ -3,8 +3,14 @@
 # Get the project root directory (where this script is located)
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Run create_test_user.py and capture its output
-output=$(cd "$PROJECT_ROOT/backend" && python3 create_test_user.py)
+# Set up Python path for the new structure and run create_test_user.py
+output=$(cd "$PROJECT_ROOT/backend" && PYTHONPATH="src:$PYTHONPATH" python3 -c "
+import sys
+import os
+sys.path.insert(0, 'src')
+from todo_api.utils.create_test_user import create_test_user
+create_test_user()
+")
 
 # Extract the JWT token using grep and sed
 token=$(echo "$output" | grep "JWT Token:" | sed 's/JWT Token: //')

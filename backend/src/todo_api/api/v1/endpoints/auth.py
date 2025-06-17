@@ -17,12 +17,13 @@ from sqlalchemy.orm import Session
 import httpx
 from pydantic import BaseModel, ConfigDict
 
-# Update legacy import
 from todo_api.config.database import get_db
-from app.config import settings
-from app.models import User
+from todo_api.config.settings import settings
+from todo_api.config.logging import get_logger, log_api_call, log_authentication_event, log_error
+from todo_api.models import User
 
 router = APIRouter()
+logger = get_logger("auth")
 
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -135,12 +136,20 @@ def google_auth():
     Returns:
         Redirect to Google OAuth authorization URL
     """
+    log_api_call(logger, "/google", "GET")
+    
     # Use the already imported settings object
     if not settings.GOOGLE_CLIENT_ID:
+        log_error(logger, HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google OAuth not configured"
+        ), "google_auth")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Google OAuth not configured"
         )
+    
+    log_authentication_event(logger, "google_oauth_initiated")
     
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
@@ -152,6 +161,7 @@ def google_auth():
     }
     
     google_auth_url = f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
+    logger.info(f"Redirecting to Google OAuth URL", extra={"redirect_url": google_auth_url})
     return RedirectResponse(url=google_auth_url)
 
 
@@ -171,15 +181,20 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
     Raises:
         HTTPException: If OAuth flow fails
     """
+    log_api_call(logger, "/google/callback", "GET", code=code[:10] + "..." if len(code) > 10 else code)
+    
     # Use the already imported settings object
     if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
-        raise HTTPException(
+        error = HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Google OAuth not configured"
         )
+        log_error(logger, error, "google_callback_config")
+        raise error
     
     try:
         # Exchange authorization code for access token
+        logger.info("Exchanging authorization code for access token")
         async with httpx.AsyncClient() as client:
             token_response = await client.post(
                 GOOGLE_TOKEN_URL,
@@ -193,6 +208,7 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
             )
             
             if token_response.status_code != 200:
+                logger.error(f"Token exchange failed with status {token_response.status_code}: {token_response.text}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Failed to exchange authorization code for token"
@@ -202,31 +218,39 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
             access_token = token_data.get("access_token")
             
             if not access_token:
+                logger.error("No access token received from Google")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="No access token received from Google"
                 )
             
             # Get user info from Google
+            logger.info("Fetching user info from Google")
             user_response = await client.get(
                 GOOGLE_USER_INFO_URL,
                 headers={"Authorization": f"Bearer {access_token}"}
             )
             
             if user_response.status_code != 200:
+                logger.error(f"User info fetch failed with status {user_response.status_code}: {user_response.text}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Failed to get user info from Google"
                 )
             
             user_data = user_response.json()
+            user_email = user_data.get("email")
+            
+            logger.info(f"Google OAuth successful for user", extra={"user_email": user_email})
             
             # Create or get user
-            user = db.query(User).filter(User.email == user_data["email"]).first()
+            user = db.query(User).filter(User.email == user_email).first()
             
             if not user:
+                logger.info(f"Creating new user", extra={"user_email": user_email})
+                log_authentication_event(logger, "user_created", user_email)
                 user = User(
-                    email=user_data["email"],
+                    email=user_email,
                     name=user_data.get("name"),
                     google_id=user_data.get("sub"),
                     is_active=True
@@ -235,6 +259,8 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
                 db.commit()
                 db.refresh(user)
             else:
+                logger.info(f"User login", extra={"user_id": user.id, "user_email": user_email})
+                log_authentication_event(logger, "user_login", str(user.id))
                 # Update user info if needed
                 if user.google_id != user_data.get("sub"):
                     user.google_id = user_data.get("sub")
@@ -249,16 +275,24 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
                 expires_delta=access_token_expires
             )
             
+            log_authentication_event(logger, "jwt_token_created", str(user.id))
+            
             # Redirect to frontend with token
             frontend_url = f"{settings.FRONTEND_URL}?token={jwt_token}"
+            logger.info(f"Redirecting to frontend", extra={"user_id": user.id, "frontend_url": settings.FRONTEND_URL})
             return RedirectResponse(url=frontend_url)
             
-    except httpx.RequestError:
+    except httpx.RequestError as e:
+        log_error(logger, e, "google_oauth_request")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to communicate with Google OAuth service"
         )
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
+        log_error(logger, e, "google_oauth_general")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Authentication failed: {str(e)}"
@@ -319,6 +353,8 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     Returns:
         Current user information
     """
+    log_api_call(logger, "/me", "GET", user_id=current_user.id)
+    logger.info(f"User info requested", extra={"user_id": current_user.id, "user_email": current_user.email})
     return current_user
 
 
@@ -334,4 +370,7 @@ def logout():
     Returns:
         Success message
     """
+    log_api_call(logger, "/logout", "POST")
+    log_authentication_event(logger, "user_logout")
+    logger.info("User logout requested")
     return {"message": "Successfully logged out"}

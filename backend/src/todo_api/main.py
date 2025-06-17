@@ -28,6 +28,7 @@ from opentelemetry import trace
 
 from .config.settings import settings
 from .config.database import get_db, engine, check_database_connection, create_tables
+from .config.logging import setup_logging, RequestResponseLoggingMiddleware, get_logger
 from .monitoring.metrics import setup_database_metrics
 from .models import User
 from .api.v1.router import api_router
@@ -35,12 +36,14 @@ from .api.v1.router import api_router
 # Update sys.path logic to include `src` explicitly
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+# Setup comprehensive logging
+log_file = getattr(settings, 'LOG_FILE', None)
+setup_logging(
+    log_level=getattr(settings, 'LOG_LEVEL', 'INFO'),
+    log_format=getattr(settings, 'LOG_FORMAT', 'json'),
+    log_file=log_file if log_file else None
 )
-logger = logging.getLogger(__name__)
+logger = get_logger("main")
 
 
 def setup_opentelemetry() -> None:
@@ -146,6 +149,9 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
+    # Add request/response logging middleware
+    app.add_middleware(RequestResponseLoggingMiddleware)
     
     # Include API routers
     app.include_router(api_router, prefix=settings.API_V1_STR)

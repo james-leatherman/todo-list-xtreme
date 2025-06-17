@@ -24,7 +24,7 @@ services:
     depends_on:
       - db
       - otel-collector
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn src.todo_api.main:app --host 0.0.0.0 --port 8000 --reload
 
   db:
     image: postgres:15

@@ -15,16 +15,17 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-# Add src directory to path for new structure imports
+# Add src directory to Python path for imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', 'src')
+backend_dir = os.path.dirname(current_dir)
+src_dir = os.path.join(backend_dir, 'src')
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
-# Import from old structure (during transition period)
-from app.database import Base, get_db
-from app.models import User, Todo, UserColumnSettings
-from app.main import app
+# Import from todo_api structure (pyproject.toml pythonpath handles this for pytest)
+from todo_api.config.database import Base, get_db  # type: ignore
+from todo_api.models import User, Todo, UserColumnSettings  # type: ignore
+from todo_api.main import app  # type: ignore
 
 # Test database URL - using SQLite for testing
 TEST_DATABASE_URL = "sqlite:///./test.db"

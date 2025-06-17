@@ -11,27 +11,20 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-# Import from new structure with fallback to old
-try:
-    from todo_api.config.database import get_db
-    from todo_api.models import User, UserColumnSettings
-    from todo_api.schemas.column_settings import (
-        ColumnSettingsSchema,
-        ColumnSettingsCreate,
-        ColumnSettingsUpdate,
-        DefaultColumnSettings,
-        ColumnSettingsResponse
-    )
-    from todo_api.core.auth import get_current_user
-except ImportError:
-    # Fallback to old structure during transition
-    from app.auth import get_current_user
-    from todo_api.config.database import get_db
-    from app.models import User, UserColumnSettings
-    from app.schemas import ColumnSettings as ColumnSettingsSchema
-    from app.schemas import ColumnSettingsCreate, ColumnSettingsUpdate
+from todo_api.config.database import get_db
+from todo_api.config.logging import get_logger, log_api_call, log_database_operation, log_error
+from todo_api.models import User, UserColumnSettings
+from todo_api.schemas.column_settings import (
+    ColumnSettingsSchema,
+    ColumnSettingsCreate,
+    ColumnSettingsUpdate,
+    DefaultColumnSettings,
+    ColumnSettingsResponse
+)
+from todo_api.api.v1.endpoints.auth import get_current_user
 
 router = APIRouter()
+logger = get_logger("column_settings")
 
 
 @router.get("/", response_model=ColumnSettingsSchema)

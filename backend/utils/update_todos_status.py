@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 # Update existing todos to have a status value based on their completion status
 
+import sys
+import os
+
+# Add src directory to path
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(os.path.dirname(backend_dir), 'src')
+sys.path.insert(0, src_dir)
+
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine
-from app.models import Todo
+from todo_api.config.database import SessionLocal, engine  # type: ignore
+from todo_api.models import Todo  # type: ignore
 
 def update_todos_status():
     db = SessionLocal()

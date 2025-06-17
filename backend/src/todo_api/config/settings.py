@@ -74,6 +74,11 @@ class Settings(BaseSettings):
     ENABLE_METRICS: bool = True
     ENABLE_TRACING: bool = True
     
+    # Logging settings
+    LOG_LEVEL: str = "INFO"
+    LOG_FORMAT: str = "json"  # "json" or "standard"
+    LOG_FILE: Optional[str] = None  # Path to log file, None for console only
+    
     # Development settings
     DEBUG: bool = False
     TESTING: bool = False

@@ -17,8 +17,8 @@ try:
 except ImportError:
     # Fallback to old structure during transition
     from todo_api.config.database import get_db
-    from app.config import settings as app_settings
-    from app.models import User
+    from todo_api.config import settings as app_settings
+    from todo_api.models import User
     get_settings = lambda: app_settings
     check_database_connection = None
     get_current_db_metrics = lambda: {}

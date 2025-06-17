@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
 # Add status column to todos table
 
+import os
+import sys
 import psycopg2
-from app.config import settings
+
+# Add src directory to Python path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.dirname(os.path.dirname(current_dir))
+if src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
+
+# Import from todo_api structure (using type: ignore for Pylance)
+from todo_api.config.settings import settings  # type: ignore
 
 def add_status_column():
     # Connect to the database

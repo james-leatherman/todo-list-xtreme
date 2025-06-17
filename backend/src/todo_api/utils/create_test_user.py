@@ -1,12 +1,20 @@
+import sys
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import os
-
-from app.models import User, Base
-from app.config import settings
-from app.database import get_db
 from jose import jwt
 from datetime import datetime, timedelta, timezone
+
+# Add src directory to Python path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.dirname(os.path.dirname(current_dir))
+if src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
+
+# Import from todo_api structure (using type: ignore for Pylance)
+from todo_api.models import User, Base  # type: ignore
+from todo_api.config.settings import settings  # type: ignore
+from todo_api.config.database import get_db  # type: ignore
 
 # Create a test user and a JWT token for testing purposes
 

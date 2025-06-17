@@ -5,16 +5,16 @@ import os
 import sys
 from sqlalchemy import text
 
-# Add the current directory to the path so we can import app modules
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add the src directory to the path so we can import todo_api modules
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.dirname(os.path.dirname(current_dir))
+if src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
 
-try:
-    from app.database import engine, Base
-    from app.models import User, Todo, TodoPhoto
-    from app.config import settings
-except ImportError as e:
-    print(f"Error importing necessary modules: {e}")
-    sys.exit(1)
+# Import from todo_api structure (using type: ignore for Pylance)
+from todo_api.config.database import engine, Base  # type: ignore
+from todo_api.models import User, Todo, TodoPhoto  # type: ignore
+from todo_api.config.settings import settings  # type: ignore
 
 def wipe_db():
     """

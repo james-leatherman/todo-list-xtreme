@@ -69,7 +69,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
     
     # Monitoring and observability
-    OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4317"
+    OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4318"
     OTEL_RESOURCE_ATTRIBUTES: str = "service.name=todo-list-xtreme-api"
     ENABLE_METRICS: bool = True
     ENABLE_TRACING: bool = True

@@ -4,6 +4,13 @@
 
 set -e
 
+# Fix NODE_OPTIONS issue that can cause MODULE_NOT_FOUND errors
+if [[ "$NODE_OPTIONS" == *"bootloader.js"* ]]; then
+    echo "🔧 Clearing problematic NODE_OPTIONS to fix VS Code debugger conflict..."
+    unset NODE_OPTIONS
+    export NODE_OPTIONS=""
+fi
+
 echo "🔧 Setting up test environment..."
 
 # Load environment variables from .env file if it exists
@@ -71,6 +78,6 @@ echo "🔑 Token (first 50 chars): ${TEST_AUTH_TOKEN:0:50}..."
 # Run tests
 echo "🧪 Running backend tests..."
 source ../backend/venv/bin/activate
-pytest "$@" -v
+pytest "$@" -v --tb=short -s
 
 echo "✅ Tests completed!"

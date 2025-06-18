@@ -27,7 +27,7 @@ def test_api_endpoints():
     
     # Get all todos
     print("\n3. Testing get todos endpoint...")
-    resp = requests.get(f"{base_url}/todos/", headers=headers)
+    resp = requests.get(f"{base_url}/api/v1/todos/", headers=headers)
     print(f"Status: {resp.status_code}")
     todos = resp.json() if resp.status_code == 200 else []
     print(f"Found {len(todos)} todos")
@@ -38,7 +38,7 @@ def test_api_endpoints():
         "title": "Test API Integration",
         "description": "Testing that the API and frontend work together"
     }
-    resp = requests.post(f"{base_url}/todos/", headers=headers, json=new_todo)
+    resp = requests.post(f"{base_url}/api/v1/todos/", headers=headers, json=new_todo)
     print(f"Status: {resp.status_code}")
     print(f"Response: {resp.json() if resp.status_code in [200, 201] else resp.text}")
     
@@ -46,7 +46,7 @@ def test_api_endpoints():
     if resp.status_code in [200, 201]:
         todo_id = resp.json().get("id")
         print(f"\n5. Testing get todo by ID endpoint (ID: {todo_id})...")
-        resp = requests.get(f"{base_url}/todos/{todo_id}/", headers=headers)
+        resp = requests.get(f"{base_url}/api/v1/todos/{todo_id}/", headers=headers)
         print(f"Status: {resp.status_code}")
         print(f"Response: {resp.json() if resp.status_code == 200 else resp.text}")
         
@@ -57,13 +57,13 @@ def test_api_endpoints():
             "description": "This todo was updated via API test",
             "is_completed": True
         }
-        resp = requests.put(f"{base_url}/todos/{todo_id}/", headers=headers, json=update_data)
+        resp = requests.put(f"{base_url}/api/v1/todos/{todo_id}/", headers=headers, json=update_data)
         print(f"Status: {resp.status_code}")
         print(f"Response: {resp.json() if resp.status_code == 200 else resp.text}")
     
     # Create sample todos
     print("\n7. Testing create sample todos endpoint...")
-    resp = requests.post(f"{base_url}/todos/test/create-sample-todos/", headers=headers)
+    resp = requests.post(f"{base_url}/api/v1/todos/test/create-sample-todos/", headers=headers)
     print(f"Status: {resp.status_code}")
     sample_todos = resp.json() if resp.status_code == 200 else []
     print(f"Created {len(sample_todos)} sample todos")

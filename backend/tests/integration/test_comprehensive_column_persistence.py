@@ -95,7 +95,7 @@ def test_column_persistence(auth_token):
     }
     
     try:
-        response = requests.post(f'{base_url}/todos', headers=headers, json=todo_payload)
+        response = requests.post(f'{base_url}/api/v1/todos/', headers=headers, json=todo_payload)
         assert response.status_code == 201, f"Failed to create test todo: {response.status_code}\n{response.text}"
         todo_id = response.json()['id']
         print(f"Created test todo with ID: {todo_id}")
@@ -124,7 +124,7 @@ def test_column_persistence(auth_token):
     
     # Clean up - delete the test todo if needed
     try:
-        response = requests.delete(f'{base_url}/todos/{todo_id}/', headers=headers)
+        response = requests.delete(f'{base_url}/api/v1/todos/{todo_id}/', headers=headers)
         assert response.status_code == 204, f"Failed to clean up test todo: {response.status_code}"
         print(f"Cleaned up test todo with ID: {todo_id}")
     except Exception as e:

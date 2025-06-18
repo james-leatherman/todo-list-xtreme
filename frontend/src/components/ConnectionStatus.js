@@ -7,7 +7,6 @@ import { columnSettingsService } from '../services/api';
  */
 function ConnectionStatus() {
   const [isConnected, setIsConnected] = useState(true);
-  const [lastChecked, setLastChecked] = useState(new Date());
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -20,7 +19,6 @@ function ConnectionStatus() {
           setIsConnected(false);
         }
       }
-      setLastChecked(new Date());
     };
 
     // Check connection immediately

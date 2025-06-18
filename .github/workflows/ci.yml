@@ -31,17 +31,30 @@ jobs:
 
     - name: Start backend and DB
       working-directory: ./backend
-      env:
-        SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-secret-key-for-ci-only-do-not-use-in-production' }}
       run: |
         docker-compose up -d db
         docker-compose up -d api
         sleep 10
 
-    - name: Generate test JWT token
+    - name: Setup database and create test user
       working-directory: ./backend
       env:
-        SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-secret-key-for-ci-only-do-not-use-in-production' }}
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_SERVER: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: todolist
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/todolist
+        SECRET_KEY: supersecretkey
+      run: |
+        # Initialize database tables
+        python -m src.todo_api.utils.init_db
+        
+        # Create test user
+        python -m src.todo_api.utils.create_test_user
+
+    - name: Generate test JWT token
+      working-directory: ./backend
       run: |
         # Install PyJWT for token generation
         pip install PyJWT
@@ -53,13 +66,8 @@ jobs:
         import os
         import sys
 
-        # JWT configuration - use environment variable with fallback
-        secret_key = os.environ.get('SECRET_KEY')
-        if not secret_key:
-            # Fallback for CI environments where secret might not be set
-            print('WARNING: SECRET_KEY not found, using default for testing', file=sys.stderr)
-            secret_key = 'test-secret-key-for-ci-only-do-not-use-in-production'
-
+        # JWT configuration - use the same secret as the backend default
+        secret_key = 'supersecretkey'
         algorithm = 'HS256'
 
         # Create token payload
@@ -81,7 +89,9 @@ jobs:
         
         # Generate the token
         TEST_TOKEN=$(python3 generate_token.py)
-        echo "TEST_AUTH_TOKEN=$TEST_TOKEN" >> $GITHUB_ENV      - name: Wait for Backend
+        echo "TEST_AUTH_TOKEN=$TEST_TOKEN" >> $GITHUB_ENV
+
+    - name: Wait for Backend
         run: |
           attempt=1
           max_attempts=10
@@ -105,13 +115,13 @@ jobs:
     - name: Run backend tests
       working-directory: ./backend
       env:
-        POSTGRES_USER: ${{ secrets.DB_USER || 'postgres' }}
-        POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD || 'postgres' }}
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
         POSTGRES_SERVER: localhost
         POSTGRES_PORT: 5432
         POSTGRES_DB: todolist
-        DATABASE_URL: postgresql://${{ secrets.DB_USER || 'postgres' }}:${{ secrets.DB_PASSWORD || 'postgres' }}@localhost:5432/todolist
-        SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-secret-key-for-ci-only-do-not-use-in-production' }}
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/todolist
+        SECRET_KEY: supersecretkey
         CORS_ORIGINS: "http://localhost:3000"
         TEST_AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
       run: pytest

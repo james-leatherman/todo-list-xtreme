@@ -20,7 +20,7 @@ def test_empty_column_persistence(auth_token):
         'done': {'id': 'done', 'title': 'Completed', 'taskIds': []},
         'empty-test': {'id': 'empty-test', 'title': 'Empty Test Column', 'taskIds': []}
     }
-    test_column_order = ['todo', 'inProgress', 'blocked', 'empty-test', 'done']
+    test_column_order = ['todo', 'inProgress', 'blocked', 'done', 'empty-test']
     
     # Save settings
     settings_payload = {

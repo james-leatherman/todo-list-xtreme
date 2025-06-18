@@ -106,16 +106,13 @@ def create_column_settings(
     # Create new settings
     db_settings = UserColumnSettings(
         user_id=current_user.id,
-        columns_config=json.dumps({
-            k: v.model_dump() if hasattr(v, 'model_dump') else v 
-            for k, v in settings.columns_config.items()
-        }),
+        columns_config=json.dumps(settings.columns_config),
         column_order=json.dumps(settings.column_order)
     )
-    
     db.add(db_settings)
     db.commit()
     db.refresh(db_settings)
+
     logger.info(f"Created column settings for user {current_user.id}")
     return db_settings
 

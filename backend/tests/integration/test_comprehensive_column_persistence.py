@@ -122,6 +122,20 @@ def test_column_persistence(auth_token):
         print(f"Error verifying column settings: {e}")
         assert False, f"Error verifying column settings: {e}"
     
+    # Step 6: Verify the new Todo is added to the correct column
+    print("\n=== Step 6: Verifying Todo assignment to column ===")
+    try:
+        response = requests.get(f'{base_url}/api/v1/column-settings/', headers=headers)
+        assert response.status_code == 200, f"Failed to get column settings: {response.status_code}\n{response.text}"
+        settings = response.json()
+        saved_columns = settings['columns_config']
+        in_progress_tasks = saved_columns['inProgress']['taskIds']
+        assert todo_id in in_progress_tasks or str(todo_id) in in_progress_tasks, f"Todo {todo_id} not found in 'inProgress' column tasks: {in_progress_tasks}"
+        print("SUCCESS: Todo assigned to the correct column")
+    except Exception as e:
+        print(f"Error verifying Todo assignment: {e}")
+        assert False, f"Error verifying Todo assignment: {e}"
+    
     # Clean up - delete the test todo if needed
     try:
         response = requests.delete(f'{base_url}/api/v1/todos/{todo_id}/', headers=headers)

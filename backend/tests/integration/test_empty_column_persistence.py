@@ -63,3 +63,16 @@ def test_empty_column_persistence(auth_token):
     except Exception as e:
         print(f"Error retrieving settings: {e}")
         assert False, f"Error retrieving settings: {e}"
+    
+    # Verify column order
+    print("\n=== Step 3: Verifying column order ===")
+    try:
+        response = requests.get(f'{base_url}/api/v1/column-settings/', headers=headers)
+        assert response.status_code == 200, f"Failed to get column settings: {response.status_code}\n{response.text}"
+        settings = response.json()
+        retrieved_order = settings['column_order']
+        assert retrieved_order == test_column_order, f"Expected column order: {test_column_order}, Got: {retrieved_order}"
+        print("SUCCESS: Column order is correct")
+    except Exception as e:
+        print(f"Error verifying column order: {e}")
+        assert False, f"Error verifying column order: {e}"

@@ -7,6 +7,7 @@ including CRUD operations, photo uploads, and bulk operations.
 
 import os
 import uuid
+import json
 from typing import List, Optional
 
 import boto3
@@ -105,7 +106,19 @@ def create_todo(
         db.add(db_todo)
         db.commit()
         db.refresh(db_todo)
-        
+
+        # Assign the todo to the correct column
+        column = db.query(UserColumnSettings).filter(
+            UserColumnSettings.user_id == current_user.id
+        ).first()
+
+        if column:
+            columns_config = json.loads(column.columns_config)
+            if todo.status in columns_config:
+                columns_config[todo.status]['taskIds'].append(db_todo.id)
+                column.columns_config = json.dumps(columns_config)
+                db.commit()
+
         log_database_operation(logger, "INSERT", "todos", user_id=current_user.id, todo_id=db_todo.id)
         logger.info(f"Created new todo", extra={"user_id": current_user.id, "todo_id": db_todo.id, "title": todo.title})
         

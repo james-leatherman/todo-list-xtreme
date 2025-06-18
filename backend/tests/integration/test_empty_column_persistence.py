@@ -2,7 +2,6 @@
 """
 Test script for column persistence with empty columns
 """
-import json
 import requests
 import sys
 import pytest
@@ -52,8 +51,8 @@ def test_empty_column_persistence(auth_token):
         )
         assert response.status_code == 200, f"FAILED: Could not retrieve settings: {response.status_code}\n{response.text}"
         settings = response.json()
-        retrieved_columns = json.loads(settings['columns_config'])
-        retrieved_order = json.loads(settings['column_order'])
+        retrieved_columns = settings['columns_config']
+        retrieved_order = settings['column_order']
         assert 'empty-test' in retrieved_columns, "FAILED: Empty test column NOT found in retrieved data"
         position = retrieved_order.index('empty-test') if 'empty-test' in retrieved_order else -1
         assert position == 2, f"WARNING: Column order changed, expected at position 2, found at {position}"

@@ -3,7 +3,6 @@
 Comprehensive test script for column persistence in Todo List Xtreme
 Tests both empty columns and column order persistence
 """
-import json
 import requests
 import sys
 import time
@@ -76,8 +75,8 @@ def test_column_persistence(auth_token):
         response = requests.get(f'{base_url}/api/v1/column-settings/', headers=headers)
         assert response.status_code == 200, f"Failed to get column settings: {response.status_code}\n{response.text}"
         settings = response.json()
-        saved_columns = json.loads(settings['columns_config'])
-        saved_order = json.loads(settings['column_order'])
+        saved_columns = settings['columns_config']
+        saved_order = settings['column_order']
         assert 'empty-test' in saved_columns and 'another-empty' in saved_columns, f"Empty test columns NOT found in saved data: {list(saved_columns.keys())}"
         assert saved_order == test_column_order, f"Column order not persisted correctly. Expected: {test_column_order}, Got: {saved_order}"
         print("Initial verification successful!")
@@ -111,8 +110,8 @@ def test_column_persistence(auth_token):
         response = requests.get(f'{base_url}/api/v1/column-settings/', headers=headers)
         assert response.status_code == 200, f"Failed to get column settings: {response.status_code}\n{response.text}"
         settings = response.json()
-        saved_columns = json.loads(settings['columns_config'])
-        saved_order = json.loads(settings['column_order'])
+        saved_columns = settings['columns_config']
+        saved_order = settings['column_order']
         assert 'empty-test' in saved_columns and 'another-empty' in saved_columns, f"Empty test columns were lost after todo creation: {list(saved_columns.keys())}"
         assert saved_order == test_column_order, f"Column order changed after todo creation. Expected: {test_column_order}, Got: {saved_order}"
         in_progress_tasks = saved_columns['inProgress']['taskIds']

@@ -72,8 +72,8 @@ def test_column_settings(auth_token):
     response = requests.get(COLUMN_SETTINGS_URL, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        saved_columns = json.loads(data["columns_config"]) if data["columns_config"] else None
-        saved_order = json.loads(data["column_order"]) if data["column_order"] else None
+        saved_columns = data["columns_config"] if data["columns_config"] else None
+        saved_order = data["column_order"] if data["column_order"] else None
         
         if (saved_columns and "custom" in saved_columns and 
             saved_order and "custom" in saved_order):

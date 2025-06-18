@@ -25,7 +25,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -80,7 +81,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m]))",
           "legendFormat": "Total Requests/sec",
@@ -93,7 +95,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -148,7 +151,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le))",
           "legendFormat": "P99 Latency",
@@ -161,7 +165,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -216,7 +221,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "(sum(rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_ERROR\"}[5m])) / sum(rate(traces_spanmetrics_calls_total[5m]))) * 100",
           "legendFormat": "Error Rate",
@@ -229,7 +235,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -284,7 +291,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "count(count by (service)(traces_spanmetrics_calls_total))",
           "legendFormat": "Active Services",
@@ -297,7 +305,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -375,7 +384,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m])) by (service)",
           "legendFormat": "{{service}}",
@@ -388,7 +398,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -466,7 +477,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service))",
           "legendFormat": "P99 - {{service}}",
@@ -475,7 +487,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service))",
           "legendFormat": "P95 - {{service}}",
@@ -484,7 +497,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "histogram_quantile(0.50, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service))",
           "legendFormat": "P50 - {{service}}",
@@ -497,7 +511,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -575,7 +590,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m])) by (span_name)",
           "legendFormat": "{{span_name}}",
@@ -588,7 +604,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -666,7 +683,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_OK\"}[5m])) by (service)",
           "legendFormat": "Success - {{service}}",
@@ -675,7 +693,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_ERROR\"}[5m])) by (service)",
           "legendFormat": "Error - {{service}}",
@@ -684,7 +703,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_UNSET\"}[5m])) by (service)",
           "legendFormat": "Unset - {{service}}",
@@ -697,7 +717,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -745,7 +766,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m])) by (service)",
           "legendFormat": "{{service}}",
@@ -758,7 +780,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -806,7 +829,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m])) by (status_code)",
           "legendFormat": "{{status_code}}",
@@ -819,7 +843,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -910,7 +935,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service, span_name))",
           "format": "table",
@@ -943,7 +969,8 @@
     {
       "datasource": {
         "type": "tempo",
-        "uid": "tempo"
+        "uid": "tempo-main",
+        "name": "Tempo"
       },
       "fieldConfig": {
         "defaults": {
@@ -998,7 +1025,8 @@
         {
           "datasource": {
             "type": "tempo",
-            "uid": "tempo"
+            "uid": "tempo-main",
+            "name": "Tempo"
           },
           "limit": 20,
           "query": "{ duration > 100ms }",
@@ -1012,7 +1040,8 @@
     {
       "datasource": {
         "type": "tempo",
-        "uid": "tempo"
+        "uid": "tempo-main",
+        "name": "Tempo"
       },
       "fieldConfig": {
         "defaults": {
@@ -1067,7 +1096,8 @@
         {
           "datasource": {
             "type": "tempo",
-            "uid": "tempo"
+            "uid": "tempo-main",
+            "name": "Tempo"
           },
           "limit": 20,
           "query": "{ status = error }",
@@ -1097,7 +1127,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Comprehensive Tempo Dashboard",
-  "uid": "comprehensive-tempo-dashboard",
+  "uid": "comprehensive-tempo",
   "version": 1,
   "weekStart": ""
 }

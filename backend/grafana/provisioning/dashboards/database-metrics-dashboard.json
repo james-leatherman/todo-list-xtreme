@@ -25,7 +25,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -100,7 +101,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "db_connections_active{job=\"fastapi\"}",
           "legendFormat": "Active Connections",
@@ -109,7 +111,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "db_connections_idle{job=\"fastapi\"}",
           "legendFormat": "Idle Connections",
@@ -118,7 +121,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "db_connections_total{job=\"fastapi\"}",
           "legendFormat": "Total Pool Size",
@@ -131,7 +135,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -206,7 +211,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(db_query_total{job=\"fastapi\"}[1m])",
           "legendFormat": "Query Rate - {{operation}}",
@@ -219,7 +225,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -294,7 +301,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket{job=\"fastapi\"}[1m]))",
           "legendFormat": "95th percentile",
@@ -303,7 +311,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket{job=\"fastapi\"}[1m]))",
           "legendFormat": "50th percentile (median)",
@@ -312,7 +321,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(db_query_duration_seconds_sum{job=\"fastapi\"}[1m]) / rate(db_query_duration_seconds_count{job=\"fastapi\"}[1m])",
           "legendFormat": "Average",
@@ -325,7 +335,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -400,7 +411,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(db_connections_created_total{job=\"fastapi\"}[1m])",
           "legendFormat": "Connections Created/sec",
@@ -409,7 +421,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(db_connections_closed_total{job=\"fastapi\"}[1m])",
           "legendFormat": "Connections Closed/sec",
@@ -422,7 +435,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -473,7 +487,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "db_connections_created_total{job=\"fastapi\"}",
           "legendFormat": "Total Created",
@@ -486,7 +501,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -537,7 +553,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "db_connections_closed_total{job=\"fastapi\"}",
           "legendFormat": "Total Closed",
@@ -550,7 +567,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -601,7 +619,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "sum(db_query_total{job=\"fastapi\"})",
           "legendFormat": "Total Queries",
@@ -614,7 +633,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -669,7 +689,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(db_query_duration_seconds_sum{job=\"fastapi\"}[1m]) / rate(db_query_duration_seconds_count{job=\"fastapi\"}[1m])",
           "legendFormat": "Avg Query Duration",

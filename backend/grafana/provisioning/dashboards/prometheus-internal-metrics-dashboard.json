@@ -25,7 +25,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -80,7 +81,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_tsdb_symbol_table_size_bytes{job=\"prometheus\"}",
           "legendFormat": "Symbol Table Size",
@@ -93,7 +95,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -148,7 +151,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_engine_queries{job=\"prometheus\"}[5m])",
           "legendFormat": "Query Rate",
@@ -161,7 +165,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -216,7 +221,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_engine_query_duration_seconds{job=\"prometheus\",quantile=\"0.5\",slice=\"inner_eval\"}",
           "legendFormat": "Avg Query Duration",
@@ -229,7 +235,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -284,7 +291,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_tsdb_head_series{job=\"prometheus\"}",
           "legendFormat": "Head Series",
@@ -297,7 +305,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -375,7 +384,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_engine_queries{job=\"prometheus\"}",
           "legendFormat": "Concurrent Queries",
@@ -384,7 +394,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_engine_query_log_failures_total{job=\"prometheus\"}[5m])",
           "legendFormat": "Query Log Failures Rate",
@@ -397,7 +408,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -475,7 +487,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_engine_query_duration_seconds{job=\"prometheus\",quantile=\"0.99\",slice=\"inner_eval\"}",
           "legendFormat": "P99 Inner Eval",
@@ -484,7 +497,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_engine_query_duration_seconds{job=\"prometheus\",quantile=\"0.9\",slice=\"inner_eval\"}",
           "legendFormat": "P90 Inner Eval",
@@ -493,7 +507,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_engine_query_duration_seconds{job=\"prometheus\",quantile=\"0.5\",slice=\"inner_eval\"}",
           "legendFormat": "P50 Inner Eval",
@@ -502,7 +517,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_engine_query_duration_seconds{job=\"prometheus\",quantile=\"0.99\",slice=\"prepare_time\"}",
           "legendFormat": "P99 Prepare Time",
@@ -511,7 +527,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_engine_query_duration_seconds{job=\"prometheus\",quantile=\"0.99\",slice=\"queue_time\"}",
           "legendFormat": "P99 Queue Time",
@@ -524,7 +541,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -602,7 +620,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_tsdb_head_series{job=\"prometheus\"}",
           "legendFormat": "Head Series",
@@ -611,7 +630,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_tsdb_head_chunks{job=\"prometheus\"}",
           "legendFormat": "Head Chunks",
@@ -624,7 +644,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -702,7 +723,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_tsdb_wal_size_bytes{job=\"prometheus\"}",
           "legendFormat": "WAL Size",
@@ -711,7 +733,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "prometheus_tsdb_head_series{job=\"prometheus\"} * prometheus_tsdb_symbol_table_size_bytes{job=\"prometheus\"} / 1024 / 1024",
           "legendFormat": "Estimated Memory Usage (MB)",
@@ -724,7 +747,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -802,7 +826,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_tsdb_compactions_total{job=\"prometheus\"}[5m])",
           "legendFormat": "Compactions",
@@ -811,7 +836,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_tsdb_compaction_chunk_samples_duplicated_total{job=\"prometheus\"}[5m])",
           "legendFormat": "Duplicated Samples",
@@ -820,7 +846,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_tsdb_wal_truncations_total{job=\"prometheus\"}[5m])",
           "legendFormat": "WAL Truncations",
@@ -833,7 +860,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -911,7 +939,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_config_last_reload_successful{job=\"prometheus\"}[5m])",
           "legendFormat": "Successful Config Reloads",
@@ -920,7 +949,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_notifications_total{job=\"prometheus\"}[5m])",
           "legendFormat": "Notifications Sent",
@@ -929,7 +959,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_rule_evaluations_total{job=\"prometheus\"}[5m])",
           "legendFormat": "Rule Evaluations",
@@ -942,7 +973,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -990,7 +1022,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "count by (job) (up == 1)",
           "legendFormat": "{{job}}",
@@ -1003,7 +1036,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -1115,7 +1149,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "up",
           "format": "table",
@@ -1146,7 +1181,8 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -1224,7 +1260,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus\"}[5m])",
           "legendFormat": "Samples Appended",
@@ -1233,7 +1270,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_remote_storage_samples_total{job=\"prometheus\"}[5m])",
           "legendFormat": "Remote Storage Samples",
@@ -1242,7 +1280,8 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           },
           "expr": "rate(prometheus_tsdb_checkpoint_creations_total{job=\"prometheus\"}[5m])",
           "legendFormat": "Checkpoint Creations",
@@ -1270,7 +1309,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Prometheus Internal Metrics Dashboard",
-  "uid": "prometheus-internal-metrics",
+  "uid": "prometheus-internal",
   "version": 1,
   "weekStart": ""
 }

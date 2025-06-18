@@ -1,7 +1,10 @@
 {
   "id": null,
   "title": "FastAPI Application Metrics",
-  "tags": ["fastapi", "todo-list-xtreme"],
+  "tags": [
+    "fastapi",
+    "todo-list-xtreme"
+  ],
   "timezone": "browser",
   "editable": true,
   "panels": [
@@ -11,7 +14,8 @@
       "type": "graph",
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "targets": [
         {
@@ -19,14 +23,24 @@
           "legendFormat": "{{method}} {{handler}}",
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           }
         }
       ],
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "yAxes": [
-        {"label": "requests/sec"},
-        {"show": false}
+        {
+          "label": "requests/sec"
+        },
+        {
+          "show": false
+        }
       ]
     },
     {
@@ -35,7 +49,8 @@
       "type": "graph",
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "targets": [
         {
@@ -43,7 +58,8 @@
           "legendFormat": "95th percentile",
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           }
         },
         {
@@ -51,14 +67,24 @@
           "legendFormat": "50th percentile",
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           }
         }
       ],
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "yAxes": [
-        {"label": "seconds"},
-        {"show": false}
+        {
+          "label": "seconds"
+        },
+        {
+          "show": false
+        }
       ]
     },
     {
@@ -67,7 +93,8 @@
       "type": "graph",
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "targets": [
         {
@@ -75,11 +102,17 @@
           "legendFormat": "{{status}} {{method}}",
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           }
         }
       ],
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      }
     },
     {
       "id": 4,
@@ -87,7 +120,8 @@
       "type": "stat",
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "prometheus-main",
+        "name": "Prometheus"
       },
       "targets": [
         {
@@ -95,16 +129,23 @@
           "legendFormat": "Active Requests",
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "prometheus-main",
+            "name": "Prometheus"
           }
         }
       ],
-      "gridPos": {"h": 4, "w": 12, "x": 12, "y": 8}
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      }
     }
   ],
   "time": {
     "from": "now-1h",
     "to": "now"
   },
-  "refresh": "5s"
+  "refresh": "5s",
+  "uid": "fastapi-metrics"
 }

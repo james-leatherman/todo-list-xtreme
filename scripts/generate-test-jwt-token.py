@@ -7,7 +7,7 @@ and generates a valid token for testing API endpoints.
 
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
 from pathlib import Path
 
@@ -38,7 +38,7 @@ def generate_test_token():
     algorithm = env_vars.get('ALGORITHM', 'HS256')
     
     # Create token payload
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     expire_hours = 24  # 24 hours for testing
     
     payload = {

@@ -37,7 +37,7 @@ fi
 echo "🔐 Generating test JWT token..."
 export TEST_AUTH_TOKEN=$(python3 -c "
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 
 # JWT configuration from environment
@@ -49,7 +49,7 @@ if not secret_key:
 algorithm = 'HS256'
 
 # Create token payload
-now = datetime.utcnow()
+now = datetime.now(timezone.utc)
 payload = {
     'sub': 'test@example.com',
     'iat': now,
@@ -71,6 +71,6 @@ echo "🔑 Token (first 50 chars): ${TEST_AUTH_TOKEN:0:50}..."
 # Run tests
 echo "🧪 Running backend tests..."
 source ../backend/venv/bin/activate
-pytest "$@" --last-failed -v
+pytest "$@" -v
 
 echo "✅ Tests completed!"

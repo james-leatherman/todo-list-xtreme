@@ -31,7 +31,7 @@ export SECRET_KEY=your_secret_key_here
 # Generate test JWT token
 export TEST_AUTH_TOKEN=$(python3 -c "
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 
 secret_key = os.environ.get('SECRET_KEY')
@@ -41,7 +41,7 @@ if not secret_key:
 
 algorithm = 'HS256'
 
-now = datetime.utcnow()
+now = datetime.now(timezone.utc)
 payload = {
     'sub': 'test@example.com',
     'iat': now,

@@ -62,7 +62,7 @@ jobs:
         # Create token generation script
         cat > generate_token.py << 'EOF'
         import jwt
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         import os
         import sys
 
@@ -71,7 +71,7 @@ jobs:
         algorithm = 'HS256'
 
         # Create token payload
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         payload = {
             'sub': 'test@example.com',
             'iat': now,

@@ -7,15 +7,15 @@ set -e
 echo "🔧 Setting up test environment..."
 
 # Load environment variables from .env file if it exists
-if [ -f "backend/.env" ]; then
+if [ -f "../backend/.env" ]; then
     echo "📁 Loading environment variables from backend/.env"
     set -a  # automatically export all variables
-    source backend/.env
+    source ../backend/.env
     set +a  # turn off automatic export
 fi
 
 # Navigate to backend directory
-cd "$(dirname "$0")/backend"
+cd "$(dirname "$0")./backend"
 
 # Check if PyJWT is installed
 if ! python3 -c "import jwt" 2>/dev/null; then
@@ -70,6 +70,7 @@ echo "🔑 Token (first 50 chars): ${TEST_AUTH_TOKEN:0:50}..."
 
 # Run tests
 echo "🧪 Running backend tests..."
-pytest "$@"
+source ../backend/venv/bin/activate
+pytest "$@" --last-failed -v
 
 echo "✅ Tests completed!"

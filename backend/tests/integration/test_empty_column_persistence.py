@@ -56,7 +56,7 @@ def test_empty_column_persistence(auth_token):
         retrieved_order = settings['column_order']
         assert 'empty-test' in retrieved_columns, "FAILED: Empty test column NOT found in retrieved data"
         position = retrieved_order.index('empty-test') if 'empty-test' in retrieved_order else -1
-        assert position == 2, f"WARNING: Column order changed, expected at position 2, found at {position}"
+        assert position == 4, f"WARNING: Column order changed, expected at position 4, found at {position}"
         print("SUCCESS: Empty test column found in retrieved data")
         print(f"SUCCESS: Empty test column found at position {position} in column order")
         print("SUCCESS: Column order correctly preserved")

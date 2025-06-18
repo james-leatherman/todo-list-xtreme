@@ -7,7 +7,7 @@ including database connections, authentication, AWS services, and monitoring.
 
 import os
 from functools import lru_cache
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import ConfigDict
@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     # API settings
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Todo List Xtreme API"
-    VERSION: str = "1.4.0"
+    VERSION: str = "1.5.0"
     DESCRIPTION: str = "A full-stack to-do list application with comprehensive observability"
     
     # CORS settings - simplified to avoid parsing issues
@@ -86,7 +86,8 @@ class Settings(BaseSettings):
     # File upload settings
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
     ALLOWED_EXTENSIONS: List[str] = [".jpg", ".jpeg", ".png", ".gif"]
-    UPLOAD_DIR: str = "uploads"
+    BASE_DIR: ClassVar[str] = os.path.dirname(os.path.abspath(__file__))
+    UPLOAD_DIR: ClassVar[str] = os.path.join(BASE_DIR, "../../../uploads")
     
     model_config = SettingsConfigDict(
         env_file=".env",

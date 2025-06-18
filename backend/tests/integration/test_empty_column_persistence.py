@@ -2,6 +2,7 @@
 """
 Test script for column persistence with empty columns
 """
+import json
 import requests
 import sys
 import pytest

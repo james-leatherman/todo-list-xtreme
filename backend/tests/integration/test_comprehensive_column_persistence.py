@@ -3,6 +3,7 @@
 Comprehensive test script for column persistence in Todo List Xtreme
 Tests both empty columns and column order persistence
 """
+import json
 import requests
 import sys
 import time

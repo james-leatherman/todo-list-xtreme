@@ -17,7 +17,7 @@ def test_column_persistence(auth_token):
     # Step 1: Clear existing column settings to start fresh
     print("\n=== Step 1: Clearing existing column settings ===")
     try:
-        response = requests.get(f'{base_url}/column-settings', headers=headers)
+        response = requests.get(f'{base_url}/api/v1/column-settings/', headers=headers)
         if response.status_code == 200:
             print("Found existing column settings, will clear them")
             
@@ -36,7 +36,7 @@ def test_column_persistence(auth_token):
             }
             
             # Update with defaults
-            response = requests.put(f'{base_url}/column-settings', headers=headers, json=payload)
+            response = requests.put(f'{base_url}/api/v1/column-settings/', headers=headers, json=payload)
             print(f"Reset to defaults: {response.status_code}")
         else:
             print(f"No existing column settings found: {response.status_code}")
@@ -63,7 +63,7 @@ def test_column_persistence(auth_token):
     }
     
     try:
-        response = requests.put(f'{base_url}/column-settings', headers=headers, json=payload)
+        response = requests.put(f'{base_url}/api/v1/column-settings/', headers=headers, json=payload)
         print(f"Create test columns response: {response.status_code}")
         assert response.status_code in (200, 201), f"Failed to create test columns: {response.text}"
     except Exception as e:
@@ -73,7 +73,7 @@ def test_column_persistence(auth_token):
     # Step 3: Verify the column settings were saved correctly
     print("\n=== Step 3: Verifying column settings ===")
     try:
-        response = requests.get(f'{base_url}/column-settings', headers=headers)
+        response = requests.get(f'{base_url}/api/v1/column-settings/', headers=headers)
         assert response.status_code == 200, f"Failed to get column settings: {response.status_code}\n{response.text}"
         settings = response.json()
         saved_columns = json.loads(settings['columns_config'])
@@ -108,7 +108,7 @@ def test_column_persistence(auth_token):
     time.sleep(1)  # Small delay to ensure server has processed the todo creation
     
     try:
-        response = requests.get(f'{base_url}/column-settings', headers=headers)
+        response = requests.get(f'{base_url}/api/v1/column-settings/', headers=headers)
         assert response.status_code == 200, f"Failed to get column settings: {response.status_code}\n{response.text}"
         settings = response.json()
         saved_columns = json.loads(settings['columns_config'])

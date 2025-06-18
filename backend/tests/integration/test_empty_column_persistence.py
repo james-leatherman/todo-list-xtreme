@@ -29,14 +29,14 @@ def test_empty_column_persistence(auth_token):
     }
     try:
         response = requests.put(
-            f'{base_url}/column-settings',
+            f'{base_url}/api/v1/column-settings/',
             headers=headers,
             json=settings_payload
         )
         print(f"Update response: {response.status_code}")
         if response.status_code != 200:
             response = requests.post(
-                f'{base_url}/column-settings',
+                f'{base_url}/api/v1/column-settings/',
                 headers=headers,
                 json=settings_payload
             )
@@ -47,7 +47,7 @@ def test_empty_column_persistence(auth_token):
     # Get settings
     try:
         response = requests.get(
-            f'{base_url}/column-settings',
+            f'{base_url}/api/v1/column-settings/',
             headers=headers
         )
         assert response.status_code == 200, f"FAILED: Could not retrieve settings: {response.status_code}\n{response.text}"

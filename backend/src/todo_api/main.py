@@ -5,6 +5,7 @@ This module creates and configures the FastAPI application with all necessary
 middleware, routers, and observability components.
 """
 
+import os
 import logging
 from contextlib import asynccontextmanager
 import sys
@@ -157,8 +158,11 @@ def create_application() -> FastAPI:
     app.include_router(api_router, prefix=settings.API_V1_STR)
     
     # Mount static files for uploads
+    if not os.path.exists(settings.UPLOAD_DIR):
+        os.makedirs(settings.UPLOAD_DIR)
+
     if not settings.TESTING:
-        app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
+        app.mount("/backend/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
     
     # Add basic endpoints
     @app.get("/")

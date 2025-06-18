@@ -45,6 +45,8 @@ def get_column_settings(
     Returns:
         User's column settings or newly created default settings
     """
+    logger.info(f"Getting column settings for user {current_user.id}")
+    
     settings = db.query(UserColumnSettings).filter(
         UserColumnSettings.user_id == current_user.id
     ).first()
@@ -56,13 +58,14 @@ def get_column_settings(
         settings = UserColumnSettings(
             user_id=current_user.id,
             columns_config=json.dumps({
-                k: v.dict() for k, v in default_settings.columns_config.items()
+                k: v.model_dump() for k, v in default_settings.columns_config.items()
             }),
             column_order=json.dumps(default_settings.column_order)
         )
         db.add(settings)
         db.commit()
         db.refresh(settings)
+        logger.info(f"Created default column settings for user {current_user.id}")
     
     return settings
 
@@ -87,6 +90,8 @@ def create_column_settings(
     Raises:
         HTTPException: If settings already exist for the user
     """
+    logger.info(f"Creating column settings for user {current_user.id}")
+    
     # Check if settings already exist
     existing_settings = db.query(UserColumnSettings).filter(
         UserColumnSettings.user_id == current_user.id
@@ -99,18 +104,11 @@ def create_column_settings(
         )
     
     # Create new settings
-    if settings.columns_config:
-        if isinstance(settings.columns_config, str):
-            columns_config_dict = json.loads(settings.columns_config)
-        else:
-            columns_config_dict = settings.columns_config
-    else:
-        columns_config_dict = {}
-
     db_settings = UserColumnSettings(
         user_id=current_user.id,
         columns_config=json.dumps({
-            k: v.dict() if hasattr(v, 'dict') else v for k, v in columns_config_dict.items()
+            k: v.model_dump() if hasattr(v, 'model_dump') else v 
+            for k, v in settings.columns_config.items()
         }),
         column_order=json.dumps(settings.column_order)
     )
@@ -118,6 +116,7 @@ def create_column_settings(
     db.add(db_settings)
     db.commit()
     db.refresh(db_settings)
+    logger.info(f"Created column settings for user {current_user.id}")
     return db_settings
 
 
@@ -141,39 +140,57 @@ def update_column_settings(
     Raises:
         HTTPException: If settings don't exist for the user
     """
-    settings = db.query(UserColumnSettings).filter(
-        UserColumnSettings.user_id == current_user.id
-    ).first()
-    
-    if not settings:
-        # Create default settings if they don't exist, then update
-        default_settings = DefaultColumnSettings.get_default()
+    try:
+        logger.info(f"Updating column settings for user {current_user.id}")
+        logger.info(f"Update data received: {settings_update}")
         
-        settings = UserColumnSettings(
-            user_id=current_user.id,
-            columns_config=json.dumps({
-                k: v.dict() for k, v in default_settings.columns_config.items()
-            }),
-            column_order=json.dumps(default_settings.column_order)
-        )
-        db.add(settings)
-        db.flush()  # Flush to get the ID but don't commit yet
-    
-    # Update settings
-    update_data = settings_update.dict(exclude_unset=True)
-    
-    if "columns_config" in update_data:
-        setattr(settings, "columns_config", json.dumps({
-            k: v.dict() if hasattr(v, 'dict') else v
-            for k, v in update_data["columns_config"].items()
-        }))
-    
-    if "column_order" in update_data:
-        settings.column_order = update_data["column_order"]
-    
-    db.commit()
-    db.refresh(settings)
-    return settings
+        settings = db.query(UserColumnSettings).filter(
+            UserColumnSettings.user_id == current_user.id
+        ).first()
+        
+        if not settings:
+            # Create default settings if they don't exist, then update
+            default_settings = DefaultColumnSettings.get_default()
+            
+            settings = UserColumnSettings(
+                user_id=current_user.id,
+                columns_config=json.dumps({
+                    k: v.model_dump() for k, v in default_settings.columns_config.items()
+                }),
+                column_order=json.dumps(default_settings.column_order)
+            )
+            db.add(settings)
+            db.flush()  # Flush to get the ID but don't commit yet
+            logger.info(f"Created default settings before update for user {current_user.id}")
+        
+        # Update settings
+        update_data = settings_update.model_dump(exclude_unset=True)
+        logger.info(f"Update data (exclude_unset): {update_data}")
+        
+        if "columns_config" in update_data and update_data["columns_config"] is not None:
+            logger.info(f"Updating columns_config: {update_data['columns_config']}")
+            setattr(settings, "columns_config", json.dumps({
+                k: v.model_dump() if hasattr(v, 'model_dump') else v
+                for k, v in update_data["columns_config"].items()
+            }))
+        
+        if "column_order" in update_data and update_data["column_order"] is not None:
+            logger.info(f"Updating column_order: {update_data['column_order']}")
+            setattr(settings, "column_order", json.dumps(update_data["column_order"]))
+        
+        db.commit()
+        db.refresh(settings)
+        logger.info(f"Updated column settings for user {current_user.id}")
+        return settings
+        
+    except Exception as e:
+        logger.error(f"Error updating column settings for user {current_user.id}: {str(e)}")
+        logger.error(f"Exception type: {type(e)}")
+        db.rollback()
+        from pydantic import ValidationError
+        if isinstance(e, ValidationError):
+            logger.error(f"Validation errors: {e.errors()}")
+        raise
 
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
@@ -222,6 +239,8 @@ def reset_column_settings(
     Returns:
         Reset column settings with default configuration
     """
+    logger.info(f"Resetting column settings for user {current_user.id}")
+    
     # Delete existing settings if they exist
     existing_settings = db.query(UserColumnSettings).filter(
         UserColumnSettings.user_id == current_user.id
@@ -237,7 +256,7 @@ def reset_column_settings(
     new_settings = UserColumnSettings(
         user_id=current_user.id,
         columns_config=json.dumps({
-            k: v.dict() for k, v in default_settings.columns_config.items()
+            k: v.model_dump() for k, v in default_settings.columns_config.items()
         }),
         column_order=json.dumps(default_settings.column_order)
     )
@@ -245,6 +264,7 @@ def reset_column_settings(
     db.add(new_settings)
     db.commit()
     db.refresh(new_settings)
+    logger.info(f"Reset column settings for user {current_user.id}")
     return new_settings
 
 
@@ -260,6 +280,6 @@ def get_default_column_settings():
     return {
         "column_order": default_settings.column_order,
         "columns_config": {
-            k: v.dict() for k, v in default_settings.columns_config.items()
+            k: v.model_dump() for k, v in default_settings.columns_config.items()
         }
     }

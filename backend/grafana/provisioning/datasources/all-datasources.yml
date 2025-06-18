@@ -1,0 +1,92 @@
+apiVersion: 1
+
+# Combined datasources configuration for complete observability stack
+datasources:
+  # Prometheus - Metrics (Default)
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus-main
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      httpMethod: GET
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 2.40.0
+      cacheLevel: High
+      disableRecordingRules: false
+      incrementalQueryOverlapWindow: 10m
+
+  # Loki - Logs  
+  - name: Loki
+    type: loki
+    uid: loki-main
+    access: proxy
+    url: http://loki:3100
+    isDefault: false
+    editable: true
+    jsonData:
+      maxLines: 1000
+      timeout: 60s
+      # Derived fields to link logs to traces
+      derivedFields:
+        - datasourceUid: tempo-main
+          matcherRegex: '"trace_id":"([^"]*)"'
+          name: TraceID
+          url: '$${__value.raw}'
+          urlDisplayLabel: 'View Trace'
+        - datasourceUid: tempo-main  
+          matcherRegex: 'trace_id=([a-zA-Z0-9]+)'
+          name: TraceID
+          url: '$${__value.raw}'
+          urlDisplayLabel: 'View Trace in Tempo'
+
+  # Tempo - Distributed Tracing
+  - name: Tempo
+    type: tempo
+    uid: tempo-main
+    access: proxy
+    url: http://tempo:3200
+    isDefault: false
+    editable: true
+    jsonData:
+      httpMethod: GET
+      # Link traces back to logs
+      tracesToLogs:
+        datasourceUid: loki-main
+        tags: ['job', 'instance', 'pod', 'namespace', 'container_name']
+        mappedTags: [
+          { key: 'service.name', value: 'service' },
+          { key: 'container.name', value: 'container_name' }
+        ]
+        mapTagNamesEnabled: true
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+        filterByTraceID: true
+        filterBySpanID: true
+        lokiSearch: true
+      # Link traces to metrics  
+      tracesToMetrics:
+        datasourceUid: prometheus-main
+        tags: [
+          { key: 'service.name', value: 'service' },
+          { key: 'job' }
+        ]
+        queries:
+          - name: 'Sample query'
+            query: 'sum(rate(tempo_spanmetrics_latency_bucket{$$__tags}[5m]))'
+      # Service map configuration
+      serviceMap:
+        datasourceUid: prometheus-main
+      # Node graph
+      nodeGraph:
+        enabled: true
+      # Search configuration
+      search:
+        hide: false
+      # Span bar configuration  
+      spanBar:
+        type: 'Tag'
+        tag: 'http.path'

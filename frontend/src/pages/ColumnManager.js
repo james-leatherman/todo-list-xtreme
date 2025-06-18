@@ -44,21 +44,29 @@ class ColumnManager {
       column_order: JSON.stringify(updatedColumnOrder)
     };
     
+    console.log('Saving column settings:', settings);
+    
     try {
       const response = await columnSettingsService.getSettings();
+      console.log('Existing settings response:', response.data);
       if (response.data && response.data.id) {
+        console.log('Updating existing settings');
         return columnSettingsService.updateSettings(settings);
       } else {
+        console.log('Creating new settings');
         return columnSettingsService.createSettings(settings);
       }
     } catch (error) {
+      console.error('Error in saveColumnSettings:', error);
       if (error.response && error.response.status === 404) {
+        console.log('Settings not found, creating new ones');
         return columnSettingsService.createSettings(settings);
       } else {
         try {
+          console.log('Attempting to update settings after error');
           return columnSettingsService.updateSettings(settings);
         } catch (secondError) {
-          console.error('Failed to save column settings:', secondError);
+          console.error('Failed to save column settings (second attempt):', secondError);
           throw secondError;
         }
       }
@@ -233,10 +241,23 @@ class ColumnManager {
       return { columns: updatedColumns, columnOrder: updatedColumnOrder, error: null };
     } catch (error) {
       console.error('Error adding column:', error);
+      let errorMessage = 'Failed to save column settings to the server';
+      
+      // Provide more specific error messages
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+        errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (error.response?.status === 422) {
+        errorMessage = 'Invalid column data. Please try again.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = `Server error: ${error.response.data.detail}`;
+      }
+      
       return { 
         columns: updatedColumns, 
         columnOrder: updatedColumnOrder, 
-        error: 'Failed to save column settings to the server'
+        error: errorMessage
       };
     }
   }
@@ -280,10 +301,23 @@ class ColumnManager {
       return { columns: updatedColumns, columnOrder: updatedColumnOrder, error: null };
     } catch (error) {
       console.error('Error deleting column:', error);
+      let errorMessage = 'Failed to save column settings to the server';
+      
+      // Provide more specific error messages
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+        errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (error.response?.status === 422) {
+        errorMessage = 'Invalid column data. Please try again.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = `Server error: ${error.response.data.detail}`;
+      }
+      
       return { 
         columns: updatedColumns, 
         columnOrder: updatedColumnOrder, 
-        error: 'Failed to save column settings to the server'
+        error: errorMessage
       };
     }
   }
@@ -329,10 +363,23 @@ class ColumnManager {
       return { columns: updatedColumns, columnOrder, error: null };
     } catch (error) {
       console.error('Error renaming column:', error);
+      let errorMessage = 'Failed to save column settings to the server';
+      
+      // Provide more specific error messages
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+        errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (error.response?.status === 422) {
+        errorMessage = 'Invalid column data. Please try again.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = `Server error: ${error.response.data.detail}`;
+      }
+      
       return { 
         columns: updatedColumns, 
         columnOrder, 
-        error: 'Failed to save column settings to the server'
+        error: errorMessage
       };
     }
   }
@@ -357,10 +404,23 @@ class ColumnManager {
       return { columns, columnOrder: updatedColumnOrder, error: null };
     } catch (error) {
       console.error('Error reordering columns:', error);
+      let errorMessage = 'Failed to save column settings to the server';
+      
+      // Provide more specific error messages
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+        errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (error.response?.status === 422) {
+        errorMessage = 'Invalid column data. Please try again.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = `Server error: ${error.response.data.detail}`;
+      }
+      
       return { 
         columns, 
         columnOrder: updatedColumnOrder, 
-        error: 'Failed to save column settings to the server'
+        error: errorMessage
       };
     }
   }
@@ -383,10 +443,23 @@ class ColumnManager {
       return { columns: defaultColumns, columnOrder: defaultColumnOrder, error: null };
     } catch (error) {
       console.error('Error restoring default columns:', error);
+      let errorMessage = 'Failed to save default columns to the server';
+      
+      // Provide more specific error messages
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+        errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (error.response?.status === 422) {
+        errorMessage = 'Invalid column data. Please try again.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = `Server error: ${error.response.data.detail}`;
+      }
+      
       return { 
         columns: defaultColumns, 
         columnOrder: defaultColumnOrder, 
-        error: 'Failed to save default columns to the server'
+        error: errorMessage
       };
     }
   }

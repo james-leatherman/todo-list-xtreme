@@ -16,6 +16,7 @@ import {
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { todoService } from '../services/api';
 import ColumnManager from './ColumnManager';
+import ConnectionStatus from '../components/ConnectionStatus';
 
 // Styled components
 const VisuallyHiddenInput = styled('input')({
@@ -744,6 +745,7 @@ function TodoList() {
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
+      <ConnectionStatus />
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           My Tasks

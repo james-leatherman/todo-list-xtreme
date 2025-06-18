@@ -34,6 +34,36 @@ services:
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
       - POSTGRES_DB=todolist
+      # Enhanced PostgreSQL logging configuration
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=scram-sha-256
+    command: 
+      - postgres
+      - -c
+      - log_destination=stderr
+      - -c
+      - log_statement=all
+      - -c
+      - log_connections=on
+      - -c
+      - log_disconnections=on
+      - -c
+      - log_checkpoints=on
+      - -c
+      - log_lock_waits=on
+      - -c
+      - log_temp_files=0
+      - -c
+      - log_autovacuum_min_duration=0
+      - -c
+      - log_error_verbosity=verbose
+      - -c
+      - log_hostname=on
+      - -c
+      - "log_line_prefix=%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h " 
+      - -c
+      - log_min_duration_statement=100
+      - -c
+      - log_timezone=UTC
     ports:
       - "5432:5432"
 
@@ -85,7 +115,29 @@ services:
       - "3200:3200"   # Tempo HTTP
     restart: unless-stopped
 
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yml:/etc/loki/loki-config.yml
+      - loki_data:/var/lib/loki
+    command: -config.file=/etc/loki/loki-config.yml
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/promtail-config.yml
+    depends_on:
+      - loki
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   grafana_data:
   tempo_data:
+  loki_data:

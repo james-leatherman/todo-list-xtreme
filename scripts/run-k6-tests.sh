@@ -19,6 +19,9 @@ SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo -e "${BLUE}🚀 K6 Load Testing Runner for Todo List Xtreme API${NC}"
 echo -e "${BLUE}====================================================${NC}"
 
+# Detect CI environment
+detect_ci_environment
+
 # Function to check if k6 is installed
 check_k6() {
     if ! command -v k6 &> /dev/null; then
@@ -68,8 +71,8 @@ generate_token() {
 run_test() {
     local test_name=$1
     local script_file=$2
-    local duration=${3:-"1m"}
-    local vus=${4:-"10"}
+    local duration=${3:-$DEFAULT_DURATION}
+    local vus=${4:-$DEFAULT_VUS}
     
     echo -e "${BLUE}🧪 Running ${test_name}...${NC}"
     echo -e "${BLUE}📊 Duration: ${duration}, Virtual Users: ${vus}${NC}"
@@ -90,6 +93,23 @@ run_test() {
     echo ""
     echo -e "${GREEN}✅ ${test_name} completed${NC}"
     echo ""
+}
+
+# Function to detect CI environment and adjust parameters
+detect_ci_environment() {
+    if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ] || [ -n "$GITLAB_CI" ] || [ -n "$JENKINS_URL" ]; then
+        echo -e "${BLUE}🤖 CI environment detected${NC}"
+        export IS_CI=true
+        # Reduce test intensity for CI
+        export DEFAULT_DURATION="30s"
+        export DEFAULT_VUS="3"
+        echo -e "${YELLOW}💡 Using CI-optimized test parameters${NC}"
+    else
+        echo -e "${BLUE}💻 Local development environment detected${NC}"
+        export IS_CI=false
+        export DEFAULT_DURATION="1m"
+        export DEFAULT_VUS="10"
+    fi
 }
 
 # Function to show usage
@@ -116,10 +136,11 @@ main() {
     check_k6
     check_api
     generate_token
+    detect_ci_environment
     
     case "${1:-quick}" in
         "quick")
-            run_test "Quick API Test" "k6-quick-test.js" "30s" "5"
+            run_test "Quick API Test" "k6-quick-test.js" "${DEFAULT_DURATION}" "${DEFAULT_VUS}"
             ;;
         "load")
             run_test "Comprehensive Load Test" "k6-api-load-test.js" "5m" "10"
@@ -133,7 +154,7 @@ main() {
         "all")
             echo -e "${BLUE}🎯 Running all k6 tests...${NC}"
             echo ""
-            run_test "Quick API Test" "k6-quick-test.js" "30s" "5"
+            run_test "Quick API Test" "k6-quick-test.js" "${DEFAULT_DURATION}" "${DEFAULT_VUS}"
             sleep 5
             run_test "Comprehensive Load Test" "k6-api-load-test.js" "3m" "10"
             sleep 5

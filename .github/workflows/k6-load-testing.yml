@@ -1,0 +1,211 @@
+name: K6 Load Testing
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of k6 test to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - quick
+        - debug
+        - load
+        - comprehensive
+        - concurrent
+      duration:
+        description: 'Test duration (e.g., 30s, 2m, 5m)'
+        required: false
+        default: '2m'
+      vus:
+        description: 'Number of virtual users'
+        required: false
+        default: '10'
+  
+  # Scheduled run (weekly on Sundays at 2 AM UTC)
+  schedule:
+    - cron: '0 2 * * 0'
+
+jobs:
+  k6-load-testing:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install docker-compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
+
+    - name: Start backend and DB
+      working-directory: ./backend
+      run: |
+        docker-compose up -d db
+        docker-compose up -d api
+        sleep 15
+
+    - name: Setup database and create test user
+      working-directory: ./backend
+      env:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_SERVER: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: todolist
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/todolist
+        SECRET_KEY: supersecretkey
+      run: |
+        # Initialize database tables
+        python -m src.todo_api.utils.init_db
+        
+        # Create test user
+        python -m src.todo_api.utils.create_test_user
+
+    - name: Generate test JWT token
+      working-directory: ./backend
+      run: |
+        # Install PyJWT for token generation
+        pip install PyJWT
+        
+        # Create token generation script
+        cat > generate_token.py << 'EOF'
+        import jwt
+        from datetime import datetime, timedelta, timezone
+
+        # JWT configuration - use the same secret as the backend default
+        secret_key = 'supersecretkey'
+        algorithm = 'HS256'
+
+        # Create token payload
+        now = datetime.now(timezone.utc)
+        payload = {
+            'sub': 'test@example.com',
+            'iat': now,
+            'exp': now + timedelta(hours=24),
+            'user_id': 1
+        }
+
+        # Generate token
+        token = jwt.encode(payload, secret_key, algorithm=algorithm)
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
+            
+        print(token)
+        EOF
+        
+        # Generate the token
+        TEST_TOKEN=$(python3 generate_token.py)
+        echo "TEST_AUTH_TOKEN=$TEST_TOKEN" >> $GITHUB_ENV
+
+    - name: Install k6
+      run: |
+        sudo gpg -k
+        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
+        sudo apt-get install k6
+
+    - name: Wait for Backend
+      run: |
+        attempt=1
+        max_attempts=15
+        while [ $attempt -le $max_attempts ]; do
+          if curl -s http://localhost:8000/health; then
+            echo "Backend is healthy!"
+            break
+          fi
+          echo "Attempt $attempt failed, waiting..."
+          sleep 10
+          attempt=$((attempt + 1))
+        done
+        
+        # Final check to make sure the API endpoints are working
+        if curl -s http://localhost:8000/api/v1/column-settings/ -H "Authorization: Bearer $TEST_AUTH_TOKEN" > /dev/null; then
+          echo "API endpoints are accessible!"
+        else
+          echo "API endpoints may not be fully ready, continuing anyway..."
+        fi
+
+    - name: Run k6 tests
+      working-directory: ./scripts
+      env:
+        API_URL: http://localhost:8000
+        AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
+        TEST_TYPE: ${{ github.event.inputs.test_type || 'all' }}
+        DURATION: ${{ github.event.inputs.duration || '2m' }}
+        VUS: ${{ github.event.inputs.vus || '10' }}
+      run: |
+        echo "Running k6 tests with type: $TEST_TYPE, duration: $DURATION, VUs: $VUS"
+        
+        case $TEST_TYPE in
+          "quick")
+            echo "Running k6 quick test..."
+            k6 run --duration=$DURATION --vus=$VUS k6-quick-test.js
+            ;;
+          "debug")
+            echo "Running k6 debug test..."
+            k6 run --duration=$DURATION --vus=1 k6-debug-test.js
+            ;;
+          "load")
+            echo "Running k6 API load test..."
+            k6 run --duration=$DURATION --vus=$VUS k6-api-load-test.js
+            ;;
+          "comprehensive")
+            echo "Running k6 comprehensive test..."
+            k6 run --duration=$DURATION --vus=$VUS k6-comprehensive-test.js
+            ;;
+          "concurrent")
+            echo "Running k6 concurrent load test..."
+            k6 run --duration=$DURATION --vus=$VUS k6-concurrent-load.js
+            ;;
+          "all"|*)
+            echo "Running all k6 tests..."
+            
+            echo "1. Quick test..."
+            k6 run --duration=30s --vus=5 k6-quick-test.js
+            
+            echo "2. Debug test..."
+            k6 run --duration=15s --vus=1 k6-debug-test.js
+            
+            echo "3. API load test..."
+            k6 run --duration=1m --vus=5 k6-api-load-test.js
+            
+            echo "4. Comprehensive test..."
+            k6 run --duration=45s --vus=3 k6-comprehensive-test.js
+            
+            echo "5. Concurrent load test..."
+            k6 run --duration=1m --vus=8 k6-concurrent-load.js
+            ;;
+        esac
+
+    - name: Upload k6 results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: k6-test-results
+        path: |
+          scripts/*.json
+          scripts/*.html
+        retention-days: 30
+
+    - name: Cleanup
+      if: always()
+      working-directory: ./backend
+      run: |
+        docker-compose logs api || true
+        docker-compose down -v || true

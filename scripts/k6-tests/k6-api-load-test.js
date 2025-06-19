@@ -175,7 +175,7 @@ function testTodoOperations() {
   console.log('Testing todo operations...');
   
   // 1. Get all todos
-  let response = makeRequest('GET', `${BASE_URL}/api/v1/todos/`);
+  let response = makeRequest('GET', '/api/v1/todos/');
   check(response, {
     'get todos successful': (r) => r.status === 200,
   });
@@ -197,7 +197,7 @@ function testTodoOperations() {
     description: `${newTodo.description} (Created by k6 test at ${new Date().toISOString()})`
   };
   
-  response = makeRequest('POST', `${BASE_URL}/api/v1/todos/`, todoToCreate);
+  response = makeRequest('POST', '/api/v1/todos/', todoToCreate);
   let createdTodo = null;
   if (check(response, {
     'create todo successful': (r) => r.status === 201,
@@ -220,13 +220,13 @@ function testTodoOperations() {
       is_completed: todoToUpdate.status === 'done'
     };
     
-    response = makeRequest('PUT', `${BASE_URL}/api/v1/todos/${todoToUpdate.id}/`, updatedData);
+    response = makeRequest('PUT', `/api/v1/todos/${todoToUpdate.id}/`, updatedData);
     check(response, {
       'update todo successful': (r) => r.status === 200,
     });
     
     // 4. Get the specific todo
-    response = makeRequest('GET', `${BASE_URL}/api/v1/todos/${todoToUpdate.id}/`);
+    response = makeRequest('GET', `/api/v1/todos/${todoToUpdate.id}/`);
     check(response, {
       'get specific todo successful': (r) => r.status === 200,
     });
@@ -234,7 +234,7 @@ function testTodoOperations() {
   
   // 5. Delete a todo (remove task) - occasionally
   if (todoToUpdate && Math.random() < 0.3) {
-    response = makeRequest('DELETE', `${BASE_URL}/api/v1/todos/${todoToUpdate.id}`);
+    response = makeRequest('DELETE', `/api/v1/todos/${todoToUpdate.id}`);
     check(response, {
       'delete todo successful': (r) => r.status === 204,
     });
@@ -257,7 +257,7 @@ function testBulkOperations() {
       status: 'todo'
     };
     
-    const response = makeRequest('POST', `${BASE_URL}/api/v1/todos/`, todoData);
+    const response = makeRequest('POST', '/api/v1/todos/', todoData);
     if (response.status === 201) {
       try {
         createdTodos.push(JSON.parse(response.body));
@@ -271,7 +271,7 @@ function testBulkOperations() {
   // Bulk delete by status (remove tasks by column)
   if (Math.random() < 0.2) { // 20% chance to do bulk delete
     const statusToDelete = 'todo';
-    const response = makeRequest('DELETE', `${BASE_URL}/api/v1/todos/column/${statusToDelete}`);
+    const response = makeRequest('DELETE', `/api/v1/todos/column/${statusToDelete}`);
     check(response, {
       'bulk delete todos successful': (r) => r.status === 204,
     });
@@ -282,31 +282,31 @@ function testHealthEndpoints() {
   console.log('Testing health endpoints...');
   
   // 1. Basic health check
-  let response = makeRequest('GET', `${BASE_URL}/health`);
+  let response = makeRequest('GET', '/health');
   check(response, {
     'health check successful': (r) => r.status === 200,
   });
   
   // 2. Detailed health check
-  response = makeRequest('GET', `${BASE_URL}/api/v1/health/detailed`);
+  response = makeRequest('GET', '/api/v1/health/detailed');
   check(response, {
     'detailed health check successful': (r) => r.status === 200,
   });
   
   // 3. Database health check
-  response = makeRequest('GET', `${BASE_URL}/api/v1/health/database`);
+  response = makeRequest('GET', '/api/v1/health/database');
   check(response, {
     'database health check successful': (r) => r.status === 200,
   });
   
   // 4. Auth check
-  response = makeRequest('GET', `${BASE_URL}/api/v1/auth/me/`);
+  response = makeRequest('GET', '/api/v1/auth/me/');
   check(response, {
     'auth check successful': (r) => r.status === 200,
   });
   
   // 5. API status
-  response = makeRequest('GET', `${BASE_URL}/api/v1/status`);
+  response = makeRequest('GET', '/api/v1/status');
   check(response, {
     'api status check successful': (r) => r.status === 200,
   });

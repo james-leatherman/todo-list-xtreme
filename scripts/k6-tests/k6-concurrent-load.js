@@ -211,7 +211,7 @@ function performColumnManagement() {
   const configChoice = getRandomElement(columnConfigurations);
   console.log(`[VU ${__VU}] Applying ${configChoice.name} configuration`);
   
-  response = makeApiCall('PUT', `${BASE_URL}/api/v1/column-settings`, configChoice.config);
+  response = makeApiCall('PUT', '/api/v1/column-settings', configChoice.config);
   check(response, {
     'column configuration updated': (r) => r && r.status === 200,
   });
@@ -224,7 +224,7 @@ function performColumnManagement() {
   sleep(0.5);
   
   // 3. Verify the configuration was applied
-  response = makeApiCall('GET', `${BASE_URL}/api/v1/column-settings`);
+  response = makeApiCall('GET', '/api/v1/column-settings');
   check(response, {
     'configuration verification': (r) => r && r.status === 200,
   });
@@ -234,7 +234,7 @@ function performTaskCreation() {
   console.log(`[VU ${__VU}] Performing task creation operations...`);
   
   // Get available columns first
-  const response = makeApiCall('GET', `${BASE_URL}/api/v1/column-settings`);
+  const response = makeApiCall('GET', '/api/v1/column-settings');
   if (!response || response.status !== 200) {
     console.log(`[VU ${__VU}] Failed to get column settings for task creation`);
     return;
@@ -264,7 +264,7 @@ function performTaskCreation() {
       is_completed: targetColumn === 'done'
     };
     
-    const createResponse = makeApiCall('POST', `${BASE_URL}/api/v1/todos/`, newTask);
+    const createResponse = makeApiCall('POST', '/api/v1/todos/', newTask);
     const success = check(createResponse, {
       'task created successfully': (r) => r && r.status === 201,
     });
@@ -282,7 +282,7 @@ function performTaskMovement() {
   console.log(`[VU ${__VU}] Performing task movement operations...`);
   
   // 1. Get existing tasks
-  let response = makeApiCall('GET', `${BASE_URL}/api/v1/todos/`);
+  let response = makeApiCall('GET', '/api/v1/todos/');
   if (!response || response.status !== 200) {
     console.log(`[VU ${__VU}] Failed to get todos for movement`);
     return;
@@ -302,7 +302,7 @@ function performTaskMovement() {
   }
   
   // 2. Get available columns
-  response = makeApiCall('GET', `${BASE_URL}/api/v1/column-settings`);
+  response = makeApiCall('GET', '/api/v1/column-settings');
   let availableColumns = ['todo', 'inProgress', 'done'];
   if (response && response.status === 200) {
     try {
@@ -328,7 +328,7 @@ function performTaskMovement() {
       description: `${todoToMove.description} (Moved to ${newStatus} by VU ${__VU})`
     };
     
-    const updateResponse = makeApiCall('PUT', `${BASE_URL}/api/v1/todos/${todoToMove.id}/`, updateData);
+    const updateResponse = makeApiCall('PUT', `/api/v1/todos/${todoToMove.id}/`, updateData);
     const success = check(updateResponse, {
       'task moved successfully': (r) => r && r.status === 200,
     });
@@ -346,7 +346,7 @@ function performTaskCleanup() {
   console.log(`[VU ${__VU}] Performing task cleanup operations...`);
   
   // 1. Get all todos
-  let response = makeApiCall('GET', `${BASE_URL}/api/v1/todos/`);
+  let response = makeApiCall('GET', '/api/v1/todos/');
   if (!response || response.status !== 200) {
     console.log(`[VU ${__VU}] Failed to get todos for cleanup`);
     return;
@@ -367,7 +367,7 @@ function performTaskCleanup() {
   for (let i = 0; i < tasksToDelete; i++) {
     const todoToDelete = completedTodos[i];
     
-    const deleteResponse = makeApiCall('DELETE', `${BASE_URL}/api/v1/todos/${todoToDelete.id}`);
+    const deleteResponse = makeApiCall('DELETE', `/api/v1/todos/${todoToDelete.id}`);
     const success = check(deleteResponse, {
       'task deleted successfully': (r) => r && r.status === 204,
     });
@@ -384,7 +384,7 @@ function performTaskCleanup() {
   if (Math.random() < 0.1) { // 10% chance
     console.log(`[VU ${__VU}] Performing bulk cleanup of 'done' column`);
     
-    const bulkDeleteResponse = makeApiCall('DELETE', `${BASE_URL}/api/v1/todos/column/done`);
+    const bulkDeleteResponse = makeApiCall('DELETE', '/api/v1/todos/column/done');
     const success = check(bulkDeleteResponse, {
       'bulk delete successful': (r) => r && r.status === 204,
     });

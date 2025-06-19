@@ -20,6 +20,23 @@ PROJECT_ROOT="$(cd "${SCRIPTS_DIR}/../.." && pwd)"
 echo -e "${BLUE}🚀 K6 Load Testing Runner for Todo List Xtreme API${NC}"
 echo -e "${BLUE}====================================================${NC}"
 
+# Function to detect CI environment and adjust parameters
+detect_ci_environment() {
+    if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ] || [ -n "$GITLAB_CI" ] || [ -n "$JENKINS_URL" ]; then
+        echo -e "${BLUE}🤖 CI environment detected${NC}"
+        export IS_CI=true
+        # Reduce test intensity for CI
+        export DEFAULT_DURATION="30s"
+        export DEFAULT_VUS="3"
+        echo -e "${YELLOW}💡 Using CI-optimized test parameters${NC}"
+    else
+        echo -e "${BLUE}💻 Local development environment detected${NC}"
+        export IS_CI=false
+        export DEFAULT_DURATION="1m"
+        export DEFAULT_VUS="10"
+    fi
+}
+
 # Detect CI environment
 detect_ci_environment
 
@@ -79,38 +96,21 @@ run_test() {
     echo -e "${BLUE}📊 Duration: ${duration}, Virtual Users: ${vus}${NC}"
     echo -e "${BLUE}🎯 Script: ${script_file}${NC}"
     echo ""
-    
-    # Set environment variables for k6
+     # Set environment variables for k6
     export API_URL="${API_URL}"
-    
-    # Run k6 with nice formatting
+
+    # Run k6 with nice formatting and Prometheus remote write output
     k6 run \
         --duration="${duration}" \
         --vus="${vus}" \
         --summary-trend-stats="avg,min,med,max,p(90),p(95),p(99)" \
         --summary-time-unit=ms \
+        --out experimental-prometheus-rw=http://localhost:9090/api/v1/write \
         "${SCRIPTS_DIR}/${script_file}"
     
     echo ""
     echo -e "${GREEN}✅ ${test_name} completed${NC}"
     echo ""
-}
-
-# Function to detect CI environment and adjust parameters
-detect_ci_environment() {
-    if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ] || [ -n "$GITLAB_CI" ] || [ -n "$JENKINS_URL" ]; then
-        echo -e "${BLUE}🤖 CI environment detected${NC}"
-        export IS_CI=true
-        # Reduce test intensity for CI
-        export DEFAULT_DURATION="30s"
-        export DEFAULT_VUS="3"
-        echo -e "${YELLOW}💡 Using CI-optimized test parameters${NC}"
-    else
-        echo -e "${BLUE}💻 Local development environment detected${NC}"
-        export IS_CI=false
-        export DEFAULT_DURATION="1m"
-        export DEFAULT_VUS="10"
-    fi
 }
 
 # Function to show usage
@@ -137,7 +137,6 @@ main() {
     check_k6
     check_api
     generate_token
-    detect_ci_environment
     
     case "${1:-quick}" in
         "quick")

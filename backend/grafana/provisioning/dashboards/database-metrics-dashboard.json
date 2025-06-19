@@ -692,7 +692,7 @@
             "uid": "prometheus-main",
             "name": "Prometheus"
           },
-          "expr": "rate(db_query_duration_seconds_sum{job=\"fastapi\"}[1m]) / rate(db_query_duration_seconds_count{job=\"fastapi\"}[1m])",
+          "expr": "rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5m])",
           "legendFormat": "Avg Query Duration",
           "refId": "A"
         }
@@ -717,7 +717,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Database Metrics Dashboard",
+  "title": "🗄️ Database Metrics Dashboard",
   "uid": "database-metrics",
   "version": 1,
   "weekStart": ""

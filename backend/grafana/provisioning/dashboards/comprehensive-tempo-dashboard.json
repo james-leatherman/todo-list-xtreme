@@ -1029,12 +1029,12 @@
             "name": "Tempo"
           },
           "limit": 20,
-          "query": "{ duration > 100ms }",
+          "query": "{duration>50ms}",
           "queryType": "nativeSearch",
           "refId": "A"
         }
       ],
-      "title": "Recent Slow Traces (>100ms)",
+      "title": "Recent Slow Traces (>50ms)",
       "type": "table"
     },
     {
@@ -1100,7 +1100,7 @@
             "name": "Tempo"
           },
           "limit": 20,
-          "query": "{ status = error }",
+          "query": "{.http.status_code>=400}",
           "queryType": "nativeSearch",
           "refId": "A"
         }
@@ -1126,8 +1126,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Comprehensive Tempo Dashboard",
+  "title": "🔗 Comprehensive Tempo Dashboard",
   "uid": "comprehensive-tempo",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

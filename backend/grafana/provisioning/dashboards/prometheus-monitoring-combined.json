@@ -1,7 +1,7 @@
 {
   "id": null,
   "uid": "prometheus-combined",
-  "title": "Prometheus Monitoring Dashboard",
+  "title": "📊 Prometheus Monitoring Dashboard",
   "description": "Comprehensive Prometheus monitoring including service health, performance metrics, and system status",
   "tags": [
     "prometheus",

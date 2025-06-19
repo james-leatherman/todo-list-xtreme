@@ -1,7 +1,7 @@
 {
   "id": null,
   "uid": "application-overview",
-  "title": "Application Overview",
+  "title": "🚀 Application Overview",
   "tags": [
     "todo-list-xtreme",
     "fastapi"
@@ -196,7 +196,7 @@
       },
       "targets": [
         {
-          "expr": "pg_stat_database_numbackends",
+          "expr": "db_connections_active",
           "legendFormat": "Active Connections",
           "datasource": {
             "type": "prometheus",

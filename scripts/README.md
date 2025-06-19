@@ -134,6 +134,23 @@ Generates necessary secret keys for the application.
 ./scripts/generate_secrets.sh
 ```
 
+## Load Testing
+
+### 🧪 `k6-tests/`
+**Dedicated k6 load testing directory**
+- All k6 load testing scripts and modules
+- Modularized authentication and setup utilities
+- Multiple test scenarios (quick, debug, load, comprehensive, concurrent)
+- CI integration with automated performance testing
+- See [k6-tests/README.md](k6-tests/README.md) for detailed documentation
+
+```bash
+cd scripts/k6-tests
+./run-k6-tests.sh quick    # Quick functionality test
+./run-k6-tests.sh load     # Comprehensive load test
+./run-k6-tests.sh all      # Run all test scenarios
+```
+
 ## Usage Notes
 
 - All scripts should be run from the project root directory

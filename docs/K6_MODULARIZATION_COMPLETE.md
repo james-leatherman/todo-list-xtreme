@@ -143,15 +143,19 @@ export default function() {
 ## File Structure
 ```
 scripts/
-├── modules/
-│   ├── auth.js              # Authentication module
-│   └── setup.js             # Setup/cleanup module
-├── k6-quick-test.js         # ✅ Basic test (modularized)
-├── k6-debug-test.js         # ✅ Debug test (modularized)
-├── k6-concurrent-load.js    # ✅ Concurrent load test (modularized)
-├── k6-api-load-test.js      # ✅ API load test (modularized)
-├── k6-comprehensive-test.js # ✅ Comprehensive test (modularized)
-└── run-k6-tests.sh          # Test runner script
+├── k6-tests/                    # ✅ Dedicated k6 testing directory
+│   ├── modules/
+│   │   ├── auth.js             # Authentication module
+│   │   └── setup.js            # Setup/cleanup module
+│   ├── k6-quick-test.js        # ✅ Basic test (modularized)
+│   ├── k6-debug-test.js        # ✅ Debug test (modularized)
+│   ├── k6-concurrent-load.js   # ✅ Concurrent load test (modularized)
+│   ├── k6-api-load-test.js     # ✅ API load test (modularized)
+│   ├── k6-comprehensive-test.js # ✅ Comprehensive test (modularized)
+│   ├── run-k6-tests.sh         # Test runner script
+│   └── README.md               # K6 tests documentation
+├── generate-test-jwt-token.py   # JWT token generation
+└── ...other scripts...
 ```
 
 ## Next Steps

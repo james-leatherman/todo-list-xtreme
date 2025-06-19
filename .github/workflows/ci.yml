@@ -247,7 +247,7 @@ jobs:
         fi
 
     - name: Run k6 quick test
-      working-directory: ./scripts
+      working-directory: ./scripts/k6-tests
       env:
         API_URL: http://localhost:8000
         AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
@@ -256,7 +256,7 @@ jobs:
         k6 run --duration=30s --vus=5 --summary-trend-stats="avg,min,med,max,p(95),p(99)" k6-quick-test.js
 
     - name: Run k6 debug test
-      working-directory: ./scripts
+      working-directory: ./scripts/k6-tests
       env:
         API_URL: http://localhost:8000
         AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
@@ -265,7 +265,7 @@ jobs:
         k6 run --duration=10s --vus=1 --summary-trend-stats="avg,min,med,max,p(95),p(99)" k6-debug-test.js
 
     - name: Run k6 load test
-      working-directory: ./scripts
+      working-directory: ./scripts/k6-tests
       env:
         API_URL: http://localhost:8000
         AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
@@ -274,7 +274,7 @@ jobs:
         k6 run --duration=1m --vus=3 --summary-trend-stats="avg,min,med,max,p(95),p(99)" k6-api-load-test.js
 
     - name: Run k6 comprehensive test
-      working-directory: ./scripts
+      working-directory: ./scripts/k6-tests
       env:
         API_URL: http://localhost:8000
         AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}

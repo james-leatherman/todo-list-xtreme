@@ -15,6 +15,7 @@ NC='\033[0m' # No Color
 # Configuration
 API_URL=${API_URL:-"http://localhost:8000"}
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPTS_DIR}/../.." && pwd)"
 
 echo -e "${BLUE}🚀 K6 Load Testing Runner for Todo List Xtreme API${NC}"
 echo -e "${BLUE}====================================================${NC}"
@@ -49,8 +50,8 @@ check_api() {
 generate_token() {
     echo -e "${BLUE}🔑 Generating fresh JWT token...${NC}"
     
-    if [ -f "${SCRIPTS_DIR}/generate-test-jwt-token.py" ]; then
-        cd "${SCRIPTS_DIR}/.."
+    if [ -f "${PROJECT_ROOT}/scripts/generate-test-jwt-token.py" ]; then
+        cd "${PROJECT_ROOT}"
         if python3 scripts/generate-test-jwt-token.py >/dev/null 2>&1; then
             # Source the .env.development.local to get the token
             if [ -f ".env.development.local" ]; then

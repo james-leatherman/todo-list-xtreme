@@ -63,21 +63,40 @@ function getAllTasks() {
 function deleteAllTasks() {
   const tasks = getAllTasks();
   let deletedCount = 0;
+  let retryCount = 0;
+  const maxRetries = 3;
   
   console.log(`Found ${tasks.length} tasks to delete`);
   
-  for (const task of tasks) {
-    const response = authenticatedDelete(`/api/v1/todos/${task.id}`);
+  while (tasks.length > 0 && retryCount < maxRetries) {
+    const batchSize = Math.min(tasks.length, 20); // Process in batches of 20
+    const batch = tasks.splice(0, batchSize);
     
-    if (check(response, { 'task deleted': (r) => r.status === 204 })) {
-      deletedCount++;
-      console.log(`Deleted task: ${task.title}`);
-    } else {
-      console.warn(`Failed to delete task ${task.id}: ${response.status}`);
+    console.log(`Processing batch of ${batch.length} tasks (${tasks.length} remaining)`);
+    
+    for (const task of batch) {
+      const response = authenticatedDelete(`/api/v1/todos/${task.id}`);
+      
+      if (check(response, { 'task deleted': (r) => r.status === 204 })) {
+        deletedCount++;
+        console.log(`Deleted task: ${task.title}`);
+      } else {
+        console.warn(`Failed to delete task ${task.id}: ${response.status}`);
+      }
+      
+      // Small delay to avoid overwhelming the API
+      sleep(0.05);
     }
     
-    // Small delay to avoid overwhelming the API
-    sleep(0.05);
+    if (tasks.length === 0 && retryCount < maxRetries - 1) {
+      // Double-check if we need to fetch more tasks
+      const remainingTasks = getAllTasks();
+      if (remainingTasks.length > 0) {
+        console.log(`Found ${remainingTasks.length} additional tasks to delete`);
+        tasks.push(...remainingTasks);
+        retryCount++;
+      }
+    }
   }
   
   return deletedCount;
@@ -240,14 +259,24 @@ export function verifyCleanState() {
   const columns = getCurrentColumns();
   
   let hasTasksInColumns = false;
+  let totalTasksInColumns = 0;
   if (columns && columns.columns_config) {
     for (const columnId in columns.columns_config) {
       const column = columns.columns_config[columnId];
       if (column.taskIds && column.taskIds.length > 0) {
         hasTasksInColumns = true;
-        break;
+        totalTasksInColumns += column.taskIds.length;
       }
     }
+  }
+  
+  // If we have tasks in columns but no actual tasks, clear column references
+  if (hasTasksInColumns && tasks.length === 0) {
+    console.log(`Detected ${totalTasksInColumns} ghost task references in columns. Clearing...`);
+    const cleanedColumns = clearColumnTaskIds(columns);
+    const response = authenticatedPut('/api/v1/column-settings/', cleanedColumns);
+    check(response, { 'ghost references cleared': (r) => r.status === 200 });
+    hasTasksInColumns = false;
   }
   
   const isClean = tasks.length === 0 && !hasTasksInColumns;
@@ -256,6 +285,10 @@ export function verifyCleanState() {
     console.log('✅ System is in clean state');
   } else {
     console.warn(`⚠️ System is not clean: ${tasks.length} tasks, tasks in columns: ${hasTasksInColumns}`);
+    // If not clean after cleanup attempts, log details for debugging
+    if (tasks.length > 0) {
+      console.log(`First 5 tasks: ${JSON.stringify(tasks.slice(0, 5).map(t => ({id: t.id, title: t.title})))}`);
+    }
   }
   
   return isClean;
@@ -269,12 +302,33 @@ export function verifyCleanState() {
 export function resetSystemState(fullReset = true) {
   console.log(`🔄 Resetting system state (full reset: ${fullReset})...`);
   
+  // First attempt
   const results = fullReset ? cleanupAndReset() : cleanupTasksOnly();
+  let isClean = results.success && verifyCleanState();
   
-  if (results.success) {
-    // Verify the reset worked
-    return verifyCleanState();
+  // If first attempt failed, try a more aggressive approach
+  if (!isClean) {
+    console.log('⚠️ First cleanup attempt incomplete, performing additional cleanup...');
+    
+    // Try an alternative approach - direct cleanup with verification
+    sleep(0.5); // Let API settle
+    deleteAllTasks();  // Directly delete tasks
+    
+    // Force-reset column settings
+    if (fullReset) {
+      resetToDefaultColumns();
+    } else {
+      const currentColumns = getCurrentColumns();
+      if (currentColumns) {
+        const cleanedColumns = clearColumnTaskIds(currentColumns);
+        authenticatedPut('/api/v1/column-settings/', cleanedColumns);
+      }
+    }
+    
+    // Final verification
+    sleep(0.5);
+    isClean = verifyCleanState();
   }
   
-  return false;
+  return isClean;
 }

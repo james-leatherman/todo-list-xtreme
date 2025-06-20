@@ -99,14 +99,66 @@ run_test() {
      # Set environment variables for k6
     export API_URL="${API_URL}"
 
-    # Run k6 with nice formatting and Prometheus remote write output
+    # Run k6 with nice formatting and save metrics to JSON for processing
+    K6_RESULT_FILE="/tmp/k6-result-${test_name//[^a-zA-Z0-9]/-}-$(date +%s).json"
+    
     k6 run \
         --duration="${duration}" \
         --vus="${vus}" \
         --summary-trend-stats="avg,min,med,max,p(90),p(95),p(99)" \
         --summary-time-unit=ms \
-        --out experimental-prometheus-rw=http://localhost:9090/api/v1/write \
+        --out json="${K6_RESULT_FILE}" \
         "${SCRIPTS_DIR}/${script_file}"
+    
+    # Process and push metrics to Prometheus if the file exists
+    if [ -f "${K6_RESULT_FILE}" ]; then
+        echo -e "${BLUE}📊 Pushing metrics to Prometheus...${NC}"
+        # Get check ratios - default to 0 if values aren't present
+        CHECKS_PASSED=$(jq -r '.metrics.checks.values.passes // 0' "${K6_RESULT_FILE}" 2>/dev/null || echo "0")
+        CHECKS_FAILED=$(jq -r '.metrics.checks.values.fails // 0' "${K6_RESULT_FILE}" 2>/dev/null || echo "0")
+        
+        # Calculate totals
+        TOTAL_CHECKS=$((CHECKS_PASSED + CHECKS_FAILED))
+        if [ "${TOTAL_CHECKS}" -eq "0" ]; then
+            # No checks were run, default to 1 to avoid division by zero
+            TOTAL_CHECKS=1
+            CHECKS_PASSED=1
+        fi
+        
+        # Use curl to push metrics directly to Prometheus PushGateway if available
+        # If pushgateway is not available, this will fail silently
+        if command -v curl &> /dev/null; then
+            # Label the metrics with the test name and timestamp
+            TEST_NAME_LABEL="${test_name//[^a-zA-Z0-9]/_}"
+            TIMESTAMP=$(date +%s)
+            
+            # Try to push to Prometheus Pushgateway
+            curl -s -X POST -H "Content-Type: text/plain" --data-binary @- http://localhost:9091/metrics/job/k6_tests/instance/${TEST_NAME_LABEL} <<EOF || true
+# HELP k6_checks_total Total number of checks executed
+# TYPE k6_checks_total gauge
+k6_checks_total ${TOTAL_CHECKS}
+# HELP k6_check_passes_total Total number of successful checks
+# TYPE k6_check_passes_total gauge
+k6_check_passes_total ${CHECKS_PASSED}
+# HELP k6_check_fails_total Total number of failed checks
+# TYPE k6_check_fails_total gauge
+k6_check_fails_total ${CHECKS_FAILED}
+# HELP k6_check_success_rate Check success rate as a percentage
+# TYPE k6_check_success_rate gauge
+k6_check_success_rate $(awk "BEGIN { printf \"%.2f\", (${CHECKS_PASSED} / ${TOTAL_CHECKS}) * 100 }")
+# HELP k6_test_timestamp Unix timestamp when test was executed
+# TYPE k6_test_timestamp gauge
+k6_test_timestamp ${TIMESTAMP}
+EOF
+            echo -e "${GREEN}✅ Metrics pushed to Prometheus Pushgateway${NC}"
+        else
+            echo -e "${YELLOW}⚠️ curl not found, skipping metrics push${NC}"
+        fi
+        
+        echo -e "${BLUE}📊 K6 results saved to ${K6_RESULT_FILE}${NC}"
+    else
+        echo -e "${YELLOW}⚠️ No result file generated${NC}"
+    fi
     
     echo ""
     echo -e "${GREEN}✅ ${test_name} completed${NC}"

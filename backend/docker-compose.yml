@@ -104,6 +104,11 @@ services:
     command: ["--config=/etc/otel-collector-config.yml"]
     depends_on:
       - tempo
+      
+  pushgateway:
+    image: prom/pushgateway:latest
+    ports:
+      - "9091:9091"
 
   tempo:
     image: grafana/tempo:latest

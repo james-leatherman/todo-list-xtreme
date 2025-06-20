@@ -8,12 +8,14 @@ This directory contains all k6 load testing scripts and modules for the Todo Lis
 k6-tests/
 ├── modules/                    # Shared k6 modules
 │   ├── auth.js                # Authentication utilities
+│   ├── checks.js              # Standardized check functions
 │   └── setup.js               # Setup and cleanup utilities
 ├── k6-quick-test.js           # Basic functionality test
 ├── k6-debug-test.js           # Debug test with detailed logging
 ├── k6-api-load-test.js        # Comprehensive API load test
 ├── k6-concurrent-load.js      # High concurrency load test
 ├── k6-comprehensive-test.js   # Full feature coverage test
+├── k6-checks-demo.js         # Demonstration of checks module usage
 ├── run-k6-tests.sh           # Test runner script
 └── README.md                 # This file
 ```

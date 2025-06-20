@@ -25,6 +25,12 @@ import {
   resetSystemState, 
   verifyCleanState 
 } from './modules/setup.js';
+import {
+  checkSuccess,
+  checkTaskResponse,
+  checkColumnsResponse,
+  checkHealth
+} from './modules/checks.js';
 
 export const options = {
   vus: 5,
@@ -77,9 +83,7 @@ export default function () {
   // 1. Add/Update columns
   console.log(`[VU ${__VU}] Updating column configuration...`);
   let response = authenticatedPut('/api/v1/column-settings/', quickColumnConfig);
-  check(response, {
-    'columns updated': (r) => r.status === 200,
-  });
+  checkColumnsResponse(response, 'update');
   
   // 2. Add tasks
   console.log(`[VU ${__VU}] Adding tasks...`);
@@ -93,9 +97,7 @@ export default function () {
     };
     
     response = authenticatedPost('/api/v1/todos/', taskData);
-    const success = check(response, {
-      'task created': (r) => r.status === 201,
-    });
+    const success = checkTaskResponse(response, 'create');
     
     if (success) {
       try {
@@ -116,16 +118,13 @@ export default function () {
     console.log(`[VU ${__VU}] Removing task: ${taskToRemove.title}`);
     
     response = authenticatedDelete(`/api/v1/todos/${taskToRemove.id}`);
-    check(response, {
-      'task removed': (r) => r.status === 204,
-    });
+    checkTaskResponse(response, 'delete');
   }
   
   // 4. Check API health
   response = http.get(`${getBaseURL()}/health`);
-  check(response, {
-    'API healthy': (r) => r.status === 200,
-  });
+  const healthCheck = checkHealth(response);
+  console.log(`[VU ${__VU}] Health check passed: ${healthCheck}, status: ${JSON.stringify(response.json())}`)
   
   sleep(1);
 }

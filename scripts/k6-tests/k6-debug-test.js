@@ -7,13 +7,15 @@
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { getAuthHeaders, authenticatedPut, authenticatedPost, getBaseURL } from './modules/auth.js';
+import { getAuthHeaders, authenticatedPut, authenticatedPost, authenticatedGet, authenticatedDelete, getBaseURL, normalizeUri } from './modules/auth.js';
 import { resetSystemState, verifyCleanState } from './modules/setup.js';
 
 export const options = {
   vus: 1,
   duration: '10s',
 };
+
+const SCRIPT_NAME = 'k6-debug-test.js';
 
 // Quick test data
 const quickColumnConfig = {
@@ -57,7 +59,7 @@ export default function () {
   
   // 1. Test column settings update
   console.log(`[DEBUG] Testing column settings update...`);
-  let response = authenticatedPut('/api/v1/column-settings/', quickColumnConfig);
+  let response = authenticatedPut('/api/v1/column-settings/', quickColumnConfig, { tags: { url: '/api/v1/column-settings/', script: SCRIPT_NAME } });
   console.log(`[DEBUG] Column settings response: Status=${response.status}, Body=${response.body}`);
   
   check(response, {
@@ -81,7 +83,7 @@ export default function () {
   };
   
   console.log(`[DEBUG] Task payload: ${JSON.stringify(taskData)}`);
-  response = authenticatedPost('/api/v1/todos/', taskData);
+  response = authenticatedPost('/api/v1/todos/', taskData, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
   console.log(`[DEBUG] Task creation response: Status=${response.status}, Body=${response.body}`);
   
   check(response, {
@@ -97,7 +99,7 @@ export default function () {
   sleep(0.5);
   
   // 3. Check API health
-  response = http.get(`${getBaseURL()}/health`);
+  response = http.get(`${getBaseURL()}/health`, { tags: { url: '/health', script: SCRIPT_NAME } });
   console.log(`[DEBUG] Health check response: Status=${response.status}`);
   
   check(response, {
@@ -129,3 +131,35 @@ export function teardown() {
   resetSystemState();
   console.log('[DEBUG] Debug test completed');
 }
+
+// Example usage of normalizeUri
+const uri = normalizeUri('/api/v1/todos/67890');
+console.log(`Normalized URI: ${uri}`);
+
+// Debug test function
+function debugTest() {
+  console.log('Running debug test...');
+
+  // Example: Get column settings
+  let response = authenticatedGet('/api/v1/column-settings');
+  check(response, {
+    'get column settings successful': (r) => r.status === 200,
+  });
+
+  // Example: Create a new task
+  const taskData = { title: 'Debug Test Task', description: 'Created during debug test', status: 'todo' };
+  const createResponse = authenticatedPost('/api/v1/todos/', taskData);
+  check(createResponse, {
+    'task created successfully': (r) => r.status === 201,
+  });
+
+  // Example: Delete the task
+  const taskId = createResponse.json('id');
+  const deleteResponse = authenticatedDelete(`/api/v1/todos/${taskId}`);
+  check(deleteResponse, {
+    'task deleted successfully': (r) => r.status === 204,
+  });
+}
+
+// Run debug test function
+debugTest();

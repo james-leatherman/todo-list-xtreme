@@ -19,7 +19,8 @@ import {
   authenticatedGet,
   authenticatedPost,
   authenticatedPut,
-  authenticatedDelete
+  authenticatedDelete,
+  normalizeUri
 } from './modules/auth.js';
 import { 
   resetSystemState, 
@@ -70,6 +71,8 @@ const quickTasks = [
   { title: 'Quick Test Task 3', description: 'API testing completed', status: 'done' }
 ];
 
+const SCRIPT_NAME = 'k6-quick-test.js';
+
 export default function () {
   // 0. Reset system state at the start of each iteration for VU 1
   if (__VU === 1 && __ITER === 0) {
@@ -82,7 +85,7 @@ export default function () {
   
   // 1. Add/Update columns
   console.log(`[VU ${__VU}] Updating column configuration...`);
-  let response = authenticatedPut('/api/v1/column-settings/', quickColumnConfig);
+  let response = authenticatedPut('/api/v1/column-settings/', quickColumnConfig, { tags: { url: '/api/v1/column-settings/', script: SCRIPT_NAME } });
   checkColumnsResponse(response, 'update');
   
   // 2. Add tasks
@@ -96,7 +99,7 @@ export default function () {
       description: `${task.description} (VU ${__VU}, Iteration ${__ITER})`
     };
     
-    response = authenticatedPost('/api/v1/todos/', taskData);
+    response = authenticatedPost('/api/v1/todos/', taskData, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
     const success = checkTaskResponse(response, 'create');
     
     if (success) {
@@ -117,12 +120,12 @@ export default function () {
     const taskToRemove = tasksCreated[Math.floor(Math.random() * tasksCreated.length)];
     console.log(`[VU ${__VU}] Removing task: ${taskToRemove.title}`);
     
-    response = authenticatedDelete(`/api/v1/todos/${taskToRemove.id}`);
+    response = authenticatedDelete(`/api/v1/todos/${taskToRemove.id}`, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
     checkTaskResponse(response, 'delete');
   }
   
   // 4. Check API health
-  response = http.get(`${getBaseURL()}/health`);
+  response = http.get(`${getBaseURL()}/health`, { tags: { url: '/health', script: SCRIPT_NAME } });
   const healthCheck = checkHealth(response);
   console.log(`[VU ${__VU}] Health check passed: ${healthCheck}, status: ${JSON.stringify(response.json())}`)
   

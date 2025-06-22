@@ -18,7 +18,8 @@ import {
   authenticatedGet,
   authenticatedPost,
   authenticatedPut,
-  authenticatedDelete
+  authenticatedDelete,
+  normalizeUri
 } from './modules/auth.js';
 import { 
   resetSystemState, 
@@ -72,6 +73,8 @@ const taskTemplates = [
   { title: 'Deploy to Production', description: 'Configure CI/CD pipeline and deploy', status: 'done' }
 ];
 
+const SCRIPT_NAME = 'k6-comprehensive-test.js';
+
 export default function () {
   // Each VU runs its own test scenario
   const vuScenario = (__VU - 1) % 3; // 0, 1, or 2
@@ -113,7 +116,7 @@ function runBasicCRUDTest() {
       description: `${template.description} (CRUD Test)`
     };
     
-    const response = authenticatedPost('/api/v1/todos/', taskData);
+    const response = authenticatedPost(`/api/v1/todos/`, taskData, { tags: { url: `/api/v1/todos/`, uri: normalizeUri(`/api/v1/todos/`), script: SCRIPT_NAME } });
     const success = check(response, {
       'task created successfully': (r) => r.status === 201,
     });
@@ -146,7 +149,7 @@ function runBasicCRUDTest() {
       status: 'inProgress'
     };
     
-    const updateResponse = authenticatedPut(`/api/v1/todos/${taskToUpdate.id}`, updateData);
+    const updateResponse = authenticatedPut(`/api/v1/todos/${taskToUpdate.id}`, updateData, { tags: { url: `/api/v1/todos/${taskToUpdate.id}`, uri: normalizeUri(`/api/v1/todos/${taskToUpdate.id}`), script: SCRIPT_NAME } });
     check(updateResponse, {
       'task updated successfully': (r) => r.status === 200,
     });
@@ -154,7 +157,7 @@ function runBasicCRUDTest() {
   
   // Delete tasks
   for (const task of tasksCreated) {
-    const deleteResponse = authenticatedDelete(`/api/v1/todos/${task.id}`);
+    const deleteResponse = authenticatedDelete(`/api/v1/todos/${task.id}`, { tags: { url: `/api/v1/todos/${task.id}`, uri: normalizeUri(`/api/v1/todos/${task.id}`), script: SCRIPT_NAME } });
     check(deleteResponse, {
       'task deleted successfully': (r) => r.status === 204,
     });
@@ -175,13 +178,13 @@ function runColumnManagementTest() {
   console.log(`[VU ${__VU}] Testing ${testConfig.name} configuration`);
   
   // Update column configuration
-  const updateResponse = authenticatedPut('/api/v1/column-settings/', testConfig.config);
+  const updateResponse = authenticatedPut('/api/v1/column-settings/', testConfig.config, { tags: { url: '/api/v1/column-settings/', script: SCRIPT_NAME } });
   check(updateResponse, {
     'column configuration updated': (r) => r.status === 200,
   });
   
   // Verify column configuration
-  const getResponse = authenticatedGet('/api/v1/column-settings/');
+  const getResponse = authenticatedGet('/api/v1/column-settings/', { tags: { url: '/api/v1/column-settings/', script: SCRIPT_NAME } });
   const getSuccess = check(getResponse, {
     'column configuration retrieved': (r) => r.status === 200,
   });
@@ -230,7 +233,7 @@ function runWorkflowTest() {
       status: status
     };
     
-    const response = authenticatedPost('/api/v1/todos/', taskData);
+    const response = authenticatedPost('/api/v1/todos/', taskData, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
     const success = check(response, {
       'workflow task created': (r) => r.status === 201,
     });

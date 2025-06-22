@@ -16,7 +16,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
-import { getAuthHeaders, authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete, getBaseURL } from './modules/auth.js';
+import { getAuthHeaders, authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete, getBaseURL, normalizeUri } from './modules/auth.js';
 import { resetSystemState, verifyCleanState } from './modules/setup.js';
 
 // Custom metrics
@@ -71,40 +71,6 @@ const sampleColumnConfigs = [
 ];
 
 // Helper functions
-function makeRequest(method, url, payload = null) {
-  let response;
-  
-  // Use modularized auth functions
-  switch (method.toLowerCase()) {
-    case 'get':
-      response = authenticatedGet(url);
-      break;
-    case 'post':
-      response = authenticatedPost(url, payload);
-      break;
-    case 'put':
-      response = authenticatedPut(url, payload);
-      break;
-    case 'delete':
-      response = authenticatedDelete(url);
-      break;
-    default:
-      throw new Error(`Unsupported HTTP method: ${method}`);
-  }
-  
-  // Track metrics
-  const success = check(response, {
-    'status is 200': (r) => r.status >= 200 && r.status < 300,
-    'response time < 2000ms': (r) => r.timings.duration < 2000,
-  });
-  
-  errorRate.add(!success);
-  responseTrend.add(response.timings.duration);
-  operationCounter.add(1);
-  
-  return response;
-}
-
 function getRandomElement(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
@@ -144,27 +110,27 @@ function testColumnOperations() {
   console.log('Testing column operations...');
   
   // 1. Get current column settings
-  let response = makeRequest('GET', '/api/v1/column-settings');
+  let response = authenticatedGet('/api/v1/column-settings');
   check(response, {
     'get column settings successful': (r) => r.status === 200,
   });
   
   // 2. Update column settings (add/modify columns)
   const newConfig = getRandomElement(sampleColumnConfigs);
-  response = makeRequest('PUT', '/api/v1/column-settings', newConfig);
+  response = authenticatedPut('/api/v1/column-settings', newConfig);
   check(response, {
     'update column settings successful': (r) => r.status === 200,
   });
   
   // 3. Get default column settings
-  response = makeRequest('GET', '/api/v1/column-settings/default');
+  response = authenticatedGet('/api/v1/column-settings/default');
   check(response, {
     'get default column settings successful': (r) => r.status === 200,
   });
   
   // 4. Reset column settings (occasionally)
   if (Math.random() < 0.1) {
-    response = makeRequest('POST', '/api/v1/column-settings/reset');
+    response = authenticatedPost('/api/v1/column-settings/reset');
     check(response, {
       'reset column settings successful': (r) => r.status === 200,
     });
@@ -175,7 +141,7 @@ function testTodoOperations() {
   console.log('Testing todo operations...');
   
   // 1. Get all todos
-  let response = makeRequest('GET', '/api/v1/todos/');
+  let response = authenticatedGet('/api/v1/todos/');
   check(response, {
     'get todos successful': (r) => r.status === 200,
   });
@@ -197,7 +163,7 @@ function testTodoOperations() {
     description: `${newTodo.description} (Created by k6 test at ${new Date().toISOString()})`
   };
   
-  response = makeRequest('POST', '/api/v1/todos/', todoToCreate);
+  response = authenticatedPost('/api/v1/todos/', todoToCreate);
   let createdTodo = null;
   if (check(response, {
     'create todo successful': (r) => r.status === 201,
@@ -220,13 +186,13 @@ function testTodoOperations() {
       is_completed: todoToUpdate.status === 'done'
     };
     
-    response = makeRequest('PUT', `/api/v1/todos/${todoToUpdate.id}/`, updatedData);
+    response = authenticatedPut(`/api/v1/todos/${todoToUpdate.id}/`, updatedData);
     check(response, {
       'update todo successful': (r) => r.status === 200,
     });
     
     // 4. Get the specific todo
-    response = makeRequest('GET', `/api/v1/todos/${todoToUpdate.id}/`);
+    response = authenticatedGet(`/api/v1/todos/${todoToUpdate.id}/`);
     check(response, {
       'get specific todo successful': (r) => r.status === 200,
     });
@@ -234,7 +200,7 @@ function testTodoOperations() {
   
   // 5. Delete a todo (remove task) - occasionally
   if (todoToUpdate && Math.random() < 0.3) {
-    response = makeRequest('DELETE', `/api/v1/todos/${todoToUpdate.id}`);
+    response = authenticatedDelete(`/api/v1/todos/${todoToUpdate.id}`);
     check(response, {
       'delete todo successful': (r) => r.status === 204,
     });
@@ -257,7 +223,7 @@ function testBulkOperations() {
       status: 'todo'
     };
     
-    const response = makeRequest('POST', '/api/v1/todos/', todoData);
+    const response = authenticatedPost('/api/v1/todos/', todoData);
     if (response.status === 201) {
       try {
         createdTodos.push(JSON.parse(response.body));
@@ -271,7 +237,7 @@ function testBulkOperations() {
   // Bulk delete by status (remove tasks by column)
   if (Math.random() < 0.2) { // 20% chance to do bulk delete
     const statusToDelete = 'todo';
-    const response = makeRequest('DELETE', `/api/v1/todos/column/${statusToDelete}`);
+    const response = authenticatedDelete(`/api/v1/todos/column/${statusToDelete}`);
     check(response, {
       'bulk delete todos successful': (r) => r.status === 204,
     });
@@ -282,31 +248,31 @@ function testHealthEndpoints() {
   console.log('Testing health endpoints...');
   
   // 1. Basic health check
-  let response = makeRequest('GET', '/health');
+  let response = authenticatedGet('/health');
   check(response, {
     'health check successful': (r) => r.status === 200,
   });
   
   // 2. Detailed health check
-  response = makeRequest('GET', '/api/v1/health/detailed');
+  response = authenticatedGet('/api/v1/health/detailed');
   check(response, {
     'detailed health check successful': (r) => r.status === 200,
   });
   
   // 3. Database health check
-  response = makeRequest('GET', '/api/v1/health/database');
+  response = authenticatedGet('/api/v1/health/database');
   check(response, {
     'database health check successful': (r) => r.status === 200,
   });
   
   // 4. Auth check
-  response = makeRequest('GET', '/api/v1/auth/me/');
+  response = authenticatedGet('/api/v1/auth/me/');
   check(response, {
     'auth check successful': (r) => r.status === 200,
   });
   
   // 5. API status
-  response = makeRequest('GET', '/api/v1/status');
+  response = authenticatedGet('/api/v1/status');
   check(response, {
     'api status check successful': (r) => r.status === 200,
   });

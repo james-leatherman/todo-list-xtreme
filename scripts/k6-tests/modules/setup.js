@@ -204,7 +204,7 @@ export function cleanupAndReset() {
       results.success = true;
       console.log('✅ System cleanup and reset completed successfully');
     } else {
-      console.warn(`⚠️ Cleanup incomplete: ${finalTasks.length} tasks remaining, columns reset: ${results.columnsReset}`);
+      console.warn(`⚠️  Cleanup incomplete: ${finalTasks.length} tasks remaining, columns reset: ${results.columnsReset}`);
     }
     
   } catch (error) {
@@ -284,7 +284,7 @@ export function verifyCleanState() {
   if (isClean) {
     console.log('✅ System is in clean state');
   } else {
-    console.warn(`⚠️ System is not clean: ${tasks.length} tasks, tasks in columns: ${hasTasksInColumns}`);
+    console.warn(`⚠️  System is not clean: ${tasks.length} tasks, tasks in columns: ${hasTasksInColumns}`);
     // If not clean after cleanup attempts, log details for debugging
     if (tasks.length > 0) {
       console.log(`First 5 tasks: ${JSON.stringify(tasks.slice(0, 5).map(t => ({id: t.id, title: t.title})))}`);
@@ -308,7 +308,7 @@ export function resetSystemState(fullReset = true) {
   
   // If first attempt failed, try a more aggressive approach
   if (!isClean) {
-    console.log('⚠️ First cleanup attempt incomplete, performing additional cleanup...');
+    console.log('⚠️  First cleanup attempt incomplete, performing additional cleanup...');
     
     // Try an alternative approach - direct cleanup with verification
     sleep(0.5); // Let API settle

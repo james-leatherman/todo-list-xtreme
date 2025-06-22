@@ -13,7 +13,8 @@ import {
   authenticatedGet,
   authenticatedPost,
   authenticatedPut,
-  authenticatedDelete
+  authenticatedDelete,
+  normalizeUri
 } from './modules/auth.js';
 import { 
   resetSystemState
@@ -67,6 +68,8 @@ const demoColumns = {
   }
 };
 
+const SCRIPT_NAME = 'k6-checks-demo.js';
+
 export default function () {
   // Initialize test environment
   if (__VU === 1 && __ITER === 0) {
@@ -78,7 +81,7 @@ export default function () {
 
   // 1. Demo checkHealth
   console.log('Testing API health check...');
-  let response = http.get(`${getBaseURL()}/health`);
+  let response = http.get(`${getBaseURL()}/health`, { tags: { url: '/health', script: SCRIPT_NAME } });
   checkHealth(response);
   
   // 2. Demo checkSuccess with generic endpoints
@@ -89,7 +92,7 @@ export default function () {
   // 3. Demo checkTaskResponse
   console.log('Testing task creation checks...');
   // Create task
-  response = authenticatedPost('/api/v1/todos/', demoTask);
+  response = authenticatedPost('/api/v1/todos/', demoTask, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
   checkTaskResponse(response, 'create');
   const taskId = response.json('id');
   
@@ -106,12 +109,12 @@ export default function () {
   
   // Delete task
   console.log('Testing task deletion checks...');
-  response = authenticatedDelete(`/api/v1/todos/${taskId}`);
+  response = authenticatedDelete(`/api/v1/todos/${taskId}`, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
   checkTaskResponse(response, 'delete');
 
   // 4. Demo checkColumnsResponse
   console.log('Testing column settings checks...');
-  response = authenticatedPut('/api/v1/column-settings/', demoColumns);
+  response = authenticatedPut('/api/v1/column-settings/', demoColumns, { tags: { url: '/api/v1/column-settings/', script: SCRIPT_NAME } });
   checkColumnsResponse(response, 'update');
   
   response = authenticatedGet('/api/v1/column-settings/');
@@ -140,6 +143,37 @@ export default function () {
     headers: { 'Content-Type': 'application/json' } // No auth token
   });
   checkAuthError(response);
+
+  // Example usage of normalizeUri
+  const uri = normalizeUri('/api/v1/todos/54321');
+  console.log(`Normalized URI: ${uri}`);
+
+  // --- Checks Demo Test Function ---
+  function checksDemoTest() {
+    console.log('Running checks demo test...');
+
+    // Example: Get column settings
+    let response = authenticatedGet('/api/v1/column-settings');
+    check(response, {
+      'get column settings successful': (r) => r.status === 200,
+    });
+
+    // Example: Create a new task
+    const taskData = { title: 'Checks Demo Test Task', description: 'Created during checks demo test', status: 'todo' };
+    const createResponse = authenticatedPost('/api/v1/todos/', taskData);
+    check(createResponse, {
+      'task created successfully': (r) => r.status === 201,
+    });
+
+    // Example: Delete the task
+    const taskId = createResponse.json('id');
+    const deleteResponse = authenticatedDelete(`/api/v1/todos/${taskId}`);
+    check(deleteResponse, {
+      'task deleted successfully': (r) => r.status === 204,
+    });
+  }
+
+  checksDemoTest();
 
   sleep(1);
 }

@@ -54,9 +54,10 @@ export function verifyAuth() {
  * @param {string} endpoint - The API endpoint (relative to base URL)
  * @returns {Object} HTTP response
  */
-export function authenticatedGet(endpoint) {
+export function authenticatedGet(endpoint, params = {}) {
+  params.tags = { url: `${BASE_URL}${endpoint}`, uri: normalizeUri(`${BASE_URL}${endpoint}`) };
   const headers = getAuthHeaders();
-  return http.get(`${BASE_URL}${endpoint}`, { headers });
+  return http.get(`${BASE_URL}${endpoint}`, { headers, ...params });
 }
 
 /**
@@ -65,9 +66,10 @@ export function authenticatedGet(endpoint) {
  * @param {Object} data - Request body data
  * @returns {Object} HTTP response
  */
-export function authenticatedPost(endpoint, data) {
+export function authenticatedPost(endpoint, data, params = {}) {
+  params.tags = { url: `${BASE_URL}${endpoint}`, uri: normalizeUri(`${BASE_URL}${endpoint}`) };
   const headers = getAuthHeaders();
-  return http.post(`${BASE_URL}${endpoint}`, JSON.stringify(data), { headers });
+  return http.post(`${BASE_URL}${endpoint}`, JSON.stringify(data), { headers, ...params });
 }
 
 /**
@@ -76,9 +78,10 @@ export function authenticatedPost(endpoint, data) {
  * @param {Object} data - Request body data
  * @returns {Object} HTTP response
  */
-export function authenticatedPut(endpoint, data) {
+export function authenticatedPut(endpoint, data, params = {}) {
+  params.tags = { url: `${BASE_URL}${endpoint}`, uri: normalizeUri(`${BASE_URL}${endpoint}`) };
   const headers = getAuthHeaders();
-  return http.put(`${BASE_URL}${endpoint}`, JSON.stringify(data), { headers });
+  return http.put(`${BASE_URL}${endpoint}`, JSON.stringify(data), { headers, ...params });
 }
 
 /**
@@ -86,7 +89,23 @@ export function authenticatedPut(endpoint, data) {
  * @param {string} endpoint - The API endpoint (relative to base URL)
  * @returns {Object} HTTP response
  */
-export function authenticatedDelete(endpoint) {
+export function authenticatedDelete(endpoint, params = {}) {
+  params.tags = { url: `${BASE_URL}${endpoint}`, uri: normalizeUri(`${BASE_URL}${endpoint}`) };
   const headers = getAuthHeaders();
-  return http.del(`${BASE_URL}${endpoint}`, null, { headers });
+  return http.del(`${BASE_URL}${endpoint}`, null, { headers, ...params });
+}
+
+/**
+ * Normalize a URL by stripping task IDs or variable path segments
+ * @param {string} url - The original URL
+ * @returns {string} Normalized URI
+ */
+export function normalizeUri(url) {
+  // Remove host and port
+  const trimmedUrl = url.replace(/^https?:\/\/[^/]+/, '');
+
+  // Preserve API version and replace numeric IDs or UUIDs in the URL with a placeholder
+  return trimmedUrl.replace(/(\/api\/v\d+)(.*)/, (match, apiVersion, rest) => {
+    return apiVersion + rest.replace(/\d+/g, '{id}').replace(/[a-f0-9-]{36}/g, '{uuid}');
+  });
 }

@@ -16,7 +16,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate, Trend, Counter, Gauge } from 'k6/metrics';
-import { getAuthHeaders, authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete, getBaseURL } from './modules/auth.js';
+import { getAuthHeaders, authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete, getBaseURL, normalizeUri } from './modules/auth.js';
 import { resetSystemState, verifyCleanState } from './modules/setup.js';
 
 // Custom metrics for better observability
@@ -125,13 +125,13 @@ function makeApiCall(method, url, payload = null) {
         response = authenticatedGet(url);
         break;
       case 'post':
-        response = authenticatedPost(url, payload);
+        response = authenticatedPost(url, payload, { tags: { url: url, script: SCRIPT_NAME } });
         break;
       case 'put':
-        response = authenticatedPut(url, payload);
+        response = authenticatedPut(url, payload, { tags: { url: url, script: SCRIPT_NAME } });
         break;
       case 'delete':
-        response = authenticatedDelete(url);
+        response = authenticatedDelete(url, { tags: { url: url, script: SCRIPT_NAME } });
         break;
       default:
         throw new Error(`Unsupported HTTP method: ${method}`);
@@ -401,7 +401,7 @@ export function setup() {
   console.log('Setting up concurrent load test...');
   
   // Verify API accessibility
-  const response = http.get(`${getBaseURL()}/health`);
+  let response = http.get(`${getBaseURL()}/health`, { tags: { url: '/health', script: SCRIPT_NAME } });
   if (response.status !== 200) {
     throw new Error(`API not accessible: ${response.status} - ${response.body}`);
   }

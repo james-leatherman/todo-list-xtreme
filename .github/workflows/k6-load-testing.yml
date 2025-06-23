@@ -141,55 +141,58 @@ jobs:
           echo "API endpoints may not be fully ready, continuing anyway..."
         fi
 
-    - name: Run k6 tests
-      working-directory: ./scripts
+    - name: Run k6 tests with Docker
+      working-directory: ./backend
       env:
-        API_URL: http://localhost:8000
         AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
         TEST_TYPE: ${{ github.event.inputs.test_type || 'all' }}
         DURATION: ${{ github.event.inputs.duration || '2m' }}
         VUS: ${{ github.event.inputs.vus || '10' }}
       run: |
-        echo "Running k6 tests with type: $TEST_TYPE, duration: $DURATION, VUs: $VUS"
+        echo "Running k6 tests with Docker: type=$TEST_TYPE, duration=$DURATION, VUs=$VUS"
+        
+        # Create directory for results and set appropriate permissions
+        mkdir -p k6-results
+        chmod -R 755 k6-results
         
         case $TEST_TYPE in
           "quick")
             echo "Running k6 quick test..."
-            TEST_MODE=quick k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick /scripts/k6-unified-test.js
             ;;
           "debug")
             echo "Running k6 debug test..."
-            TEST_MODE=quick DEBUG=true k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick -e DEBUG=true /scripts/k6-unified-test.js
             ;;
           "load")
             echo "Running k6 load test..."
-            TEST_MODE=load k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=load /scripts/k6-unified-test.js
             ;;
           "comprehensive")
             echo "Running k6 comprehensive test..."
-            TEST_MODE=comprehensive k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=comprehensive /scripts/k6-unified-test.js
             ;;
           "concurrent"|"stress")
             echo "Running k6 stress test..."
-            TEST_MODE=stress k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=stress /scripts/k6-unified-test.js
             ;;
           "all"|*)
             echo "Running all k6 tests..."
             
             echo "1. Quick test..."
-            TEST_MODE=quick k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick /scripts/k6-unified-test.js
             
             echo "2. Debug test..."
-            TEST_MODE=quick DEBUG=true k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick -e DEBUG=true /scripts/k6-unified-test.js
             
             echo "3. Load test..."
-            TEST_MODE=load k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=load /scripts/k6-unified-test.js
             
             echo "4. Comprehensive test..."
-            TEST_MODE=comprehensive k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=comprehensive /scripts/k6-unified-test.js
             
             echo "5. Stress test..."
-            TEST_MODE=stress k6 run k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=stress /scripts/k6-unified-test.js
             ;;
         esac
 
@@ -199,8 +202,8 @@ jobs:
       with:
         name: k6-test-results
         path: |
-          scripts/*.json
-          scripts/*.html
+          backend/k6-results/*.json
+          backend/k6-results/*.html
         retention-days: 30
 
     - name: Cleanup

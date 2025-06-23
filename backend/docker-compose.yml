@@ -141,6 +141,18 @@ services:
       - loki
     restart: unless-stopped
 
+  k6:
+    image: grafana/k6:latest
+    volumes:
+      - ../scripts:/scripts
+      - ./k6-results:/results
+    environment:
+      - K6_OUT=json=/results/k6-results.json
+      - API_URL=http://api:8000
+      - AUTH_TOKEN=${AUTH_TOKEN:-}
+    depends_on:
+      - api
+
 volumes:
   postgres_data:
   grafana_data:

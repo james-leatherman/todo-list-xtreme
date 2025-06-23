@@ -11,6 +11,19 @@ A full-stack to-do list application with photo upload capabilities, responsive d
 
 This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It includes all core functionality and is ready for basic use and testing.
 
+## What's New in v1.5.1 (2025-06-23)
+
+- **Improved Load Testing:** Fixed k6 test script validation for task status values, ensuring all tests run successfully in local and CI environments.
+- **Docker Integration:** Enhanced k6 test execution with proper Docker support, fixed path references, and consistent volume mounts.
+- **CI Workflow:** Updated GitHub Actions workflow for reliable k6 test execution and results collection.
+- **API Compatibility:** Ensured all test scripts use API-valid status values (`todo`, `inProgress`, `blocked`, `done`).
+
+## What's New in v1.5.0 (2025-06-17)
+
+- **Metrics Module Improvements:** Refactored Prometheus metrics with better type safety and error handling.
+- **OAuth Enhancement:** Improved Google OAuth flow with better debugging and error handling.
+- **Development Tools:** Added debugging utilities and fixed import resolution issues.
+
 ## What's New in v1.4.0 (2025-06-10)
 
 - **Accessibility First:** Added comprehensive id/name attributes to all interactive elements for better testing and accessibility support.
@@ -282,6 +295,29 @@ MIT License
 - AWS and Terraform for the infrastructure
 
 ## Tests & Utilities
+
+### Load Testing with k6
+- `scripts/k6-tests/k6-unified-test.js`: Unified load testing script that can run different testing scenarios:
+  - Quick smoke tests
+  - Load tests with stages
+  - Comprehensive feature tests
+  - Stress tests with high VU count
+- **Run load tests:**
+  ```bash
+  # Run quick smoke test
+  ./scripts/k6-tests/run-k6-tests.sh quick
+  
+  # Run comprehensive test
+  ./scripts/k6-tests/run-k6-tests.sh comprehensive
+  
+  # Run load test using Docker
+  ./scripts/k6-tests/run-k6-tests.sh load --docker
+  
+  # Run stress test
+  ./scripts/k6-tests/run-k6-tests.sh stress
+  ```
+- All tests can be run locally or using Docker integration via the `--docker` flag
+- Fully integrated with GitHub Actions CI workflow for automated load testing
 
 ### Backend Test Scripts
 - `test_api.py`: End-to-end API test for all main endpoints. Run with `python test_api.py` (requires backend running and test user/token).

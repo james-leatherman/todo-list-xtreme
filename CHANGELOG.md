@@ -5,12 +5,25 @@ All notable changes to the Todo List Xtreme project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Changelog
+## [1.5.1] - 2025-06-23
+### Added
+- **k6 Docker Integration**: Added full Docker support for k6 load testing
+  - New k6 service in backend docker-compose.yml
+  - Docker-compatible test execution in CI/CD and local environments
+  - Results directory for storing test artifacts
+  
+### Fixed
+- **k6 Test Scripts**: Fixed validation errors in k6 load tests
+  - Corrected all status values to match API validation pattern (todo, inProgress, blocked, done)
+  - Fixed all path references in GitHub Actions workflow to correctly target test scripts
+  - Ensured consistent volume mounts between local Docker and CI environments
+  - Resolved "file not found" errors when running tests in Docker
 
-All notable changes to the Todo List Xtreme project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### Improved
+- **Load Testing Workflow**: Enhanced k6 test execution and result collection
+  - Added clear documentation for each k6 test issue fixed
+  - Improved run-k6-tests.sh script with better Docker support
+  - Standardized test configuration across all environments
 
 ## [1.5.0] - 2025-06-17
 ### Changed

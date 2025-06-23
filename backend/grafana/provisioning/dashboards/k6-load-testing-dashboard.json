@@ -1084,9 +1084,12 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "browser"
+        ],
         "tooltip": {
           "hideZeros": false,
-          "mode": "multi",
+          "mode": "single",
           "sort": "desc"
         }
       },
@@ -1098,7 +1101,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, handler)) * 1000",
+          "expr": "sum(rate(http_request_duration_seconds_bucket[5m])) by (method, handler)",
           "legendFormat": "{{method}} {{handler}}",
           "range": true,
           "refId": "A"
@@ -1636,7 +1639,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[1m])) by (le)) * 1000",
+          "expr": "sum(rate(http_request_duration_seconds_bucket[1m]))",
           "hide": false,
           "legendFormat": "API ms",
           "range": true,
@@ -1796,6 +1799,80 @@
       ],
       "title": "Comparison - Request Rate",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-main"
+      },
+      "description": "k6 check success rate percentage by check",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "orange",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 65
+      },
+      "id": 23,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "expr": "k6_successful_checks_total / (k6_successful_checks_total + k6_unsuccessful_checks_total) * 100",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "k6 - Check Success Rate per Check",
+      "type": "gauge"
     }
   ],
   "preload": false,
@@ -1812,12 +1889,12 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "API + k6 Performance Dashboard - Todo List Xtreme",
   "uid": "fastapi-k6-dashboard",
-  "version": 22
+  "version": 25
 }

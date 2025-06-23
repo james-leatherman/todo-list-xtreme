@@ -251,9 +251,10 @@ jobs:
       env:
         API_URL: http://localhost:8000
         AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
+        DEBUG: true
       run: |
         echo "Running k6 quick test..."
-        k6 run --duration=30s --vus=5 --summary-trend-stats="avg,min,med,max,p(95),p(99)" --debug k6-quick-test.js
+        k6 run --duration=30s --vus=5 --summary-trend-stats="avg,min,med,max,p(95),p(99)" k6-quick-test.js
 
     - name: Run k6 load test
       working-directory: ./scripts/k6-tests

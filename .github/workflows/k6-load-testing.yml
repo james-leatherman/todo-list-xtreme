@@ -158,41 +158,41 @@ jobs:
         case $TEST_TYPE in
           "quick")
             echo "Running k6 quick test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick /scripts/k6-tests/k6-unified-test.js
             ;;
           "debug")
             echo "Running k6 debug test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick -e DEBUG=true /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick -e DEBUG=true /scripts/k6-tests/k6-unified-test.js
             ;;
           "load")
             echo "Running k6 load test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=load /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=load /scripts/k6-tests/k6-unified-test.js
             ;;
           "comprehensive")
             echo "Running k6 comprehensive test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=comprehensive /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=comprehensive /scripts/k6-tests/k6-unified-test.js
             ;;
           "concurrent"|"stress")
             echo "Running k6 stress test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=stress /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=stress /scripts/k6-tests/k6-unified-test.js
             ;;
           "all"|*)
             echo "Running all k6 tests..."
             
             echo "1. Quick test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick /scripts/k6-tests/k6-unified-test.js
             
             echo "2. Debug test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick -e DEBUG=true /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=quick -e DEBUG=true /scripts/k6-tests/k6-unified-test.js
             
             echo "3. Load test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=load /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=load /scripts/k6-tests/k6-unified-test.js
             
             echo "4. Comprehensive test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=comprehensive /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=comprehensive /scripts/k6-tests/k6-unified-test.js
             
             echo "5. Stress test..."
-            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=stress /scripts/k6-unified-test.js
+            docker-compose run --rm --user $(id -u):$(id -g) -e AUTH_TOKEN="$AUTH_TOKEN" -e DURATION="$DURATION" -e VUS="$VUS" k6 run -e TEST_MODE=stress /scripts/k6-tests/k6-unified-test.js
             ;;
         esac
 

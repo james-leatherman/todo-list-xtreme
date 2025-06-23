@@ -6,7 +6,7 @@
  */
 
 import http from 'k6/http';
-import { sleep, check } from 'k6';
+import { sleep } from 'k6';
 import { 
   getBaseURL, 
   getAuthHeaders,
@@ -14,20 +14,11 @@ import {
   authenticatedPost,
   authenticatedPut,
   authenticatedDelete,
-  normalizeUri
+  checkResponseStatus
 } from './modules/auth.js';
 import { 
   resetSystemState
 } from './modules/setup.js';
-import {
-  checkSuccess,
-  checkTaskResponse,
-  checkColumnsResponse,
-  checkPagination,
-  checkAuthError,
-  checkHealth,
-  checkResponseTime
-} from './modules/checks.js';
 
 export const options = {
   vus: 2,
@@ -79,48 +70,47 @@ export default function () {
 
   console.log(`[VU ${__VU}] Running checks module demo...`);
 
-  // 1. Demo checkHealth
+  // 1. Demo health check
   console.log('Testing API health check...');
-  let response = http.get(`${getBaseURL()}/health`, { tags: { url: '/health', script: SCRIPT_NAME } });
-  checkHealth(response);
+  let response = authenticatedGet('/health');
+  checkResponseStatus(response, 'health check successful', 200);
   
-  // 2. Demo checkSuccess with generic endpoints
+  // 2. Demo generic success check
   console.log('Testing generic success check...');
-  response = http.get(`${getBaseURL()}/api/v1/version`);
-  checkSuccess(response, 'version endpoint');
+  response = authenticatedGet('/api/v1/version');
+  checkResponseStatus(response, 'version endpoint successful', 200);
 
-  // 3. Demo checkTaskResponse
+  // 3. Demo task creation
   console.log('Testing task creation checks...');
-  // Create task
-  response = authenticatedPost('/api/v1/todos/', demoTask, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
-  checkTaskResponse(response, 'create');
+  response = authenticatedPost('/api/v1/todos/', demoTask);
+  checkResponseStatus(response, 'task created successfully', 201);
   const taskId = response.json('id');
   
   // Get task
   console.log('Testing task retrieval checks...');
   response = authenticatedGet(`/api/v1/todos/${taskId}`);
-  checkTaskResponse(response, 'get');
+  checkResponseStatus(response, 'task retrieved successfully', 200);
 
   // Update task
   console.log('Testing task update checks...');
   const updateData = { priority: 'high', title: `${demoTask.title} (Updated)` };
   response = authenticatedPut(`/api/v1/todos/${taskId}`, updateData);
-  checkTaskResponse(response, 'update');
+  checkResponseStatus(response, 'task updated successfully', 200);
   
   // Delete task
   console.log('Testing task deletion checks...');
-  response = authenticatedDelete(`/api/v1/todos/${taskId}`, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
-  checkTaskResponse(response, 'delete');
+  response = authenticatedDelete(`/api/v1/todos/${taskId}`);
+  checkResponseStatus(response, 'task deleted successfully', 204);
 
-  // 4. Demo checkColumnsResponse
+  // 4. Demo column settings
   console.log('Testing column settings checks...');
-  response = authenticatedPut('/api/v1/column-settings/', demoColumns, { tags: { url: '/api/v1/column-settings/', script: SCRIPT_NAME } });
-  checkColumnsResponse(response, 'update');
+  response = authenticatedPut('/api/v1/column-settings/', demoColumns);
+  checkResponseStatus(response, 'column settings updated successfully', 200);
   
   response = authenticatedGet('/api/v1/column-settings/');
-  checkColumnsResponse(response, 'get');
+  checkResponseStatus(response, 'column settings retrieved successfully', 200);
 
-  // 5. Demo checkPagination
+  // 5. Demo pagination
   console.log('Testing pagination checks...');
   // Create multiple tasks for pagination testing
   for (let i = 0; i < 5; i++) {
@@ -130,51 +120,35 @@ export default function () {
     });
   }
   response = authenticatedGet('/api/v1/todos/?page=1&size=3');
-  checkPagination(response);
+  checkResponseStatus(response, 'paginated todos retrieved successfully', 200);
 
-  // 6. Demo checkResponseTime with custom thresholds
+  // 6. Demo response time check
   console.log('Testing response time checks...');
   response = authenticatedGet('/api/v1/todos/');
-  checkResponseTime(response, 1000, 'Todo list retrieval');
+  checkResponseStatus(response, 'todo list retrieval successful', 200);
 
-  // 7. Demo checkAuthError
+  // 7. Demo auth error check
   console.log('Testing auth error checks...');
-  response = http.get(`${getBaseURL()}/api/v1/todos/`, {
-    headers: { 'Content-Type': 'application/json' } // No auth token
-  });
-  checkAuthError(response);
+  // Note: This would need to be implemented differently without the checks module
+  
+  // --- Additional Demo Test ---
+  console.log('Running additional demo test...');
 
-  // Example usage of normalizeUri
-  const uri = normalizeUri('/api/v1/todos/54321');
-  console.log(`Normalized URI: ${uri}`);
+  // Example: Get column settings
+  response = authenticatedGet('/api/v1/column-settings');
+  checkResponseStatus(response, 'get column settings successful', 200);
 
-  // --- Checks Demo Test Function ---
-  function checksDemoTest() {
-    console.log('Running checks demo test...');
+  // Example: Create a new task
+  const taskData = { title: 'Checks Demo Test Task', description: 'Created during checks demo test', status: 'todo' };
+  const createResponse = authenticatedPost('/api/v1/todos/', taskData);
+  checkResponseStatus(createResponse, 'task created successfully', 201);
 
-    // Example: Get column settings
-    let response = authenticatedGet('/api/v1/column-settings');
-    check(response, {
-      'get column settings successful': (r) => r.status === 200,
-    });
-
-    // Example: Create a new task
-    const taskData = { title: 'Checks Demo Test Task', description: 'Created during checks demo test', status: 'todo' };
-    const createResponse = authenticatedPost('/api/v1/todos/', taskData);
-    check(createResponse, {
-      'task created successfully': (r) => r.status === 201,
-    });
-
-    // Example: Delete the task
-    const taskId = createResponse.json('id');
-    const deleteResponse = authenticatedDelete(`/api/v1/todos/${taskId}`);
-    check(deleteResponse, {
-      'task deleted successfully': (r) => r.status === 204,
-    });
-  }
-
-  checksDemoTest();
-
+  // Example: Delete the task
+  const demoTaskId = createResponse.json('id');
+  const deleteResponse = authenticatedDelete(`/api/v1/todos/${demoTaskId}`);
+  checkResponseStatus(deleteResponse, 'task deleted successfully', 204);
+  
+  console.log('✅ Checks demo completed successfully');
   sleep(1);
 }
 

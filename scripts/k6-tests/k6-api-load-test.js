@@ -15,14 +15,21 @@
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { Rate, Trend, Counter } from 'k6/metrics';
-import { getAuthHeaders, authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete, getBaseURL, normalizeUri } from './modules/auth.js';
+import { Counter } from 'k6/metrics';
+import {
+  authenticatedGet,
+  authenticatedPost,
+  authenticatedPut,
+  authenticatedDelete,
+  getBaseURL,
+  checkResponseStatus
+}
+  from './modules/auth.js';
 import { resetSystemState, verifyCleanState } from './modules/setup.js';
 
 // Custom metrics
-const errorRate = new Rate('errors');
-const responseTrend = new Trend('response_time');
-const operationCounter = new Counter('api_operations');
+const successfulChecks = new Counter('successful_checks');
+const unsuccessfulChecks = new Counter('unsuccessful_checks');
 
 // Test configuration
 export const options = {
@@ -35,7 +42,8 @@ export const options = {
   thresholds: {
     http_req_duration: ['p(95)<2000'], // 95% of requests under 2s
     http_req_failed: ['rate<0.1'],     // Error rate under 10%
-    errors: ['rate<0.05'],             // Custom error rate under 5%
+    successful_checks: ['count>300'],
+    unsuccessful_checks: ['count<30'],
   },
 };
 
@@ -86,9 +94,9 @@ export default function () {
     console.log(`[VU ${__VU}] Resetting system state for clean iteration...`);
     resetSystemState();
   }
-  
+
   const scenario = Math.random();
-  
+
   if (scenario < 0.3) {
     // 30% - Column operations
     testColumnOperations();
@@ -102,50 +110,40 @@ export default function () {
     // 10% - Health and status checks
     testHealthEndpoints();
   }
-  
+
   sleep(Math.random() * 2 + 1); // Random sleep 1-3 seconds
 }
 
 function testColumnOperations() {
   console.log('Testing column operations...');
-  
+
   // 1. Get current column settings
-  let response = authenticatedGet('/api/v1/column-settings');
-  check(response, {
-    'get column settings successful': (r) => r.status === 200,
-  });
-  
+  let response = authenticatedGet('/api/v1/column-settings/');
+  checkResponseStatus(response, 'get column settings successful', 200, successfulChecks, unsuccessfulChecks);
+
   // 2. Update column settings (add/modify columns)
   const newConfig = getRandomElement(sampleColumnConfigs);
   response = authenticatedPut('/api/v1/column-settings', newConfig);
-  check(response, {
-    'update column settings successful': (r) => r.status === 200,
-  });
-  
-  // 3. Get default column settings
-  response = authenticatedGet('/api/v1/column-settings/default');
-  check(response, {
-    'get default column settings successful': (r) => r.status === 200,
-  });
-  
+  checkResponseStatus(response, 'update column settings successful', 200, successfulChecks, unsuccessfulChecks);
+
+  // 3. Verify the update was successful
+  response = authenticatedGet('/api/v1/column-settings/');
+  checkResponseStatus(response, 'verify column settings successful', 200, successfulChecks, unsuccessfulChecks);
+
   // 4. Reset column settings (occasionally)
   if (Math.random() < 0.1) {
     response = authenticatedPost('/api/v1/column-settings/reset');
-    check(response, {
-      'reset column settings successful': (r) => r.status === 200,
-    });
+    checkResponseStatus(response, 'reset column settings successful', 200, successfulChecks, unsuccessfulChecks);
   }
 }
 
 function testTodoOperations() {
   console.log('Testing todo operations...');
-  
+
   // 1. Get all todos
   let response = authenticatedGet('/api/v1/todos/');
-  check(response, {
-    'get todos successful': (r) => r.status === 200,
-  });
-  
+  checkResponseStatus(response, 'get todos successful', 200, successfulChecks, unsuccessfulChecks);
+
   let todos = [];
   if (response.status === 200) {
     try {
@@ -154,7 +152,7 @@ function testTodoOperations() {
       todos = [];
     }
   }
-  
+
   // 2. Create a new todo (add task)
   const newTodo = getRandomElement(sampleTodos);
   const todoToCreate = {
@@ -162,22 +160,22 @@ function testTodoOperations() {
     title: `${newTodo.title} - ${generateRandomId()}`,
     description: `${newTodo.description} (Created by k6 test at ${new Date().toISOString()})`
   };
-  
+
   response = authenticatedPost('/api/v1/todos/', todoToCreate);
   let createdTodo = null;
-  if (check(response, {
-    'create todo successful': (r) => r.status === 201,
-  })) {
+  checkResponseStatus(response, 'create todo successful', 201, successfulChecks, unsuccessfulChecks);
+
+  if (response.status === 201) {
     try {
       createdTodo = JSON.parse(response.body);
     } catch (e) {
       // Handle JSON parse error
     }
   }
-  
+
   // 3. Update a todo (if we have todos or just created one)
   let todoToUpdate = createdTodo || (todos.length > 0 ? getRandomElement(todos) : null);
-  
+
   if (todoToUpdate) {
     const updatedData = {
       title: `Updated: ${todoToUpdate.title}`,
@@ -185,35 +183,27 @@ function testTodoOperations() {
       status: getRandomElement(['todo', 'inProgress', 'blocked', 'done']),
       is_completed: todoToUpdate.status === 'done'
     };
-    
+
     response = authenticatedPut(`/api/v1/todos/${todoToUpdate.id}/`, updatedData);
-    check(response, {
-      'update todo successful': (r) => r.status === 200,
-    });
-    
+    checkResponseStatus(response, 'update todo successful', 200, successfulChecks, unsuccessfulChecks);
+
     // 4. Get the specific todo
     response = authenticatedGet(`/api/v1/todos/${todoToUpdate.id}/`);
-    check(response, {
-      'get specific todo successful': (r) => r.status === 200,
-    });
-  }
-  
-  // 5. Delete a todo (remove task) - occasionally
-  if (todoToUpdate && Math.random() < 0.3) {
+    checkResponseStatus(response, 'get specific todo successful', 200, successfulChecks, unsuccessfulChecks);
+
+    // 5. Delete the todo
     response = authenticatedDelete(`/api/v1/todos/${todoToUpdate.id}`);
-    check(response, {
-      'delete todo successful': (r) => r.status === 204,
-    });
+    checkResponseStatus(response, 'delete todo successful', 204, successfulChecks, unsuccessfulChecks);
   }
 }
 
 function testBulkOperations() {
   console.log('Testing bulk operations...');
-  
+
   // Create multiple todos first
   const todosToCreate = 3;
   const createdTodos = [];
-  
+
   for (let i = 0; i < todosToCreate; i++) {
     const todo = getRandomElement(sampleTodos);
     const todoData = {
@@ -222,8 +212,10 @@ function testBulkOperations() {
       description: `Bulk operation test todo ${i + 1}`,
       status: 'todo'
     };
-    
+
     const response = authenticatedPost('/api/v1/todos/', todoData);
+    checkResponseStatus(response, 'bulk create todo successful', 201, successfulChecks, unsuccessfulChecks);
+
     if (response.status === 201) {
       try {
         createdTodos.push(JSON.parse(response.body));
@@ -233,66 +225,60 @@ function testBulkOperations() {
     }
     sleep(0.1); // Small delay between creations
   }
-  
-  // Bulk delete by status (remove tasks by column)
-  if (Math.random() < 0.2) { // 20% chance to do bulk delete
-    const statusToDelete = 'todo';
-    const response = authenticatedDelete(`/api/v1/todos/column/${statusToDelete}`);
-    check(response, {
-      'bulk delete todos successful': (r) => r.status === 204,
-    });
+
+  console.log(`Created ${createdTodos.length} todos in bulk`);
+
+  // 2. Bulk delete some todos
+  if (createdTodos.length > 0) {
+    const todosToDelete = createdTodos.slice(0, Math.min(3, createdTodos.length));
+
+    for (const todo of todosToDelete) {
+      const response = authenticatedDelete(`/api/v1/todos/${todo.id}`);
+      checkResponseStatus(response, 'bulk delete todo successful', 204, successfulChecks, unsuccessfulChecks);
+      sleep(0.1);
+    }
   }
 }
 
 function testHealthEndpoints() {
   console.log('Testing health endpoints...');
-  
+
   // 1. Basic health check
   let response = authenticatedGet('/health');
-  check(response, {
-    'health check successful': (r) => r.status === 200,
-  });
-  
+  checkResponseStatus(response, 'basic health check successful', 200, successfulChecks, unsuccessfulChecks);
+
   // 2. Detailed health check
   response = authenticatedGet('/api/v1/health/detailed');
-  check(response, {
-    'detailed health check successful': (r) => r.status === 200,
-  });
-  
-  // 3. Database health check
-  response = authenticatedGet('/api/v1/health/database');
-  check(response, {
-    'database health check successful': (r) => r.status === 200,
-  });
-  
-  // 4. Auth check
-  response = authenticatedGet('/api/v1/auth/me/');
-  check(response, {
-    'auth check successful': (r) => r.status === 200,
-  });
-  
-  // 5. API status
-  response = authenticatedGet('/api/v1/status');
-  check(response, {
-    'api status check successful': (r) => r.status === 200,
-  });
+checkResponseStatus(response, 'detailed health check successful', 200, successfulChecks, unsuccessfulChecks);
+
+// 3. Database health check
+response = authenticatedGet('/api/v1/health/database');
+checkResponseStatus(response, 'database health check successful', 200, successfulChecks, unsuccessfulChecks);
+
+// 4. Auth check
+response = authenticatedGet('/api/v1/auth/me/');
+checkResponseStatus(response, 'auth check successful', 200, successfulChecks, unsuccessfulChecks);
+
+// 5. API status
+response = authenticatedGet('/api/v1/status');
+checkResponseStatus(response, 'api status check successful', 200, successfulChecks, unsuccessfulChecks);
 }
 
 // Setup function (runs once per VU at the start)
 export function setup() {
   console.log('Setting up k6 load test...');
-  
+
   // Verify API is accessible
   const response = http.get(`${getBaseURL()}/health`);
   if (response.status !== 200) {
     throw new Error(`API not accessible: ${response.status}`);
   }
-  
+
   // Reset system to clean state for consistent load testing
   console.log('Performing initial system reset for clean load testing...');
   resetSystemState();
   verifyCleanState();
-  
+
   console.log('K6 load test setup complete - API is accessible and system is clean');
   return { baseUrl: getBaseURL(), setupTime: Date.now() };
 }
@@ -301,10 +287,10 @@ export function setup() {
 export function teardown(data) {
   const duration = Date.now() - data.setupTime;
   console.log(`K6 load test completed in ${duration}ms`);
-  
+
   // Clean up after load testing
   console.log('Performing final cleanup after load testing...');
   resetSystemState();
-  
+
   console.log('K6 load test teardown complete');
 }

@@ -13,11 +13,24 @@
  * k6 run --duration=2m --vus=20 scripts/k6-concurrent-load.js
  */
 
-import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { Rate, Trend, Counter, Gauge } from 'k6/metrics';
-import { getAuthHeaders, authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete, getBaseURL, normalizeUri } from './modules/auth.js';
-import { resetSystemState, verifyCleanState } from './modules/setup.js';
+import { sleep } from 'k6';
+import {
+  Rate,
+  Trend,
+  Counter,
+  Gauge
+} from 'k6/metrics';
+import {
+  authenticatedGet,
+  authenticatedPost,
+  authenticatedPut,
+  authenticatedDelete,
+  checkResponseStatus
+} from './modules/auth.js';
+import {
+  resetSystemState,
+  verifyCleanState
+} from './modules/setup.js';
 
 // Custom metrics for better observability
 const errorRate = new Rate('api_errors');
@@ -25,6 +38,8 @@ const operationDuration = new Trend('operation_duration');
 const concurrentUsers = new Gauge('concurrent_users');
 const todoOperations = new Counter('todo_operations');
 const columnOperations = new Counter('column_operations');
+const successfulChecks = new Counter('successful_checks');
+const unsuccessfulChecks = new Counter('unsuccessful_checks');
 
 // Test configuration optimized for concurrent load
 export const options = {
@@ -40,6 +55,8 @@ export const options = {
     http_req_failed: ['rate<0.05'],        // Error rate under 5%
     api_errors: ['rate<0.03'],             // Custom error rate under 3%
     operation_duration: ['p(90)<1000'],    // 90% operations under 1s
+    successful_checks: ['count>500'],
+    unsuccessful_checks: ['count<50'],
   },
 };
 
@@ -114,43 +131,6 @@ const taskTemplates = [
 ];
 
 // Utility functions
-function makeApiCall(method, url, payload = null) {
-  const startTime = Date.now();
-  
-  let response;
-  try {
-    // Use modularized auth functions
-    switch (method.toLowerCase()) {
-      case 'get':
-        response = authenticatedGet(url);
-        break;
-      case 'post':
-        response = authenticatedPost(url, payload, { tags: { url: url, script: SCRIPT_NAME } });
-        break;
-      case 'put':
-        response = authenticatedPut(url, payload, { tags: { url: url, script: SCRIPT_NAME } });
-        break;
-      case 'delete':
-        response = authenticatedDelete(url, { tags: { url: url, script: SCRIPT_NAME } });
-        break;
-      default:
-        throw new Error(`Unsupported HTTP method: ${method}`);
-    }
-  } catch (error) {
-    console.error(`API call failed: ${error.message}`);
-    errorRate.add(1);
-    return null;
-  }
-  
-  const duration = Date.now() - startTime;
-  operationDuration.add(duration);
-  
-  const success = response.status >= 200 && response.status < 300;
-  errorRate.add(!success);
-  
-  return response;
-}
-
 function getRandomElement(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
@@ -167,12 +147,12 @@ function getUserId() {
 export default function () {
   const vuId = __VU;
   const iteration = __ITER;
-  
+
   concurrentUsers.add(1);
-  
+
   // Different users focus on different operations to create realistic load
   const scenario = vuId % 4;
-  
+
   switch (scenario) {
     case 0:
       // Column management focused
@@ -191,55 +171,48 @@ export default function () {
       performTaskCleanup();
       break;
   }
-  
+
   sleep(Math.random() * 1.5 + 0.5); // Random sleep 0.5-2 seconds
 }
 
 function performColumnManagement() {
   console.log(`[VU ${__VU}] Performing column management operations...`);
-  
+
   // 1. Get current column settings
-  let response = makeApiCall('GET', '/api/v1/column-settings');
-  if (!response || response.status !== 200) {
-    console.log(`[VU ${__VU}] Failed to get column settings`);
-    return;
-  }
-  
+  let response = authenticatedGet('/api/v1/column-settings');
+  checkResponseStatus(response, 'get column settings successful', 200, successfulChecks, unsuccessfulChecks);
+
   columnOperations.add(1);
-  
+
   // 2. Choose a random column configuration and apply it
   const configChoice = getRandomElement(columnConfigurations);
   console.log(`[VU ${__VU}] Applying ${configChoice.name} configuration`);
-  
-  response = makeApiCall('PUT', '/api/v1/column-settings', configChoice.config);
-  check(response, {
-    'column configuration updated': (r) => r && r.status === 200,
-  });
-  
-  if (response && response.status === 200) {
+
+  response = authenticatedPut('/api/v1/column-settings', configChoice.config);
+  checkResponseStatus(response, 'column configuration updated', 200, successfulChecks, unsuccessfulChecks);
+
+  if (response.status === 200) {
     columnOperations.add(1);
     console.log(`[VU ${__VU}] Successfully applied ${configChoice.name}`);
   }
-  
+
   sleep(0.5);
-  
+
   // 3. Verify the configuration was applied
-  response = makeApiCall('GET', '/api/v1/column-settings');
-  check(response, {
-    'configuration verification': (r) => r && r.status === 200,
-  });
+  response = authenticatedGet('/api/v1/column-settings');
+  checkResponseStatus(response, 'configuration verification successful', 200, successfulChecks, unsuccessfulChecks);
 }
 
 function performTaskCreation() {
   console.log(`[VU ${__VU}] Performing task creation operations...`);
-  
+
   // Get available columns first
-  const response = makeApiCall('GET', '/api/v1/column-settings');
+  const response = authenticatedGet('/api/v1/column-settings');
   if (!response || response.status !== 200) {
     console.log(`[VU ${__VU}] Failed to get column settings for task creation`);
     return;
   }
-  
+
   let availableColumns = ['todo', 'inProgress', 'done']; // Default fallback
   try {
     const settings = JSON.parse(response.body);
@@ -249,45 +222,43 @@ function performTaskCreation() {
   } catch (e) {
     console.log(`[VU ${__VU}] Using default columns due to parse error`);
   }
-  
+
   // Create multiple tasks in different columns
   const tasksToCreate = 2 + Math.floor(Math.random() * 3); // 2-4 tasks
-  
+
   for (let i = 0; i < tasksToCreate; i++) {
     const template = getRandomElement(taskTemplates);
     const targetColumn = getRandomElement(availableColumns);
-    
+
     const newTask = {
       title: `${template.title} - ${generateUniqueId()}`,
       description: `${template.description} (Created by VU ${__VU}, iteration ${__ITER})`,
       status: targetColumn,
       is_completed: targetColumn === 'done'
     };
-    
-    const createResponse = makeApiCall('POST', '/api/v1/todos/', newTask);
-    const success = check(createResponse, {
-      'task created successfully': (r) => r && r.status === 201,
-    });
-    
-    if (success) {
+
+    const createResponse = authenticatedPost('/api/v1/todos/', newTask);
+    checkResponseStatus(createResponse, 'task created successfully', 201, successfulChecks, unsuccessfulChecks);
+
+    if (createResponse.status === 201) {
       todoOperations.add(1);
       console.log(`[VU ${__VU}] Created task in ${targetColumn}: ${newTask.title}`);
     }
-    
+
     sleep(0.2); // Small delay between task creations
   }
 }
 
 function performTaskMovement() {
   console.log(`[VU ${__VU}] Performing task movement operations...`);
-  
+
   // 1. Get existing tasks
-  let response = makeApiCall('GET', '/api/v1/todos/');
+  let response = authenticatedGet('/api/v1/todos/');
   if (!response || response.status !== 200) {
     console.log(`[VU ${__VU}] Failed to get todos for movement`);
     return;
   }
-  
+
   let todos;
   try {
     todos = JSON.parse(response.body);
@@ -295,14 +266,14 @@ function performTaskMovement() {
     console.log(`[VU ${__VU}] Failed to parse todos response`);
     return;
   }
-  
+
   if (todos.length === 0) {
     console.log(`[VU ${__VU}] No todos available for movement`);
     return;
   }
-  
+
   // 2. Get available columns
-  response = makeApiCall('GET', '/api/v1/column-settings');
+  response = authenticatedGet('/api/v1/column-settings');
   let availableColumns = ['todo', 'inProgress', 'done'];
   if (response && response.status === 200) {
     try {
@@ -314,44 +285,42 @@ function performTaskMovement() {
       // Use default columns
     }
   }
-  
+
   // 3. Move random tasks between columns
   const tasksToMove = Math.min(3, todos.length);
   for (let i = 0; i < tasksToMove; i++) {
     const todoToMove = getRandomElement(todos);
     const newStatus = getRandomElement(availableColumns.filter(col => col !== todoToMove.status));
-    
+
     const updateData = {
       ...todoToMove,
       status: newStatus,
       is_completed: newStatus === 'done',
       description: `${todoToMove.description} (Moved to ${newStatus} by VU ${__VU})`
     };
-    
-    const updateResponse = makeApiCall('PUT', `/api/v1/todos/${todoToMove.id}/`, updateData);
-    const success = check(updateResponse, {
-      'task moved successfully': (r) => r && r.status === 200,
-    });
-    
-    if (success) {
+
+    const updateResponse = authenticatedPut(`/api/v1/todos/${todoToMove.id}/`, updateData);
+    checkResponseStatus(updateResponse, 'task moved successfully', 200, successfulChecks, unsuccessfulChecks);
+
+    if (updateResponse.status === 200) {
       todoOperations.add(1);
       console.log(`[VU ${__VU}] Moved task ${todoToMove.id} from ${todoToMove.status} to ${newStatus}`);
     }
-    
+
     sleep(0.3);
   }
 }
 
 function performTaskCleanup() {
   console.log(`[VU ${__VU}] Performing task cleanup operations...`);
-  
+
   // 1. Get all todos
-  let response = makeApiCall('GET', '/api/v1/todos/');
+  let response = authenticatedGet('/api/v1/todos/');
   if (!response || response.status !== 200) {
     console.log(`[VU ${__VU}] Failed to get todos for cleanup`);
     return;
   }
-  
+
   let todos;
   try {
     todos = JSON.parse(response.body);
@@ -359,37 +328,33 @@ function performTaskCleanup() {
     console.log(`[VU ${__VU}] Failed to parse todos for cleanup`);
     return;
   }
-  
+
   // 2. Delete some completed tasks
   const completedTodos = todos.filter(todo => todo.status === 'done' || todo.is_completed);
   const tasksToDelete = Math.min(2, completedTodos.length);
-  
+
   for (let i = 0; i < tasksToDelete; i++) {
     const todoToDelete = completedTodos[i];
-    
-    const deleteResponse = makeApiCall('DELETE', `/api/v1/todos/${todoToDelete.id}`);
-    const success = check(deleteResponse, {
-      'task deleted successfully': (r) => r && r.status === 204,
-    });
-    
-    if (success) {
+
+    const deleteResponse = authenticatedDelete(`/api/v1/todos/${todoToDelete.id}`);
+    checkResponseStatus(deleteResponse, 'task deleted successfully', 204, successfulChecks, unsuccessfulChecks);
+
+    if (deleteResponse.status === 204) {
       todoOperations.add(1);
       console.log(`[VU ${__VU}] Deleted completed task: ${todoToDelete.title}`);
     }
-    
+
     sleep(0.2);
   }
-  
+
   // 3. Occasionally perform bulk cleanup
   if (Math.random() < 0.1) { // 10% chance
     console.log(`[VU ${__VU}] Performing bulk cleanup of 'done' column`);
-    
-    const bulkDeleteResponse = makeApiCall('DELETE', '/api/v1/todos/column/done');
-    const success = check(bulkDeleteResponse, {
-      'bulk delete successful': (r) => r && r.status === 204,
-    });
-    
-    if (success) {
+
+    const bulkDeleteResponse = authenticatedDelete('/api/v1/todos/column/done');
+    checkResponseStatus(bulkDeleteResponse, 'bulk delete successful', 204, successfulChecks, unsuccessfulChecks);
+
+    if (bulkDeleteResponse.status === 204) {
       todoOperations.add(1);
       console.log(`[VU ${__VU}] Bulk deleted all tasks from 'done' column`);
     }
@@ -399,24 +364,25 @@ function performTaskCleanup() {
 // Setup function
 export function setup() {
   console.log('Setting up concurrent load test...');
-  
+
   // Verify API accessibility
-  let response = http.get(`${getBaseURL()}/health`, { tags: { url: '/health', script: SCRIPT_NAME } });
+  const response = authenticatedGet('/health');
+  checkResponseStatus(response, 'API accessible', 200, successfulChecks, unsuccessfulChecks);
   if (response.status !== 200) {
     throw new Error(`API not accessible: ${response.status} - ${response.body}`);
   }
-  
+
   // Verify authentication using modularized auth
   const authResponse = authenticatedGet('/api/v1/auth/me/');
   if (authResponse.status !== 200) {
     console.warn('Authentication may not be working properly');
   }
-  
+
   // Reset system to clean state for consistent load testing
   console.log('Performing initial system reset for clean load testing...');
   resetSystemState();
   verifyCleanState();
-  
+
   console.log('Concurrent load test setup complete');
   return { setupTime: Date.now() };
 }
@@ -425,10 +391,10 @@ export function setup() {
 export function teardown(data) {
   const duration = Date.now() - data.setupTime;
   console.log(`Concurrent load test completed in ${duration}ms`);
-  
+
   // Clean up after load testing
   console.log('Performing final cleanup after load testing...');
   resetSystemState();
-  
+
   console.log('Final metrics summary will be displayed by k6');
 }

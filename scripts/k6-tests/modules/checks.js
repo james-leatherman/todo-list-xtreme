@@ -3,9 +3,12 @@
  * 
  * Standardized check functions for API testing with k6
  * These functions simplify test assertions and provide consistent reporting
+ * 
+ * NOTE: This module is being deprecated in favor of using checkResponseStatus() directly
+ * from auth.js for better consistency and metrics aggregation.
  */
 
-import { check } from 'k6';
+import { checkResponseStatus } from './auth.js';
 
 /**
  * Generic success check for any response

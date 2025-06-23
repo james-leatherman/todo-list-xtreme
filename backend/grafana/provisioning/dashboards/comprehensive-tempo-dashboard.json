@@ -18,15 +18,14 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 2,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -38,8 +37,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -67,6 +65,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -74,15 +73,17 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m]))",
           "legendFormat": "Total Requests/sec",
@@ -94,9 +95,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -108,8 +109,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -137,6 +137,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -144,15 +145,17 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le))",
           "legendFormat": "P99 Latency",
@@ -164,9 +167,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -178,8 +181,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -207,6 +209,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -214,15 +217,17 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "(sum(rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_ERROR\"}[5m])) / sum(rate(traces_spanmetrics_calls_total[5m]))) * 100",
           "legendFormat": "Error Rate",
@@ -234,9 +239,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -248,8 +253,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -277,6 +281,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -284,15 +289,17 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "count(count by (service)(traces_spanmetrics_calls_total))",
           "legendFormat": "Active Services",
@@ -304,9 +311,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -314,19 +321,23 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "vis": false
+              "vis": false,
+              "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -348,8 +359,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -376,16 +386,18 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m])) by (service)",
           "legendFormat": "{{service}}",
@@ -397,9 +409,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -407,19 +419,23 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "vis": false
+              "vis": false,
+              "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -441,8 +457,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -469,16 +484,18 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service))",
           "legendFormat": "P99 - {{service}}",
@@ -486,9 +503,9 @@
         },
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service))",
           "legendFormat": "P95 - {{service}}",
@@ -496,9 +513,9 @@
         },
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "histogram_quantile(0.50, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service))",
           "legendFormat": "P50 - {{service}}",
@@ -510,9 +527,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -520,19 +537,23 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "vis": false
+              "vis": false,
+              "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -554,8 +575,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -582,16 +602,18 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m])) by (span_name)",
           "legendFormat": "{{span_name}}",
@@ -603,9 +625,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -613,19 +635,23 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "vis": false
+              "vis": false,
+              "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -647,8 +673,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -675,16 +700,18 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_OK\"}[5m])) by (service)",
           "legendFormat": "Success - {{service}}",
@@ -692,9 +719,9 @@
         },
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_ERROR\"}[5m])) by (service)",
           "legendFormat": "Error - {{service}}",
@@ -702,9 +729,9 @@
         },
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total{status_code=\"STATUS_CODE_UNSET\"}[5m])) by (service)",
           "legendFormat": "Unset - {{service}}",
@@ -716,9 +743,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -729,7 +756,8 @@
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "vis": false
+              "vis": false,
+              "viz": false
             }
           },
           "mappings": []
@@ -758,16 +786,18 @@
           "values": false
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m])) by (service)",
           "legendFormat": "{{service}}",
@@ -779,9 +809,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -792,7 +822,8 @@
             "hideFrom": {
               "legend": false,
               "tooltip": false,
-              "vis": false
+              "vis": false,
+              "viz": false
             }
           },
           "mappings": []
@@ -821,16 +852,18 @@
           "values": false
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "sum(rate(traces_spanmetrics_calls_total[5m])) by (status_code)",
           "legendFormat": "{{status_code}}",
@@ -842,9 +875,9 @@
     },
     {
       "datasource": {
+        "name": "Prometheus",
         "type": "prometheus",
-        "uid": "prometheus-main",
-        "name": "Prometheus"
+        "uid": "prometheus-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -863,8 +896,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "yellow",
@@ -930,13 +962,13 @@
           }
         ]
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Prometheus",
             "type": "prometheus",
-            "uid": "prometheus-main",
-            "name": "Prometheus"
+            "uid": "prometheus-main"
           },
           "expr": "histogram_quantile(0.99, sum(rate(traces_spanmetrics_latency_bucket[5m])) by (le, service, span_name))",
           "format": "table",
@@ -952,8 +984,8 @@
             "excludeByName": {
               "Time": true,
               "__name__": true,
-              "job": true,
-              "instance": true
+              "instance": true,
+              "job": true
             },
             "indexByName": {},
             "renameByName": {
@@ -968,9 +1000,9 @@
     },
     {
       "datasource": {
+        "name": "Tempo",
         "type": "tempo",
-        "uid": "tempo-main",
-        "name": "Tempo"
+        "uid": "tempo-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -989,8 +1021,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1018,20 +1049,35 @@
           ],
           "show": false
         },
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Duration"
+          }
+        ]
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Tempo",
             "type": "tempo",
-            "uid": "tempo-main",
-            "name": "Tempo"
+            "uid": "tempo-main"
           },
+          "filters": [
+            {
+              "id": "c2ae805e",
+              "operator": "=",
+              "scope": "span"
+            }
+          ],
           "limit": 20,
-          "query": "{duration>50ms}",
-          "queryType": "nativeSearch",
-          "refId": "A"
+          "metricsQueryType": "range",
+          "query": "{duration > 50ms}",
+          "queryType": "traceql",
+          "refId": "A",
+          "tableType": "traces"
         }
       ],
       "title": "Recent Slow Traces (>50ms)",
@@ -1039,9 +1085,9 @@
     },
     {
       "datasource": {
+        "name": "Tempo",
         "type": "tempo",
-        "uid": "tempo-main",
-        "name": "Tempo"
+        "uid": "tempo-main"
       },
       "fieldConfig": {
         "defaults": {
@@ -1060,8 +1106,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1091,26 +1136,36 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
+            "name": "Tempo",
             "type": "tempo",
-            "uid": "tempo-main",
-            "name": "Tempo"
+            "uid": "tempo-main"
           },
+          "filters": [
+            {
+              "id": "d9aa314f",
+              "operator": "=",
+              "scope": "span"
+            }
+          ],
           "limit": 20,
-          "query": "{.http.status_code>=400}",
-          "queryType": "nativeSearch",
-          "refId": "A"
+          "metricsQueryType": "range",
+          "query": "{.http.status_code >= 400}",
+          "queryType": "traceql",
+          "refId": "A",
+          "tableType": "traces"
         }
       ],
       "title": "Recent Error Traces",
       "type": "table"
     }
   ],
+  "preload": false,
   "refresh": "30s",
-  "schemaVersion": 39,
+  "schemaVersion": 41,
   "tags": [
     "tempo",
     "tracing",
@@ -1128,6 +1183,5 @@
   "timezone": "",
   "title": "🔗 Comprehensive Tempo Dashboard",
   "uid": "comprehensive-tempo",
-  "version": 2,
-  "weekStart": ""
+  "version": 2
 }

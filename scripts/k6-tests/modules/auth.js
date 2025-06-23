@@ -9,8 +9,16 @@ import { check } from 'k6';
 
 // Configuration
 const BASE_URL = __ENV.API_URL || 'http://localhost:8000';
-const AUTH_TOKEN = __ENV.AUTH_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiaWF0IjoxNzUwMjk4NDg0LCJleHAiOjE3NTAzODQ4ODQsInVzZXJfaWQiOjF9.cdRfFwSnNIc9FiHAbg2LV2FTem3cM-Iv-FYavD8hHCI';
+const AUTH_TOKEN = __ENV.AUTH_TOKEN;
 
+// Debug configuration
+if (!AUTH_TOKEN) {
+  console.warn('⚠️  AUTH_TOKEN environment variable is not set. Authentication may fail.');
+} else {
+  console.log(`🔑 Using AUTH_TOKEN: ${AUTH_TOKEN.substring(0, 10)}...`);
+}
+
+console.log(`🌐 Using BASE_URL: ${BASE_URL}`);
 /**
  * Get authentication headers for API requests
  * @returns {Object} Headers object with authorization
@@ -35,17 +43,14 @@ export function getBaseURL() {
  * @returns {boolean} True if authenticated, false otherwise
  */
 export function verifyAuth() {
-  const headers = getAuthHeaders();
-  const response = http.get(`${BASE_URL}/api/v1/column-settings/`, { headers });
-  
-  const isAuthenticated = check(response, {
-    'authentication working': (r) => r.status === 200,
-  });
-  
+  const response = authenticatedGet('/api/v1/column-settings/');
+
+  const isAuthenticated = checkResponseStatus(response, 'authentication working', 200);
+
   if (!isAuthenticated) {
     console.error(`Authentication failed: ${response.status} - ${response.body}`);
   }
-  
+
   return isAuthenticated;
 }
 
@@ -106,6 +111,50 @@ export function normalizeUri(url) {
 
   // Preserve API version and replace numeric IDs or UUIDs in the URL with a placeholder
   return trimmedUrl.replace(/(\/api\/v\d+)(.*)/, (match, apiVersion, rest) => {
-    return apiVersion + rest.replace(/\d+/g, '{id}').replace(/[a-f0-9-]{36}/g, '{uuid}');
+    return apiVersion + rest.replace(/\d+/g, '{todo_id}').replace(/[a-f0-9-]{36}/g, '{uuid}');
   });
+}
+
+/**
+ * Check the response status and update successful or unsuccessful checks
+ * @param {Object} response - The HTTP response object
+ * @param {string} checkName - Name for the check (optional)
+ * @param {number} expectedStatus - Expected status code (optional, defaults to any 2xx)
+ * @param {Set} successfulChecks - A set to track successful checks (optional)
+ * @param {Set} unsuccessfulChecks - A set to track unsuccessful checks (optional)
+ * @returns {boolean} True if the status matches expectation, false otherwise
+ */
+export function checkResponseStatus(response,
+  checkName = 'request successful',
+  expectedStatus = null, successfulChecks = null,
+  unsuccessfulChecks = null) {
+  const checkObj = {};
+
+  if (expectedStatus !== null) {
+    // Check for specific status code
+    checkObj[`status is ${expectedStatus}`] = (r) => {
+      const result = r.status === expectedStatus;
+      if (!result) {
+        console.warn(`Expected status ${expectedStatus} but got ${r.status} for ${r.url}. Response: ${r.body ? r.body.substring(0, 200) : 'No body'}`);
+      }
+      if (successfulChecks && unsuccessfulChecks) {
+        result ? successfulChecks.add(1) : unsuccessfulChecks.add(1);
+      }
+      return result;
+    };
+  } else {
+    // Check for any 2xx success status
+    checkObj[checkName] = (r) => {
+      const result = r.status >= 200 && r.status < 300;
+      if (!result) {
+        console.warn(`Expected 2xx status but got ${r.status} for ${r.url}. Response: ${r.body ? r.body.substring(0, 200) : 'No body'}`);
+      }
+      if (successfulChecks && unsuccessfulChecks) {
+        result ? successfulChecks.add(1) : unsuccessfulChecks.add(1);
+      }
+      return result;
+    };
+  }
+
+  return check(response, checkObj);
 }

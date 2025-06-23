@@ -7,12 +7,20 @@
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { getAuthHeaders, authenticatedPut, authenticatedPost, authenticatedGet, authenticatedDelete, getBaseURL, normalizeUri } from './modules/auth.js';
+import { getAuthHeaders, authenticatedPut, authenticatedPost, authenticatedGet, authenticatedDelete, getBaseURL } from './modules/auth.js';
 import { resetSystemState, verifyCleanState } from './modules/setup.js';
+import { Counter } from 'k6/metrics';
+
+const successfulChecks = new Counter('successful_checks');
+const unsuccessfulChecks = new Counter('unsuccessful_checks');
 
 export const options = {
   vus: 1,
   duration: '10s',
+  thresholds: {
+    successful_checks: ['count>50'],
+    unsuccessful_checks: ['count<5'],
+  },
 };
 
 const SCRIPT_NAME = 'k6-debug-test.js';
@@ -59,7 +67,7 @@ export default function () {
   
   // 1. Test column settings update
   console.log(`[DEBUG] Testing column settings update...`);
-  let response = authenticatedPut('/api/v1/column-settings/', quickColumnConfig, { tags: { url: '/api/v1/column-settings/', script: SCRIPT_NAME } });
+  let response = authenticatedPut('/api/v1/column-settings/', quickColumnConfig);
   console.log(`[DEBUG] Column settings response: Status=${response.status}, Body=${response.body}`);
   
   check(response, {
@@ -83,7 +91,7 @@ export default function () {
   };
   
   console.log(`[DEBUG] Task payload: ${JSON.stringify(taskData)}`);
-  response = authenticatedPost('/api/v1/todos/', taskData, { tags: { url: '/api/v1/todos/', script: SCRIPT_NAME } });
+  response = authenticatedPost('/api/v1/todos/', taskData);
   console.log(`[DEBUG] Task creation response: Status=${response.status}, Body=${response.body}`);
   
   check(response, {
@@ -99,7 +107,7 @@ export default function () {
   sleep(0.5);
   
   // 3. Check API health
-  response = http.get(`${getBaseURL()}/health`, { tags: { url: '/health', script: SCRIPT_NAME } });
+  response = authenticatedGet('/health');
   console.log(`[DEBUG] Health check response: Status=${response.status}`);
   
   check(response, {
@@ -131,10 +139,6 @@ export function teardown() {
   resetSystemState();
   console.log('[DEBUG] Debug test completed');
 }
-
-// Example usage of normalizeUri
-const uri = normalizeUri('/api/v1/todos/67890');
-console.log(`Normalized URI: ${uri}`);
 
 // Debug test function
 function debugTest() {

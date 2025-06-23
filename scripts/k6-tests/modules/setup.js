@@ -4,12 +4,13 @@
  * Provides utilities to reset the system state before/after tests
  */
 
-import { check, sleep } from 'k6';
+import { sleep } from 'k6';
 import { 
   authenticatedGet, 
   authenticatedPost, 
   authenticatedPut, 
-  authenticatedDelete 
+  authenticatedDelete,
+  checkResponseStatus
 } from './auth.js';
 
 /**
@@ -77,7 +78,7 @@ function deleteAllTasks() {
     for (const task of batch) {
       const response = authenticatedDelete(`/api/v1/todos/${task.id}`);
       
-      if (check(response, { 'task deleted': (r) => r.status === 204 })) {
+      if (checkResponseStatus(response, 'task deleted', 204)) {
         deletedCount++;
         console.log(`Deleted task: ${task.title}`);
       } else {
@@ -150,9 +151,7 @@ function resetToDefaultColumns() {
   
   const response = authenticatedPut('/api/v1/column-settings/', defaultColumnConfig);
   
-  const success = check(response, {
-    'default columns restored': (r) => r.status === 200,
-  });
+  const success = checkResponseStatus(response, 'default columns restored', 200);
   
   if (success) {
     console.log('Default columns restored successfully');
@@ -190,7 +189,7 @@ export function cleanupAndReset() {
     if (currentColumns) {
       const cleanedColumns = clearColumnTaskIds(currentColumns);
       const response = authenticatedPut('/api/v1/column-settings/', cleanedColumns);
-      check(response, { 'column task references cleared': (r) => r.status === 200 });
+      checkResponseStatus(response, 'column task references cleared', 200);
     }
     
     // Step 4: Reset to default columns
@@ -235,7 +234,7 @@ export function cleanupTasksOnly() {
     if (currentColumns) {
       const cleanedColumns = clearColumnTaskIds(currentColumns);
       const response = authenticatedPut('/api/v1/column-settings/', cleanedColumns);
-      const cleared = check(response, { 'column task references cleared': (r) => r.status === 200 });
+      const cleared = checkResponseStatus(response, 'column task references cleared', 200);
       
       if (cleared) {
         results.success = true;
@@ -275,7 +274,7 @@ export function verifyCleanState() {
     console.log(`Detected ${totalTasksInColumns} ghost task references in columns. Clearing...`);
     const cleanedColumns = clearColumnTaskIds(columns);
     const response = authenticatedPut('/api/v1/column-settings/', cleanedColumns);
-    check(response, { 'ghost references cleared': (r) => r.status === 200 });
+    checkResponseStatus(response, 'ghost references cleared', 200);
     hasTasksInColumns = false;
   }
   

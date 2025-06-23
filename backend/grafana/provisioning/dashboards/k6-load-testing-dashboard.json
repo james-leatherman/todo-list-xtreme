@@ -78,6 +78,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -146,7 +147,9 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -154,8 +157,7 @@
                 "color": "green"
               }
             ]
-          },
-          "unit": "short"
+          }
         },
         "overrides": []
       },
@@ -191,13 +193,13 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "sum(increase(http_requests_total[1m]))",
-          "legendFormat": "FastAPI Requests",
+          "expr": "sum(http_requests_total)",
+          "legendFormat": "API Requests",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "API - Total Requests (5m)",
+      "title": "API - Total Requests",
       "type": "stat"
     },
     {
@@ -212,19 +214,12 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green"
-              },
-              {
-                "color": "yellow",
-                "value": 10
-              },
-              {
-                "color": "red",
-                "value": 20
               }
             ]
           },
@@ -249,11 +244,11 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^Virtual Users$/",
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "auto",
+        "textMode": "value",
         "wideLayout": true
       },
       "pluginVersion": "12.0.2",
@@ -264,8 +259,8 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "sum(k6_vus)",
-          "legendFormat": "Active Virtual Users",
+          "expr": "k6_vus",
+          "legendFormat": "Virtual Users",
           "range": true,
           "refId": "A"
         }
@@ -310,13 +305,13 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
-          "fields": "/^Value$/",
+          "fields": "",
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value_and_name",
+        "textMode": "value",
         "wideLayout": true
       },
       "pluginVersion": "12.0.2",
@@ -328,25 +323,16 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(k6_http_reqs_total) by (script)",
+          "expr": "sum(k6_http_reqs_total)",
           "format": "time_series",
           "hide": false,
           "instant": false,
-          "legendFormat": "{{script}}",
+          "legendFormat": "Total Requests",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "k6 - Total Requests by Script",
-      "transformations": [
-        {
-          "id": "labelsToFields",
-          "options": {
-            "mode": "columns",
-            "valueLabel": "script"
-          }
-        }
-      ],
+      "title": "k6 - Total Requests",
       "type": "stat"
     },
     {
@@ -409,7 +395,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "sum by(method, handler) (increase(http_requests_total[5m]))",
+          "expr": "sum by(method, handler) (http_requests_total)",
           "legendFormat": "{{method}} {{handler}}",
           "range": true,
           "refId": "A"
@@ -478,13 +464,13 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "sum(k6_http_reqs_total) by (scenario)",
-          "legendFormat": "{{scenario}}",
+          "expr": "sum(k6_http_reqs_total) by (method, uri)",
+          "legendFormat": "{{method}} {{uri}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "k6 - Scenario Distribution",
+      "title": "k6 - Endpoint Distribution",
       "type": "piechart"
     },
     {
@@ -700,7 +686,9 @@
           ],
           "displayMode": "table",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -1179,7 +1167,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "avg(k6_http_req_duration_p99) by (method, uri)",
+          "expr": "avg(k6_http_req_duration_p99) by (method, uri) * 1000",
           "legendFormat": "{{method}} {{uri}}",
           "range": true,
           "refId": "A"
@@ -1315,6 +1303,7 @@
           "mappings": [],
           "max": 100,
           "min": 0,
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1347,9 +1336,7 @@
         "minVizWidth": 75,
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": [],
           "fields": "",
           "values": false
         },
@@ -1365,8 +1352,10 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "k6",
-          "legendFormat": "Check Success Rate",
+          "expr": "k6_successful_checks_total / (k6_successful_checks_total + k6_unsuccessful_checks_total) * 100",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
@@ -1500,7 +1489,7 @@
           "editorMode": "code",
           "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[1m])) by (le)) * 1000",
           "hide": false,
-          "legendFormat": "FastAPI P95",
+          "legendFormat": "API p99",
           "range": true,
           "refId": "A"
         },
@@ -1510,9 +1499,9 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "sum(rate(k6_http_reqs_total_p99[1m])) * 1000",
+          "expr": "sum(k6_http_req_duration_p99)",
           "hide": false,
-          "legendFormat": "k6 P95",
+          "legendFormat": "k6 p99",
           "range": true,
           "refId": "B"
         }
@@ -1674,12 +1663,12 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "",
+  "timezone": "browser",
   "title": "API + k6 Performance Dashboard - Todo List Xtreme",
   "uid": "fastapi-k6-dashboard",
-  "version": 3
+  "version": 16
 }

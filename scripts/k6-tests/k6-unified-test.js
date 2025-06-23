@@ -28,8 +28,8 @@
  */
 
 import { sleep } from 'k6';
+import { Counter } from 'k6/metrics';
 import {
-  getBaseURL,
   verifyAuth,
   authenticatedGet,
   authenticatedPost,
@@ -42,6 +42,10 @@ import {
   verifyCleanState,
   cleanupTasksOnly
 } from './modules/setup.js';
+
+// Metrics counters for tracking successful and unsuccessful checks
+const successfulChecks = new Counter('successful_checks');
+const unsuccessfulChecks = new Counter('unsuccessful_checks');
 
 // Configuration
 const TEST_MODE = __ENV.TEST_MODE || 'quick';
@@ -202,7 +206,7 @@ function runQuickTest() {
 
   // 1. Update columns
   let response = authenticatedPut('/api/v1/column-settings/', columnConfig);
-  checkResponseStatus(response, 'columns updated', 200);
+  checkResponseStatus(response, 'columns updated', 200, successfulChecks, unsuccessfulChecks, 'script');
   debugLog('Column update', { status: response.status });
 
   // 2. Create a few tasks
@@ -216,7 +220,7 @@ function runQuickTest() {
     };
 
     response = authenticatedPost('/api/v1/todos/', taskData);
-    checkResponseStatus(response, 'task created', 201);
+    checkResponseStatus(response, 'task created', 201, successfulChecks, unsuccessfulChecks, 'script');
     debugLog('Task creation', { status: response.status, title: taskData.title });
 
     if (response.status === 201) {
@@ -228,11 +232,11 @@ function runQuickTest() {
 
   // 3. Get tasks
   response = authenticatedGet('/api/v1/todos/');
-  checkResponseStatus(response, 'tasks retrieved', 200);
+  checkResponseStatus(response, 'tasks retrieved', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   // 4. Health check
   response = authenticatedGet('/health');
-  checkResponseStatus(response, 'health check', 200);
+  checkResponseStatus(response, 'health check', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   console.log(`[VU ${__VU}] Quick test completed - created ${tasksCreated.length} tasks`);
 }
@@ -301,24 +305,24 @@ function performCRUDOperations() {
 
   // Create
   let response = authenticatedPost('/api/v1/todos/', taskData);
-  checkResponseStatus(response, 'CRUD task created', 201);
+  checkResponseStatus(response, 'CRUD task created', 201, successfulChecks, unsuccessfulChecks, 'script');
 
   if (response.status === 201) {
     const task = JSON.parse(response.body);
 
     // Read
     response = authenticatedGet(`/api/v1/todos/${task.id}`);
-    checkResponseStatus(response, 'CRUD task retrieved', 200);
+    checkResponseStatus(response, 'CRUD task retrieved', 200, successfulChecks, unsuccessfulChecks, 'script');
 
     // Update
     const updateData = { ...task, title: `${task.title} - UPDATED` };
     response = authenticatedPut(`/api/v1/todos/${task.id}`, updateData);
-    checkResponseStatus(response, 'CRUD task updated', 200);
+    checkResponseStatus(response, 'CRUD task updated', 200, successfulChecks, unsuccessfulChecks, 'script');
 
     // Delete (50% chance)
     if (Math.random() < 0.5) {
       response = authenticatedDelete(`/api/v1/todos/${task.id}`);
-      checkResponseStatus(response, 'CRUD task deleted', 204);
+      checkResponseStatus(response, 'CRUD task deleted', 204, successfulChecks, unsuccessfulChecks, 'script');
     }
   }
 
@@ -333,11 +337,11 @@ function performColumnOperations() {
 
   // Update column configuration
   let response = authenticatedPut('/api/v1/column-settings/', columnConfig.config);
-  checkResponseStatus(response, 'column config updated', 200);
+  checkResponseStatus(response, 'column config updated', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   // Verify configuration
   response = authenticatedGet('/api/v1/column-settings/');
-  checkResponseStatus(response, 'column config retrieved', 200);
+  checkResponseStatus(response, 'column config retrieved', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   console.log(`[VU ${__VU}] Updated to ${columnConfig.name} configuration`);
   sleep(0.3);
@@ -359,7 +363,7 @@ function performBulkTaskOperations() {
     };
 
     const response = authenticatedPost('/api/v1/todos/', taskData);
-    checkResponseStatus(response, 'bulk task created', 201);
+    checkResponseStatus(response, 'bulk task created', 201, successfulChecks, unsuccessfulChecks, 'script');
 
     if (response.status === 201) {
       const task = JSON.parse(response.body);
@@ -370,7 +374,7 @@ function performBulkTaskOperations() {
 
   // Get all tasks
   let response = authenticatedGet('/api/v1/todos/');
-  checkResponseStatus(response, 'bulk tasks retrieved', 200);
+  checkResponseStatus(response, 'bulk tasks retrieved', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   console.log(`[VU ${__VU}] Bulk operation completed - created ${tasksCreated.length} tasks`);
   sleep(0.2);
@@ -382,7 +386,7 @@ function performHealthChecks() {
   // Multiple health checks with different intervals
   for (let i = 0; i < 3; i++) {
     const response = authenticatedGet('/health');
-    checkResponseStatus(response, 'health check', 200);
+    checkResponseStatus(response, 'health check', 200, successfulChecks, unsuccessfulChecks, 'script');
     sleep(0.5);
   }
 }
@@ -406,7 +410,7 @@ function runBasicCRUDTest() {
     };
 
     const response = authenticatedPost('/api/v1/todos/', taskData);
-    checkResponseStatus(response, 'task created successfully', 201);
+    checkResponseStatus(response, 'task created successfully', 201, successfulChecks, unsuccessfulChecks, 'script');
 
     if (response.status === 201) {
       const task = JSON.parse(response.body);
@@ -418,7 +422,7 @@ function runBasicCRUDTest() {
 
   // Read and verify tasks
   const getResponse = authenticatedGet('/api/v1/todos/');
-  checkResponseStatus(getResponse, 'tasks retrieved successfully', 200);
+  checkResponseStatus(getResponse, 'tasks retrieved successfully', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   // Update a task
   if (tasksCreated.length > 0) {
@@ -430,11 +434,11 @@ function runBasicCRUDTest() {
     };
 
     const updateResponse = authenticatedPut(`/api/v1/todos/${taskToUpdate.id}`, updateData);
-    checkResponseStatus(updateResponse, 'task updated successfully', 200);
+    checkResponseStatus(updateResponse, 'task updated successfully', 200, successfulChecks, unsuccessfulChecks, 'script');
 
     // Delete the task
     const deleteResponse = authenticatedDelete(`/api/v1/todos/${taskToUpdate.id}`);
-    checkResponseStatus(deleteResponse, 'task deleted successfully', 204);
+    checkResponseStatus(deleteResponse, 'task deleted successfully', 204, successfulChecks, unsuccessfulChecks, 'script');
   }
 }
 
@@ -448,11 +452,11 @@ function runColumnManagementTest() {
 
   // Update column configuration
   const updateResponse = authenticatedPut('/api/v1/column-settings/', testConfig.config);
-  checkResponseStatus(updateResponse, 'column configuration updated', 200);
+  checkResponseStatus(updateResponse, 'column configuration updated', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   // Verify column configuration
   const getResponse = authenticatedGet('/api/v1/column-settings/');
-  checkResponseStatus(getResponse, 'column configuration retrieved', 200);
+  checkResponseStatus(getResponse, 'column configuration retrieved', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   if (getResponse.status === 200) {
     console.log(`[VU ${__VU}] Column configuration validated for ${testConfig.name}`);
@@ -467,7 +471,7 @@ function runWorkflowTest() {
   // Setup extended workflow
   const workflowConfig = columnConfigs[2].config; // Extended workflow
   const configResponse = authenticatedPut('/api/v1/column-settings/', workflowConfig);
-  checkResponseStatus(configResponse, 'workflow columns configured', 200);
+  checkResponseStatus(configResponse, 'workflow columns configured', 200, successfulChecks, unsuccessfulChecks, 'script');
 
   // Create tasks in different stages
   const workflowTasks = [];
@@ -484,7 +488,7 @@ function runWorkflowTest() {
     };
 
     const response = authenticatedPost('/api/v1/todos/', taskData);
-    checkResponseStatus(response, 'workflow task created', 201);
+    checkResponseStatus(response, 'workflow task created', 201, successfulChecks, unsuccessfulChecks, 'script');
 
     if (response.status === 201) {
       const task = JSON.parse(response.body);
@@ -507,7 +511,7 @@ function runWorkflowTest() {
       };
 
       const progressResponse = authenticatedPut(`/api/v1/todos/${task.id}`, progressData);
-      checkResponseStatus(progressResponse, 'task progressed in workflow', 200);
+      checkResponseStatus(progressResponse, 'task progressed in workflow', 200, successfulChecks, unsuccessfulChecks, 'script');
 
       console.log(`[VU ${__VU}] Progressed task from ${task.status} to ${nextStatus}`);
       sleep(0.2);
@@ -516,7 +520,7 @@ function runWorkflowTest() {
 
   // Verify final state
   const finalResponse = authenticatedGet('/api/v1/todos/');
-  checkResponseStatus(finalResponse, 'workflow state retrieved', 200);
+  checkResponseStatus(finalResponse, 'workflow state retrieved', 200, successfulChecks, unsuccessfulChecks, 'script');
 }
 
 function performHighVolumeOperation(operation) {
@@ -533,7 +537,7 @@ function performHighVolumeOperation(operation) {
         };
 
         const response = authenticatedPost('/api/v1/todos/', taskData);
-        checkResponseStatus(response, 'stress task created', 201);
+        checkResponseStatus(response, 'stress task created', 201, successfulChecks, unsuccessfulChecks, 'script');
         sleep(0.05);
       }
       break;
@@ -541,7 +545,7 @@ function performHighVolumeOperation(operation) {
     case 'read':
       for (let i = 0; i < 10; i++) {
         const response = authenticatedGet('/api/v1/todos/');
-        checkResponseStatus(response, 'stress tasks retrieved', 200);
+        checkResponseStatus(response, 'stress tasks retrieved', 200, successfulChecks, unsuccessfulChecks, 'script');
         sleep(0.02);
       }
       break;
@@ -559,7 +563,7 @@ function performHighVolumeOperation(operation) {
           };
 
           const response = authenticatedPut(`/api/v1/todos/${task.id}`, updateData);
-          checkResponseStatus(response, 'stress task updated', 200);
+          checkResponseStatus(response, 'stress task updated', 200, successfulChecks, unsuccessfulChecks, 'script');
         }
       }
       break;
@@ -571,7 +575,7 @@ function performHighVolumeOperation(operation) {
         if (tasks.length > 0) {
           const task = tasks[Math.floor(Math.random() * tasks.length)];
           const response = authenticatedDelete(`/api/v1/todos/${task.id}`);
-          checkResponseStatus(response, 'stress task deleted', 204);
+          checkResponseStatus(response, 'stress task deleted', 204, successfulChecks, unsuccessfulChecks, 'script');
         }
       }
       break;

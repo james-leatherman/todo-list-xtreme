@@ -127,7 +127,7 @@ export function normalizeUri(url) {
 export function checkResponseStatus(response,
   checkName = 'request successful',
   expectedStatus = null, successfulChecks = null,
-  unsuccessfulChecks = null) {
+  unsuccessfulChecks = null, context = 'test') {
   const checkObj = {};
 
   if (expectedStatus !== null) {

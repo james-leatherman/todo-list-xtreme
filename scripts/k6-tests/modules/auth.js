@@ -122,7 +122,7 @@ export function normalizeUri(url) {
  * @param {number} expectedStatus - Expected status code (optional, defaults to any 2xx)
  * @param {Set} successfulChecks - A set to track successful checks (optional)
  * @param {Set} unsuccessfulChecks - A set to track unsuccessful checks (optional)
- * @returns {boolean} True if the status matches expectation, false otherwise
+ * @returns {boolean} - True if the status matches expectation, false otherwise
  */
 export function checkResponseStatus(response,
   checkName = 'request successful',

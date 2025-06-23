@@ -139,31 +139,3 @@ export function teardown() {
   resetSystemState();
   console.log('[DEBUG] Debug test completed');
 }
-
-// Debug test function
-function debugTest() {
-  console.log('Running debug test...');
-
-  // Example: Get column settings
-  let response = authenticatedGet('/api/v1/column-settings');
-  check(response, {
-    'get column settings successful': (r) => r.status === 200,
-  });
-
-  // Example: Create a new task
-  const taskData = { title: 'Debug Test Task', description: 'Created during debug test', status: 'todo' };
-  const createResponse = authenticatedPost('/api/v1/todos/', taskData);
-  check(createResponse, {
-    'task created successfully': (r) => r.status === 201,
-  });
-
-  // Example: Delete the task
-  const taskId = createResponse.json('id');
-  const deleteResponse = authenticatedDelete(`/api/v1/todos/${taskId}`);
-  check(deleteResponse, {
-    'task deleted successfully': (r) => r.status === 204,
-  });
-}
-
-// Run debug test function
-debugTest();

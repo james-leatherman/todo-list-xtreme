@@ -128,10 +128,10 @@ const columnConfigs = [
   {
     name: 'Simple Kanban',
     config: {
-      column_order: ['todo', 'doing', 'done'],
+      column_order: ['todo', 'inProgress', 'done'],
       columns_config: {
         'todo': { id: 'todo', title: 'To Do', taskIds: [] },
-        'doing': { id: 'doing', title: 'Doing', taskIds: [] },
+        'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
         'done': { id: 'done', title: 'Done', taskIds: [] }
       }
     }
@@ -151,12 +151,11 @@ const columnConfigs = [
   {
     name: 'Extended Workflow',
     config: {
-      column_order: ['backlog', 'todo', 'inProgress', 'review', 'done'],
+      column_order: ['todo', 'inProgress', 'blocked', 'done'],
       columns_config: {
-        'backlog': { id: 'backlog', title: 'Backlog', taskIds: [] },
         'todo': { id: 'todo', title: 'To Do', taskIds: [] },
         'inProgress': { id: 'inProgress', title: 'In Progress', taskIds: [] },
-        'review': { id: 'review', title: 'Review', taskIds: [] },
+        'blocked': { id: 'blocked', title: 'Blocked', taskIds: [] },
         'done': { id: 'done', title: 'Done', taskIds: [] }
       }
     }
@@ -167,7 +166,7 @@ const taskTemplates = [
   { title: 'Setup Development Environment', description: 'Install and configure development tools', status: 'todo' },
   { title: 'Design API Endpoints', description: 'Plan and document REST API structure', status: 'todo' },
   { title: 'Implement User Authentication', description: 'Add JWT-based authentication system', status: 'inProgress' },
-  { title: 'Write Unit Tests', description: 'Create comprehensive test coverage', status: 'review' },
+  { title: 'Write Unit Tests', description: 'Create comprehensive test coverage', status: 'done' },
   { title: 'Deploy to Production', description: 'Configure CI/CD pipeline and deploy', status: 'done' },
   { title: 'Monitor Performance', description: 'Set up monitoring and alerting', status: 'todo' },
   { title: 'Optimize Database', description: 'Improve query performance', status: 'inProgress' },
@@ -475,7 +474,8 @@ function runWorkflowTest() {
 
   // Create tasks in different stages
   const workflowTasks = [];
-  const statuses = ['backlog', 'todo', 'inProgress', 'review', 'done'];
+  // Using only valid statuses accepted by the API
+  const statuses = ['todo', 'inProgress', 'blocked', 'done'];
 
   for (let i = 0; i < taskTemplates.length && i < 5; i++) {
     const template = taskTemplates[i];

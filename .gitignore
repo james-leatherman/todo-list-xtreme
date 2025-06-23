@@ -53,6 +53,7 @@ crash.log
 # Uploads directory (local development only)
 /backend/uploads/
 /uploads/
+/backend/k6-results/
 
 # Docker
 .docker/

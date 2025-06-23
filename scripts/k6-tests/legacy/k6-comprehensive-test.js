@@ -69,7 +69,7 @@ const taskTemplates = [
   { title: 'Setup Development Environment', description: 'Install and configure development tools', status: 'todo' },
   { title: 'Design API Endpoints', description: 'Plan and document REST API structure', status: 'todo' },
   { title: 'Implement User Authentication', description: 'Add JWT-based authentication system', status: 'inProgress' },
-  { title: 'Write Unit Tests', description: 'Create comprehensive test coverage', status: 'review' },
+  { title: 'Write Unit Tests', description: 'Create comprehensive test coverage', status: 'inProgress' },
   { title: 'Deploy to Production', description: 'Configure CI/CD pipeline and deploy', status: 'done' }
 ];
 

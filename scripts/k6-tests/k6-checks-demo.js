@@ -8,8 +8,6 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
 import { 
-  getBaseURL, 
-  getAuthHeaders,
   authenticatedGet,
   authenticatedPost,
   authenticatedPut,

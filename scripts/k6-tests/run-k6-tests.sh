@@ -85,16 +85,14 @@ generate_token() {
     fi
 }
 
-# Function to run a specific k6 test
+# Function to run a specific k6 test using the unified script
 run_test() {
     local test_name=$1
-    local script_file=$2
-    local duration=${3:-$DEFAULT_DURATION}
-    local vus=${4:-$DEFAULT_VUS}
+    local test_mode=$2
     
     echo -e "${BLUE}🧪 Running ${test_name}...${NC}"
-    echo -e "${BLUE}📊 Duration: ${duration}, Virtual Users: ${vus}${NC}"
-    echo -e "${BLUE}🎯 Script: ${script_file}${NC}"
+    echo -e "${BLUE}🎯 Test Mode: ${test_mode}${NC}"
+    echo -e "${BLUE}📊 Script: k6-unified-test.js${NC}"
     
     # Check for debug flag
     if [[ "$*" =~ "--debug" ]] || [[ "${DEBUG}" == "true" ]]; then
@@ -103,18 +101,16 @@ run_test() {
     fi
     
     echo ""
-     # Set environment variables for k6
+    # Set environment variables for k6
     export API_URL="${API_URL}"
+    export TEST_MODE="${test_mode}"
 
     # Run k6 with experimental Prometheus remote write output
     k6 run \
-        --duration="${duration}" \
-        --vus="${vus}" \
         --summary-trend-stats="avg,min,med,max,p(90),p(95),p(99)" \
         --summary-time-unit=ms \
         --out experimental-prometheus-rw="http://localhost:9090/api/v1/write" \
-        -e SCRIPT_NAME="${SCRIPT_NAME}" \
-        "${SCRIPTS_DIR}/${script_file}"
+        "${SCRIPTS_DIR}/k6-unified-test.js"
     
     echo ""
     echo -e "${GREEN}✅ ${test_name} completed${NC}"
@@ -125,20 +121,23 @@ run_test() {
 show_usage() {
     echo -e "${YELLOW}Usage: $0 [test_type] [options]${NC}"
     echo ""
-    echo -e "  ${GREEN}quick${NC}      - Quick API test (30s, 5 VUs)"
-    echo -e "  ${GREEN}load${NC}       - Comprehensive load test (5m, 10 VUs)"
-    echo -e "  ${GREEN}concurrent${NC} - Concurrent operations test (2m, 20 VUs)"
-    echo -e "  ${GREEN}stress${NC}     - Stress test (3m, 50 VUs)"
-    echo -e "  ${GREEN}all${NC}        - Run all tests sequentially"
+    echo -e "  ${GREEN}quick${NC}         - Quick smoke test (30s, 2 VUs)"
+    echo -e "  ${GREEN}load${NC}          - Load test with stages (4m total)"
+    echo -e "  ${GREEN}comprehensive${NC} - Comprehensive feature test (60s, 3 VUs)"
+    echo -e "  ${GREEN}stress${NC}        - Stress test with high load (5m total, up to 50 VUs)"
+    echo -e "  ${GREEN}all${NC}           - Run all tests sequentially"
     echo ""
     echo -e "${YELLOW}Options:${NC}"
-    echo -e "  ${GREEN}--debug${NC}    - Enable debug mode (detailed logging)"
+    echo -e "  ${GREEN}--debug${NC}       - Enable debug mode (detailed logging)"
     echo ""
     echo -e "${YELLOW}Examples:${NC}"
     echo -e "  $0 quick"
     echo -e "  $0 quick --debug"
     echo -e "  $0 load"
     echo -e "  API_URL=http://localhost:8000 $0 stress"
+    echo ""
+    echo -e "${YELLOW}Note:${NC} All tests now use the unified k6-unified-test.js script"
+    echo -e "      with different TEST_MODE configurations for flexibility."
     echo ""
 }
 
@@ -158,32 +157,24 @@ main() {
     
     case "${1:-quick}" in
         "quick")
-            export SCRIPT_NAME="k6-quick-test.js"
-            run_test "Quick API Test" "k6-quick-test.js" "${DEFAULT_DURATION}" "${DEFAULT_VUS}" $debug_flag
+            run_test "Quick API Test" "quick" $debug_flag
             ;;
         "load")
-            export SCRIPT_NAME="k6-api-load-test.js"
-            run_test "Comprehensive Load Test" "k6-api-load-test.js" "5m" "10" $debug_flag
+            run_test "Load Test" "load" $debug_flag
             ;;
-        "concurrent")
-            export SCRIPT_NAME="k6-concurrent-load.js"
-            run_test "Concurrent Operations Test" "k6-concurrent-load.js" "2m" "20" $debug_flag
+        "comprehensive")
+            run_test "Comprehensive Test" "comprehensive" $debug_flag
             ;;
-        "stress")
-            export SCRIPT_NAME="k6-concurrent-load.js"
-            run_test "Stress Test" "k6-concurrent-load.js" "3m" "50" $debug_flag
+        "concurrent"|"stress")
+            run_test "Stress Test" "stress" $debug_flag
             ;;
         "all")
             echo -e "${BLUE}🎯 Running all k6 tests...${NC}"
             echo ""
-            export SCRIPT_NAME="k6-quick-test.js"
-            run_test "Quick API Test" "k6-quick-test.js" "${DEFAULT_DURATION}" "${DEFAULT_VUS}" $debug_flag
-            export SCRIPT_NAME="k6-api-load-test.js"
-            run_test "Comprehensive Load Test" "k6-api-load-test.js" "5m" "10" $debug_flag
-            export SCRIPT_NAME="k6-concurrent-load.js"
-            run_test "Concurrent Operations Test" "k6-concurrent-load.js" "2m" "20" $debug_flag
-            export SCRIPT_NAME="k6-concurrent-load.js"
-            run_test "Stress Test" "k6-concurrent-load.js" "3m" "50" $debug_flag
+            run_test "Quick API Test" "quick" $debug_flag
+            run_test "Load Test" "load" $debug_flag
+            run_test "Comprehensive Test" "comprehensive" $debug_flag
+            run_test "Stress Test" "stress" $debug_flag
             echo -e "${GREEN}🎉 All tests completed!${NC}"
             ;;
         "help"|"-h"|"--help")

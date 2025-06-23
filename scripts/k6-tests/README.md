@@ -1,6 +1,6 @@
 # K6 Load Tests
 
-This directory contains all k6 load testing scripts and modules for the Todo List Xtreme API.
+This directory contains the unified k6 load testing solution for the Todo List Xtreme API. All testing scenarios have been consolidated into a single, flexible script that supports multiple test modes.
 
 ## Directory Structure
 
@@ -8,121 +8,229 @@ This directory contains all k6 load testing scripts and modules for the Todo Lis
 k6-tests/
 ├── modules/                    # Shared k6 modules
 │   ├── auth.js                # Authentication utilities
-│   ├── checks.js              # Standardized check functions
 │   └── setup.js               # Setup and cleanup utilities
-├── k6-quick-test.js           # Basic functionality test
-├── k6-debug-test.js           # Debug test with detailed logging
-├── k6-api-load-test.js        # Comprehensive API load test
-├── k6-concurrent-load.js      # High concurrency load test
-├── k6-comprehensive-test.js   # Full feature coverage test
-├── k6-checks-demo.js         # Demonstration of checks module usage
+├── k6-unified-test.js         # Single unified test script (all scenarios)
+├── legacy/                    # Deprecated individual scripts (backup)
+│   ├── k6-quick-test.js       # ➤ Replaced by TEST_MODE=quick
+│   ├── k6-api-load-test.js    # ➤ Replaced by TEST_MODE=load
+│   ├── k6-comprehensive-test.js # ➤ Replaced by TEST_MODE=comprehensive
+│   ├── k6-concurrent-load.js  # ➤ Replaced by TEST_MODE=stress
+│   └── k6-checks-demo.js      # ➤ Replaced by unified helpers
 ├── run-k6-tests.sh           # Test runner script
 └── README.md                 # This file
 ```
 
-## Test Files
+## Unified Test Script
 
-### Core Test Scripts
+The **`k6-unified-test.js`** script replaces all individual test scripts and supports multiple test modes:
 
-- **`k6-quick-test.js`** - Fast basic functionality test
-  - Duration: 30s-1m
-  - VUs: 1-5
-  - Purpose: Quick validation of core API functions
+### Test Modes
 
-- **`k6-debug-test.js`** - Debug test with verbose logging
-  - Duration: 10s-30s
-  - VUs: 1-2
-  - Purpose: Detailed API response debugging
+Configure the test scenario via the `TEST_MODE` environment variable:
 
-- **`k6-api-load-test.js`** - Comprehensive load testing
-  - Duration: 1m-5m
-  - VUs: 3-20
-  - Purpose: Full API performance testing
+- **`quick`** (default) - Fast smoke test
+  - Duration: 30s, 2 VUs
+  - Purpose: Basic API validation
+  - Thresholds: p(95)<1000ms, errors<5%
 
-- **`k6-concurrent-load.js`** - High concurrency testing
-  - Duration: 1m-10m
-  - VUs: 5-50
-  - Purpose: Stress testing with multiple scenarios
+- **`load`** - Load testing with stages
+  - Stages: 30s→5 VUs, 2m→10 VUs, 1m→20 VUs, 30s→0 VUs
+  - Purpose: Performance under realistic load
+  - Thresholds: p(95)<2000ms, errors<10%
 
-- **`k6-comprehensive-test.js`** - Complete feature testing
-  - Duration: 30s-2m
-  - VUs: 2-10
-  - Purpose: Full application workflow testing
+- **`comprehensive`** - Complete feature testing
+  - Duration: 60s, 3 VUs
+  - Purpose: Full workflow validation
+  - Thresholds: p(95)<1000ms, errors<10%
+
+- **`stress`** - High-load stress testing
+  - Stages: 1m→10 VUs, 3m→50 VUs, 1m→0 VUs
+  - Purpose: System limits and stability
+  - Thresholds: p(95)<5000ms, errors<20%
 
 ### Shared Modules
 
 - **`modules/auth.js`** - Authentication and HTTP utilities
-  - `getAuthHeaders()` - Get standardized auth headers
-  - `getBaseURL()` - Get configured API base URL
   - `authenticatedGet/Post/Put/Delete()` - HTTP methods with auth
+  - `checkResponseStatus()` - Standardized response validation
+  - `getBaseURL()`, `verifyAuth()` - Configuration utilities
 
 - **`modules/setup.js`** - System setup and cleanup utilities
   - `resetSystemState()` - Complete system reset
-  - `cleanupAndReset()` - Full cleanup and default restoration
   - `verifyCleanState()` - Validate clean system state
+  - `cleanupTasksOnly()` - Task-specific cleanup
 
 ## Usage
 
-### Local Testing
+### Using the Test Runner Script (Recommended)
 
 ```bash
 # Run from project root
 cd scripts/k6-tests
 
-# Quick test
+# Quick smoke test
 ./run-k6-tests.sh quick
 
-# Debug test
-./run-k6-tests.sh debug
-
-# Load test
+# Load test with stages
 ./run-k6-tests.sh load
 
-# All tests
+# Comprehensive feature test
+./run-k6-tests.sh comprehensive
+
+# Stress test
+./run-k6-tests.sh stress
+
+# Run all tests sequentially
 ./run-k6-tests.sh all
+
+# Enable debug mode
+./run-k6-tests.sh quick --debug
 ```
 
-### Manual k6 Execution
+### Direct k6 Execution
 
 ```bash
 # Set environment variables
 export API_URL=http://localhost:8000
 export AUTH_TOKEN=your-jwt-token
 
-# Run specific test
-k6 run --duration=1m --vus=10 k6-api-load-test.js
+# Quick test (default mode)
+k6 run k6-unified-test.js
 
-# Run with custom parameters
-k6 run --duration=30s --vus=5 k6-quick-test.js
+# Specific test modes
+TEST_MODE=load k6 run k6-unified-test.js
+TEST_MODE=comprehensive k6 run k6-unified-test.js
+TEST_MODE=stress k6 run k6-unified-test.js
+
+# With debug logging
+TEST_MODE=quick DEBUG=true k6 run k6-unified-test.js
 ```
-
-### CI Integration
-
-The k6 tests are automatically executed in GitHub Actions CI pipeline:
-
-- **Location**: `.github/workflows/ci.yml`
-- **Trigger**: Push to main, Pull Requests
-- **Working Directory**: `./scripts/k6-tests`
-- **Tests Run**: quick, debug, load, comprehensive
 
 ## Environment Variables
 
-Required environment variables:
+### Required Variables
 
 - `API_URL` - Backend API URL (default: http://localhost:8000)
 - `AUTH_TOKEN` - JWT token for authentication
 
-Optional variables:
+### Optional Variables
 
-- `CI` - Set to 'true' in CI environments (auto-detected)
-- `DEFAULT_DURATION` - Default test duration
-- `DEFAULT_VUS` - Default number of virtual users
+- `TEST_MODE` - Test scenario: `quick|load|comprehensive|stress` (default: `quick`)
+- `DEBUG` - Enable detailed logging: `true|false` (default: `false`)
+
+## CI Integration
+
+The unified script is integrated into GitHub Actions workflows:
+
+### Main CI Pipeline (`.github/workflows/ci.yml`)
+
+```yaml
+- name: Run k6 quick test
+  env:
+    TEST_MODE: quick
+    DEBUG: true
+  run: k6 run k6-unified-test.js
+
+- name: Run k6 load test
+  env:
+    TEST_MODE: load
+  run: k6 run k6-unified-test.js
+
+- name: Run k6 comprehensive test
+  env:
+    TEST_MODE: comprehensive
+  run: k6 run k6-unified-test.js
+```
+
+### Load Testing Workflow (`.github/workflows/k6-load-testing.yml`)
+
+Supports all test modes via workflow dispatch inputs.
+
+## Test Scenarios
+
+The unified script automatically runs different test scenarios based on the VU (Virtual User) ID and test mode:
+
+### Quick Mode
+- Basic CRUD operations
+- Column configuration updates
+- Health checks
+- Authentication verification
+
+### Load Mode
+- Distributed VU scenarios:
+  - VU % 4 = 0: CRUD operations
+  - VU % 4 = 1: Column operations  
+  - VU % 4 = 2: Bulk task operations
+  - VU % 4 = 3: Health checks
+
+### Comprehensive Mode
+- Per-VU test scenarios:
+  - VU % 3 = 0: Basic CRUD test
+  - VU % 3 = 1: Column management test
+  - VU % 3 = 2: Workflow test
+
+### Stress Mode
+- High-volume operations:
+  - Create, read, update, delete operations
+  - Random task selection for updates/deletes
+  - Concurrent access patterns
+
+## Performance Thresholds
+
+```javascript
+// Quick Mode
+thresholds: {
+  checks: ['rate>0.95'],
+  http_req_duration: ['p(95)<1000'],
+  http_req_failed: ['rate<0.05']
+}
+
+// Load Mode  
+thresholds: {
+  checks: ['rate>0.95'],
+  http_req_duration: ['p(95)<2000'],
+  http_req_failed: ['rate<0.1']
+}
+
+// Comprehensive Mode
+thresholds: {
+  checks: ['rate>0.95'],
+  http_req_duration: ['p(95)<1000'],
+  http_req_failed: ['rate<0.1']
+}
+
+// Stress Mode
+thresholds: {
+  checks: ['rate>0.90'],      // Lower threshold for stress
+  http_req_duration: ['p(95)<5000'],
+  http_req_failed: ['rate<0.2']
+}
+```
+
+## Migration from Individual Scripts
+
+The following individual scripts have been **deprecated** and replaced:
+
+| Old Script | New Equivalent | Migration |
+|------------|---------------|-----------|
+| `k6-quick-test.js` | `TEST_MODE=quick` | ✅ Completed |
+| `k6-api-load-test.js` | `TEST_MODE=load` | ✅ Completed |
+| `k6-comprehensive-test.js` | `TEST_MODE=comprehensive` | ✅ Completed |
+| `k6-concurrent-load.js` | `TEST_MODE=stress` | ✅ Completed |
+| `k6-checks-demo.js` | Built-in `checkResponseStatus` | ✅ Completed |
+
+**Benefits of the unified approach:**
+- ✅ Single script to maintain
+- ✅ Consistent modular helpers across all tests
+- ✅ Flexible scenario configuration via environment variables
+- ✅ Easier CI/CD integration
+- ✅ Better code reuse and reduced duplication
 
 ## Prerequisites
 
 ### System Requirements
 
-- **k6** - Load testing tool
+- **k6** - Load testing tool (v0.40+)
 - **Backend API** - Running Todo List Xtreme API
 - **Database** - PostgreSQL instance
 - **Authentication** - Valid JWT token
@@ -143,56 +251,6 @@ brew install k6
 winget install k6
 ```
 
-## Test Scenarios
-
-### Quick Test (`k6-quick-test.js`)
-- Basic CRUD operations
-- Column management
-- Authentication verification
-- Health checks
-
-### Debug Test (`k6-debug-test.js`)
-- Verbose response logging
-- Error condition testing
-- API response validation
-- System state verification
-
-### Load Test (`k6-api-load-test.js`)
-- Multiple test scenarios (30% columns, 40% todos, 20% bulk, 10% health)
-- Performance threshold validation
-- Error rate monitoring
-- Throughput measurement
-
-### Concurrent Load Test (`k6-concurrent-load.js`)
-- High concurrency scenarios
-- Different VU behaviors
-- Column configuration testing
-- Task movement operations
-
-### Comprehensive Test (`k6-comprehensive-test.js`)
-- Complete workflow testing
-- Multi-user scenarios
-- Complex task operations
-- System integration validation
-
-## Performance Thresholds
-
-Default thresholds for test validation:
-
-```javascript
-// Quick Test
-http_req_duration: ['p(95)<1000']  // 95% under 1s
-http_req_failed: ['rate<0.05']     // Error rate under 5%
-
-// Load Test  
-http_req_duration: ['p(95)<2000']  // 95% under 2s
-http_req_failed: ['rate<0.1']      // Error rate under 10%
-
-// Concurrent Test
-http_req_duration: ['p(95)<1500']  // 95% under 1.5s
-operation_duration: ['p(90)<1000'] // 90% operations under 1s
-```
-
 ## Troubleshooting
 
 ### Common Issues
@@ -208,73 +266,52 @@ docker-compose up -d
 ```
 
 **Authentication failures**
-```bash
+```bash  
 # Generate fresh JWT token
 cd ..
-python3 scripts/generate-test-jwt-token.py
+bash scripts/create-test-user.sh
 ```
 
-**Module import errors**
+**Test mode not recognized**
 ```bash
-# Verify modules directory exists
-ls -la modules/
-
-# Check file permissions
-chmod +x run-k6-tests.sh
+# Valid test modes
+TEST_MODE=quick k6 run k6-unified-test.js
+TEST_MODE=load k6 run k6-unified-test.js
+TEST_MODE=comprehensive k6 run k6-unified-test.js
+TEST_MODE=stress k6 run k6-unified-test.js
 ```
 
-### Getting Help
+### Debug Mode
 
-1. Check test logs for detailed error messages
-2. Verify backend and database are running
-3. Ensure JWT token is valid and not expired
-4. Review k6 documentation: https://k6.io/docs/
+Enable detailed logging to troubleshoot issues:
 
-## CI Integration Details
+```bash
+# Via environment variable
+DEBUG=true TEST_MODE=quick k6 run k6-unified-test.js
 
-### GitHub Actions Workflow
+# Via test runner
+./run-k6-tests.sh quick --debug
+```
 
-The k6 tests are integrated into the main CI pipeline:
-
-1. **Setup Phase**
-   - Start PostgreSQL database
-   - Start backend API
-   - Initialize database schema  
-   - Create test user
-   - Generate JWT token
-
-2. **Test Execution Phase**
-   - Run k6-quick-test.js (30s, 5 VUs)
-   - Run k6-debug-test.js (10s, 1 VU)
-   - Run k6-api-load-test.js (1m, 3 VUs)
-   - Run k6-comprehensive-test.js (30s, 2 VUs)
-
-3. **Cleanup Phase**
-   - Stop all containers
-   - Clean up resources
-
-### Path Updates
-
-After moving to dedicated directory, the following paths were updated:
-
-- **CI Workflow**: `working-directory: ./scripts/k6-tests`
-- **Test Runner**: Updated paths to reference parent directories
-- **Module Imports**: Relative paths remain the same
-- **Documentation**: Updated to reflect new structure
+Debug mode shows:
+- Detailed request/response information
+- API response status codes and bodies
+- Test iteration and VU information
+- Configuration validation results
 
 ## Contributing
 
-When adding new k6 tests:
+When modifying the unified test script:
 
-1. **Use modular approach** - Import auth and setup modules
-2. **Follow naming convention** - `k6-[purpose]-test.js`
-3. **Include proper setup/teardown** - Reset system state
-4. **Set appropriate thresholds** - Match test purpose
-5. **Update documentation** - Add to this README
-6. **Test locally first** - Verify before CI integration
+1. **Maintain backwards compatibility** - Don't break existing test modes
+2. **Use modular helpers** - Always use `authenticatedGet/Post/Put/Delete` and `checkResponseStatus`
+3. **Add proper debug logging** - Use `debugLog()` for detailed information
+4. **Test all modes locally** - Verify `quick`, `load`, `comprehensive`, and `stress` modes
+5. **Update thresholds appropriately** - Match performance expectations
+6. **Update documentation** - Reflect any new features or changes
 
 ## Related Documentation
 
 - [K6 Modularization Complete](../../docs/K6_MODULARIZATION_COMPLETE.md)
 - [K6 CI Integration Complete](../../docs/K6_CI_INTEGRATION_COMPLETE.md)
-- [K6 CI Integration Guide](../../docs/K6_CI_INTEGRATION.md)
+- [K6 Reorganization Complete](../../docs/K6_REORGANIZATION_COMPLETE.md)

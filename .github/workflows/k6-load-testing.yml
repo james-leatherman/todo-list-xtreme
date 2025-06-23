@@ -155,41 +155,41 @@ jobs:
         case $TEST_TYPE in
           "quick")
             echo "Running k6 quick test..."
-            k6 run --duration=$DURATION --vus=$VUS k6-quick-test.js
+            TEST_MODE=quick k6 run k6-unified-test.js
             ;;
           "debug")
             echo "Running k6 debug test..."
-            k6 run --duration=$DURATION --vus=1 k6-debug-test.js
+            TEST_MODE=quick DEBUG=true k6 run k6-unified-test.js
             ;;
           "load")
-            echo "Running k6 API load test..."
-            k6 run --duration=$DURATION --vus=$VUS k6-api-load-test.js
+            echo "Running k6 load test..."
+            TEST_MODE=load k6 run k6-unified-test.js
             ;;
           "comprehensive")
             echo "Running k6 comprehensive test..."
-            k6 run --duration=$DURATION --vus=$VUS k6-comprehensive-test.js
+            TEST_MODE=comprehensive k6 run k6-unified-test.js
             ;;
-          "concurrent")
-            echo "Running k6 concurrent load test..."
-            k6 run --duration=$DURATION --vus=$VUS k6-concurrent-load.js
+          "concurrent"|"stress")
+            echo "Running k6 stress test..."
+            TEST_MODE=stress k6 run k6-unified-test.js
             ;;
           "all"|*)
             echo "Running all k6 tests..."
             
             echo "1. Quick test..."
-            k6 run --duration=30s --vus=5 k6-quick-test.js
+            TEST_MODE=quick k6 run k6-unified-test.js
             
             echo "2. Debug test..."
-            k6 run --duration=15s --vus=1 k6-debug-test.js
+            TEST_MODE=quick DEBUG=true k6 run k6-unified-test.js
             
-            echo "3. API load test..."
-            k6 run --duration=1m --vus=5 k6-api-load-test.js
+            echo "3. Load test..."
+            TEST_MODE=load k6 run k6-unified-test.js
             
             echo "4. Comprehensive test..."
-            k6 run --duration=45s --vus=3 k6-comprehensive-test.js
+            TEST_MODE=comprehensive k6 run k6-unified-test.js
             
-            echo "5. Concurrent load test..."
-            k6 run --duration=1m --vus=8 k6-concurrent-load.js
+            echo "5. Stress test..."
+            TEST_MODE=stress k6 run k6-unified-test.js
             ;;
         esac
 

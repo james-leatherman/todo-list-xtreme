@@ -246,23 +246,14 @@ jobs:
           echo "Warning: API endpoints may not be fully ready"
         fi
 
-    - name: Run k6 quick test
+    - name: Run k6 quick test in debug mode
       working-directory: ./scripts/k6-tests
       env:
         API_URL: http://localhost:8000
         AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
       run: |
         echo "Running k6 quick test..."
-        k6 run --duration=30s --vus=5 --summary-trend-stats="avg,min,med,max,p(95),p(99)" k6-quick-test.js
-
-    - name: Run k6 debug test
-      working-directory: ./scripts/k6-tests
-      env:
-        API_URL: http://localhost:8000
-        AUTH_TOKEN: ${{ env.TEST_AUTH_TOKEN }}
-      run: |
-        echo "Running k6 debug test..."
-        k6 run --duration=10s --vus=1 --summary-trend-stats="avg,min,med,max,p(95),p(99)" k6-debug-test.js
+        k6 run --duration=30s --vus=5 --summary-trend-stats="avg,min,med,max,p(95),p(99)" --debug k6-quick-test.js
 
     - name: Run k6 load test
       working-directory: ./scripts/k6-tests

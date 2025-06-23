@@ -734,7 +734,7 @@
         "type": "prometheus",
         "uid": "prometheus-main"
       },
-      "description": "HTTP response time percentiles (FastAPI)",
+      "description": "HTTP response time percentiles",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -832,12 +832,15 @@
           ],
           "displayMode": "table",
           "placement": "bottom",
-          "showLegend": true,
+          "showLegend": false,
           "sortBy": "Name",
           "sortDesc": true
         },
+        "timezone": [
+          "browser"
+        ],
         "tooltip": {
-          "hideZeros": false,
+          "hideZeros": true,
           "mode": "multi",
           "sort": "none"
         }
@@ -850,7 +853,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le)) * 1000",
           "legendFormat": "P95",
           "range": true,
           "refId": "A"
@@ -861,7 +864,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[1m])) by (le)) * 1000",
           "legendFormat": "P99",
           "range": true,
           "refId": "B"
@@ -872,7 +875,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[1m])) by (le)) * 1000",
           "legendFormat": "P50",
           "range": true,
           "refId": "C"
@@ -1004,7 +1007,7 @@
           "refId": "A"
         }
       ],
-      "title": "API - Status Codes (5m)",
+      "title": "API - Status Codes",
       "type": "timeseries"
     },
     {
@@ -1095,13 +1098,13 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, handler)) * 1000",
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, method, handler)) * 1000",
           "legendFormat": "{{method}} {{handler}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "API - Response Time by Endpoint (P95)",
+      "title": "API - Response Time by Endpoint (p99)",
       "type": "timeseries"
     },
     {
@@ -1809,12 +1812,12 @@
     "list": []
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "API + k6 Performance Dashboard - Todo List Xtreme",
   "uid": "fastapi-k6-dashboard",
-  "version": 20
+  "version": 22
 }

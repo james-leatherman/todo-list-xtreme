@@ -78,6 +78,18 @@ services:
       - "9090:9090"
     depends_on:
       - otel-collector
+      
+  mimir:
+    image: grafana/mimir:latest
+    volumes:
+      - ./mimir-config.yml:/etc/mimir/config.yml
+      - mimir_data:/var/mimir/data
+    command: ["-config.file=/etc/mimir/config.yml"]
+    ports:
+      - "9009:9009" # HTTP endpoint
+      - "9095:9095" # gRPC endpoint
+    depends_on:
+      - prometheus
 
   grafana:
     image: grafana/grafana:latest
@@ -158,3 +170,4 @@ volumes:
   grafana_data:
   tempo_data:
   loki_data:
+  mimir_data:

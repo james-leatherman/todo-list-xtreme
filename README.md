@@ -1,58 +1,81 @@
 <table>
   <tr>
     <td><img src="https://github.com/james-leatherman/todo-list-xtreme/blob/main/frontend/src/images/tlx-logo.png" alt="TLX Logo" width="64"/></td>
-    <td><h1 style="margin-left: 16px;">Todo List Xtreme - MVP</h1></td>
+    <td><h1 style="margin-left: 16px;">Todo List Xtreme - LGTM Edition</h1></td>
   </tr>
 </table>
 
-A full-stack to-do list application with photo upload capabilities, responsive design, OAuth authentication, and robust testing utilities.
+A full-stack to-do list application featuring the complete Grafana LGTM observability stack, photo upload capabilities, responsive design, and robust testing utilities.
 
 ## MVP Status
 
-This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It includes all core functionality and is ready for basic use and testing.
+This is the enhanced version of Todo List Xtreme, featuring a complete observability stack. It includes all core functionality and is ready for development, testing, and monitoring.
 
-## What's New in v1.5.1 (2025-06-23)
+## What's New in v1.6.0 (2025-06-23)
 
+### Observability Enhancements
+- **Complete LGTM Stack:** Added Grafana Mimir for long-term metrics storage, completing the LGTM (Loki, Grafana, Tempo, Mimir) observability stack.
+- **Enhanced Metrics Storage:** Configured Prometheus remote write to Mimir for durable metrics retention.
+- **Grafana Integration:** Added auto-provisioned Mimir data source to Grafana.
+- **Unified Observability:** Dashboard improvements to show metrics, logs, and traces in one place.
+
+### Load Testing Improvements
 - **Improved Load Testing:** Fixed k6 test script validation for task status values, ensuring all tests run successfully in local and CI environments.
 - **Docker Integration:** Enhanced k6 test execution with proper Docker support, fixed path references, and consistent volume mounts.
 - **CI Workflow:** Updated GitHub Actions workflow for reliable k6 test execution and results collection.
 - **API Compatibility:** Ensured all test scripts use API-valid status values (`todo`, `inProgress`, `blocked`, `done`).
 
-## What's New in v1.5.0 (2025-06-17)
-
-- **Metrics Module Improvements:** Refactored Prometheus metrics with better type safety and error handling.
-- **OAuth Enhancement:** Improved Google OAuth flow with better debugging and error handling.
-- **Development Tools:** Added debugging utilities and fixed import resolution issues.
-
-## What's New in v1.4.0 (2025-06-10)
-
-- **Accessibility First:** Added comprehensive id/name attributes to all interactive elements for better testing and accessibility support.
-- **Development Workflow:** New centralized scripts system with automated test token generation and environment setup.
-- **Navigation Improvements:** Fixed logout caching issues with proper React Router integration and state cleanup.
-- **Asset Organization:** Cleaned up logo files and PWA icons with better file structure.
-- **Developer Experience:** Enhanced setup process with `./scripts/setup-dev.sh` for one-command environment configuration.
-- **Security:** Removed hardcoded tokens in favor of environment-driven development authentication.
-
 ## Previous Updates
 
-### v1.3.0 (2025-06-07)
-- **TLX Retro 90s Theme:** Selectable, authentic 90s-inspired theme with custom fonts, colors, and jazz-cup header.
-- **Header Improvements:** Tagline now randomly chosen from a user-supplied 90s descriptor list; jazz-cup image added.
-- **UI/UX Fixes:** Drag-and-drop and theme switching bugs resolved.
-- **Code Quality:** All React hook and lint warnings fixed.
-- **Cloud References:** All Google Cloud deployment references removed from code and docs.
-- **Documentation:** README and setup instructions updated for tests/utilities.
+- **v1.5.0:** Metrics Module improvements, OAuth enhancements, development tools additions
+- **v1.4.0:** Accessibility improvements, development workflow enhancements, security fixes
+- **v1.3.0:** TLX Retro 90s theme, UI/UX improvements, code quality fixes
+
+## Grafana LGTM Observability Stack
+
+Todo List Xtreme features a complete Grafana LGTM observability stack:
+
+### L - Loki (Log Aggregation)
+- Centralized log collection from all services
+- Structured logging with metadata
+- Log correlation with traces and metrics
+- Query logs with LogQL
+
+### G - Grafana (Visualization)
+- Single pane of glass for all observability data
+- Pre-configured dashboards for application and system metrics
+- Custom dashboard creation
+- Alerting capabilities
+
+### T - Tempo (Distributed Tracing)
+- End-to-end request tracing
+- OpenTelemetry integration
+- Trace visualization and analysis
+- Service dependency mapping
+
+### M - Mimir (Metrics Storage)
+- Long-term metrics storage and querying
+- Highly scalable Prometheus-compatible database
+- Multi-tenant metrics architecture
+- High query performance for historical data
 
 ## Features
 
+### Application Features
 - Create, read, update, and delete tasks
 - Bulk delete all tasks in a column
 - Add photos to tasks for visual tracking
 - Google OAuth authentication
 - Responsive design (works on mobile devices)
 - Theme selection, including "TLX Retro 90s"
-- PostgreSQL database for data persistence
-- AWS infrastructure managed with Terraform
+
+### Observability Features
+- Complete metrics collection via Prometheus and Mimir
+- Log aggregation with Loki and Promtail
+- Distributed tracing with Tempo and OpenTelemetry
+- Custom Grafana dashboards for system and application monitoring
+- Load testing with k6 and metrics visualization
+- Performance analytics and bottleneck identification
 
 ## Tech Stack
 
@@ -60,7 +83,8 @@ This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It include
 - Python with FastAPI
 - PostgreSQL database
 - JWT authentication
-- AWS S3 integration for photo storage
+- OpenTelemetry instrumentation
+- Prometheus metrics
 - Docker containerization
 
 ### Frontend
@@ -68,16 +92,14 @@ This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It include
 - Material-UI components
 - Responsive design
 - JWT token authentication
-- Photo upload capability
 - Theme support (including 90s retro)
 
-### Infrastructure
-- AWS (Amazon Web Services)
-- Terraform for Infrastructure as Code
-- RDS PostgreSQL
-- S3 buckets
-- Elastic Beanstalk for deployment
-- CloudFront CDN for frontend
+### Observability
+- **Metrics:** Prometheus, Mimir, Pushgateway
+- **Logs:** Loki, Promtail
+- **Traces:** Tempo, OpenTelemetry Collector
+- **Visualization:** Grafana
+- **Load Testing:** k6 with Prometheus output
 
 ## Getting Started
 
@@ -85,49 +107,47 @@ This is the Minimum Viable Product (MVP) release of Todo List Xtreme. It include
 - Docker and Docker Compose
 - Node.js and npm
 - Python 3.11+
-- AWS CLI (for deployment)
-- Terraform (for infrastructure provisioning)
 
-### GitHub Repository Setup
-If you're setting up the project on GitHub, configure these secrets:
-- **DB_USER** - PostgreSQL username (default: postgres)
-- **DB_PASSWORD** - PostgreSQL password (default: postgres)
-- **SECRET_KEY** - JWT secret key for authentication
-- **DOCKER_HUB_USERNAME** - Docker Hub username for CI/CD pipeline
-- **DOCKER_HUB_ACCESS_TOKEN** - Docker Hub access token
-- **API_URL** - The URL where your API will be hosted (for production build)
-
-### Local Development
-
-#### Quick Setup (Recommended)
+### Quick Setup (Recommended)
 ```bash
 # Set up development environment with one command
 ./scripts/setup-dev.sh
+
+# Start the full stack including observability components
+cd backend
+docker-compose up -d
 ```
 
-#### Manual Setup
+### Manual Setup
 
-##### Backend
+#### Backend & Observability Stack
 ```bash
 cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-# Create a .env file (see below)
-docker-compose up -d db
+# Create a .env file (see Environment Variables section)
+docker-compose up -d
 python init_db.py
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn src.todo_api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-##### Frontend
+#### Frontend
 ```bash
 cd frontend
 npm install
-# Create a .env file (see below)
+# Create a .env file (see Environment Variables section)
 npm start
 ```
 
-### Development Scripts
+### Accessing Grafana and Observability Tools
+- **Grafana:** http://localhost:3001 (default credentials: admin/admin)
+- **Prometheus:** http://localhost:9090
+- **Tempo:** http://localhost:3200
+- **Loki:** http://localhost:3100
+- **Mimir:** http://localhost:9009
+
+## Development Scripts
 
 The `scripts/` directory contains utilities for development:
 
@@ -139,42 +159,8 @@ The `scripts/` directory contains utilities for development:
 
 Run from project root: `./scripts/[script-name].sh`
 
-### Environment Configuration
+## Environment Configuration
 - `./generate_secrets.sh` — Generates secure random credentials and .env files for dev/prod.
-
-#### Database Utilities
-- `backend/wipe_db.sh` — Wipes the development database (use with caution).
-- `backend/demo_db_restore.sh` — Restores demo data to the database.
-- `backend/init_db.py` — Initializes the database schema.
-- `backend/create_test_user.py` — Creates a test user for development.
-
-### Testing
-
-#### Backend Manual API Test
-- `backend/test_api.py` — Runs a full suite of API endpoint tests (requires running backend and test user):
-  ```bash
-  cd backend
-  source venv/bin/activate
-  python test_api.py
-  ```
-- Other backend test scripts:
-  - `test_column_settings.py`, `test_comprehensive_column_persistence.py`, `test_empty_column_persistence.py`, `test_import.py`, `test_settings.py` — Specialized tests for columns/settings.
-
-#### Backend Automated Tests
-- Uses `pytest` (see `backend/conftest.py` for fixtures):
-  ```bash
-  cd backend
-  source venv/bin/activate
-  pytest
-  ```
-
-#### Frontend Tests
-- `frontend/src/App.test.js` — React component tests (Jest):
-  ```bash
-  cd frontend
-  npm test
-  ```
-- Test output: see `frontend/jest-output.txt` and `frontend/test-output.txt`.
 
 ### Environment Variables
 
@@ -191,10 +177,8 @@ SECRET_KEY=your_secret_key
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=your_aws_region
-AWS_S3_BUCKET=your_s3_bucket
+OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+OTEL_RESOURCE_ATTRIBUTES=service.name=todo-list-xtreme-api
 ```
 
 #### Frontend (.env.local)
@@ -202,33 +186,90 @@ AWS_S3_BUCKET=your_s3_bucket
 REACT_APP_API_URL=http://localhost:8000
 ```
 
-## Deployment with Terraform
+## Testing
 
+### Load Testing with k6
+- `scripts/k6-tests/k6-unified-test.js`: Unified load testing script that can run different testing scenarios:
+  - Quick smoke tests
+  - Load tests with stages
+  - Comprehensive feature tests
+  - Stress tests with high VU count
+- **Run load tests:**
+  ```bash
+  # Run quick smoke test
+  ./scripts/k6-tests/run-k6-tests.sh quick
+  
+  # Run comprehensive test
+  ./scripts/k6-tests/run-k6-tests.sh comprehensive
+  
+  # Run load test using Docker
+  ./scripts/k6-tests/run-k6-tests.sh load --docker
+  
+  # Run stress test
+  ./scripts/k6-tests/run-k6-tests.sh stress
+  ```
+
+### Backend Tests
 ```bash
-cd terraform
-terraform init
-terraform plan -out=tfplan
-terraform apply tfplan
+cd backend
+source venv/bin/activate
+# Run all tests with pytest
+pytest
+# Or run individual scripts:
+python test_api.py
 ```
+
+### Frontend Tests
+```bash
+cd frontend
+npm test
+```
+
+## Observability Guide
+
+### Metrics
+- **System Metrics:** Available in the "System Overview" dashboard
+- **API Metrics:** Response times, error rates, and request counts in "FastAPI Dashboard"
+- **Database Metrics:** Connection pools, query times, and throughput in "PostgreSQL Dashboard"
+- **Custom Business Metrics:** Task creation/completion rates in "Business Metrics Dashboard"
+
+### Logs
+- **Application Logs:** Filter by service name, log level, or trace ID in Explore > Loki
+- **System Logs:** Docker container logs automatically collected
+- **Query Examples:**
+  - `{container_name="api"} |= "ERROR"` - Show API errors
+  - `{job="api"} |~ "user_id=\\d+"` - Show logs with user IDs
+
+### Traces
+- **End-to-End Request Tracing:** View in Explore > Tempo
+- **Service Graph:** See dependencies and performance in the Service Graph view
+- **Trace Search:** Filter by duration, status code, or service name
+
+### Dashboards
+- **Overview:** General application health and metrics
+- **API Performance:** Endpoint-specific metrics and SLIs
+- **User Activity:** User engagement and action metrics
+- **System Resources:** CPU, memory, and disk utilization
+- **k6 Load Tests:** Visualize performance under load
 
 ## Project Structure
 
 ```
 todo-list-xtreme/
 ├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── auth.py
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   ├── main.py
-│   │   ├── models.py
-│   │   ├── schemas.py
-│   │   └── todos.py
+│   ├── src/
+│   │   ├── todo_api/
+│   │   ├── models/
+│   │   └── utils/
 │   ├── tests/
-│   ├── alembic/
-│   ├── Dockerfile
-│   ├── docker-compose.yml
+│   ├── docker-compose.yml    # Full stack including LGTM components
+│   ├── prometheus.yml
+│   ├── tempo.yml
+│   ├── loki-config.yml
+│   ├── mimir-config.yml
+│   ├── otel-collector-config.yml
+│   ├── grafana/
+│   │   └── provisioning/     # Auto-provisioned dashboards and data sources
 │   └── requirements.txt
 ├── frontend/
 │   ├── public/
@@ -237,22 +278,16 @@ todo-list-xtreme/
 │   │   ├── contexts/
 │   │   ├── pages/
 │   │   ├── services/
-│   │   ├── utils/
-│   │   ├── App.js
-│   │   ├── index.js
-│   │   └── index.css
-│   ├── package.json
-│   └── README.md
-└── terraform/
-    ├── modules/
-    │   └── database/
-    │       ├── main.tf
-    │       ├── variables.tf
-    │       └── outputs.tf
-    ├── environments/
-    ├── main.tf
-    ├── variables.tf
-    └── outputs.tf
+│   │   └── utils/
+│   └── package.json
+├── scripts/
+│   ├── setup-dev.sh
+│   ├── k6-tests/
+│   │   ├── k6-unified-test.js
+│   │   └── modules/
+│   └── create-test-user.sh
+└── docs/
+    └── observability/        # Documentation for the LGTM stack
 ```
 
 ## Contributing
@@ -276,13 +311,19 @@ Contributions are welcome! Here's how you can contribute:
 
 ## Roadmap
 
-- [x] Implement Google OAuth authentication
-- [x] Add AWS S3 integration for production photo storage
-- [x] Create CI/CD pipeline with GitHub Actions
-- [x] Add unit and integration tests
-- [x] Implement tagging system for todos
-- [x] Add user preferences and theme selection
-- [x] Add TLX Retro 90s theme
+### Completed in v1.6.0
+- [x] Implement complete LGTM observability stack
+- [x] Integrate Mimir for long-term metrics storage
+- [x] Add k6 load testing with metrics visualization
+- [x] Enhance Docker integration for observability tools
+- [x] Fix API compatibility in testing scripts
+
+### Previously Completed
+- [x] Create custom Grafana dashboards
+- [x] Implement OpenTelemetry instrumentation
+- [x] Set up log aggregation with Loki
+- [x] Add distributed tracing with Tempo
+- [x] Add retro UI themes with multiple options
 
 ## License
 
@@ -292,96 +333,8 @@ MIT License
 
 - FastAPI for the amazing Python web framework
 - React and Material-UI for the frontend components
-- AWS and Terraform for the infrastructure
+- Grafana for the incredible LGTM observability stack
+- OpenTelemetry for the instrumentation framework
+- k6 for the powerful load testing capabilities
 
-## Tests & Utilities
 
-### Load Testing with k6
-- `scripts/k6-tests/k6-unified-test.js`: Unified load testing script that can run different testing scenarios:
-  - Quick smoke tests
-  - Load tests with stages
-  - Comprehensive feature tests
-  - Stress tests with high VU count
-- **Run load tests:**
-  ```bash
-  # Run quick smoke test
-  ./scripts/k6-tests/run-k6-tests.sh quick
-  
-  # Run comprehensive test
-  ./scripts/k6-tests/run-k6-tests.sh comprehensive
-  
-  # Run load test using Docker
-  ./scripts/k6-tests/run-k6-tests.sh load --docker
-  
-  # Run stress test
-  ./scripts/k6-tests/run-k6-tests.sh stress
-  ```
-- All tests can be run locally or using Docker integration via the `--docker` flag
-- Fully integrated with GitHub Actions CI workflow for automated load testing
-
-### Backend Test Scripts
-- `test_api.py`: End-to-end API test for all main endpoints. Run with `python test_api.py` (requires backend running and test user/token).
-- `test_column_settings.py`, `simple_test_column_settings.py`, `test_comprehensive_column_persistence.py`, `test_empty_column_persistence.py`: Test column settings and persistence logic. See script headers for usage.
-- `test_import.py`: Tests import functionality.
-- `test_settings.py`: Tests backend settings/configuration.
-- `conftest.py`: Pytest fixtures for backend tests.
-- `create_test_user.py`: Creates a test user for development/testing.
-- `wipe_db.py` / `wipe_db.sh`: Wipe/reset the development database.
-- `demo_db_restore.sh`: Restore demo database from snapshot.
-- `init_db.py`: Initialize the database schema.
-
-### Frontend Test Scripts
-- `src/App.test.js`: React component tests (run with `npm test` in `frontend`).
-- `jest-output.txt`, `test-output.txt`: Output logs from frontend test runs.
-- `public/test-token.js`: Example/test JWT token for development.
-
-### Utilities
-- `generate_secrets.sh`: Generate secure random credentials and .env files for dev/prod.
-- `update_todos_status.py`, `add_column_settings.py`, `add_status_column.py`: Backend utilities for managing todos and columns.
-
-## Running Tests
-
-### Backend (Python/FastAPI)
-```bash
-cd backend
-source venv/bin/activate
-# Run all tests with pytest (if using pytest conventions)
-pytest
-# Or run individual scripts:
-python test_api.py
-python test_column_settings.py
-python simple_test_column_settings.py <auth_token>
-```
-
-### Frontend (React)
-```bash
-cd frontend
-npm test
-```
-
-## Updated Setup Instructions
-
-### 1. Backend Setup
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env  # or use generate_secrets.sh
-# Start PostgreSQL (if not running):
-docker-compose up -d db
-python init_db.py
-```
-
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-cp .env.example .env.local  # or use generate_secrets.sh
-npm start
-```
-
-### 3. Utilities & Scripts
-- To generate secrets and .env files: `./generate_secrets.sh`
-- To wipe/reset the database: `cd backend && ./wipe_db.sh`
-- To restore demo data: `cd backend && ./demo_db_restore.sh`

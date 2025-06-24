@@ -1,0 +1,52 @@
+multitenancy_enabled: false
+
+blocks_storage:
+  backend: filesystem
+  filesystem:
+    dir: /var/mimir/data/blocks
+  bucket_store:
+    sync_dir: /var/mimir/data/tsdb-sync
+  tsdb:
+    dir: /var/mimir/data/tsdb
+
+compactor:
+  data_dir: /var/mimir/data/compactor
+  sharding_ring:
+    kvstore:
+      store: inmemory
+
+distributor:
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+  remote_timeout: 30s
+
+frontend:
+  address: 0.0.0.0
+  compress_responses: true
+
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+
+ruler:
+  alertmanager_url: http://localhost:9093
+
+server:
+  http_listen_port: 9009
+  grpc_listen_port: 9095
+
+store_gateway:
+  sharding_ring:
+    replication_factor: 1
+
+limits:
+  max_query_length: 2160h
+  max_query_parallelism: 16
+
+usage_stats:
+  enabled: false

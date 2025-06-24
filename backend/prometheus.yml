@@ -1,6 +1,11 @@
 global:
   scrape_interval: 15s
 
+remote_write:
+  - url: http://mimir:9009/api/v1/push
+    name: mimir
+    remote_timeout: 30s
+
 scrape_configs:
   # Prometheus monitors itself
   - job_name: 'prometheus'

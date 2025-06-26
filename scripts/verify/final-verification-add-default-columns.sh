@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load common test functions
-source "$(dirname "$0")/common-test-functions.sh"
+source "$(dirname "$0")/../common/common-test-functions.sh"
 
 # Final verification script for the "Add Default Columns" button fix
 echo "🎉 Final Verification - Add Default Columns Button Fix"

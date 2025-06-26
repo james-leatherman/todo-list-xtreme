@@ -5,25 +5,69 @@ All notable changes to the Todo List Xtreme project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.1] - 2025-06-23
+## [1.6.0] - 2025-06-26
 ### Added
-- **k6 Docker Integration**: Added full Docker support for k6 load testing
-  - New k6 service in backend docker-compose.yml
-  - Docker-compatible test execution in CI/CD and local environments
-  - Results directory for storing test artifacts
-  
+- **Complete LGTM Observability Stack**: Added the final component (Mimir) to complete the LGTM (Loki, Grafana, Tempo, Mimir) observability stack
+  - Added Mimir service to docker-compose.yml
+  - Created mimir-config.yml with appropriate settings
+  - Added persistent mimir_data volume
+  - Enhanced metrics storage with Prometheus remote write to Mimir
+  - Auto-provisioned Mimir data source to Grafana
+  - Added comprehensive observability guide in documentation
+
+- **Script Consolidation System**: Created unified script management system
+  - New `system-tools.sh` script with multiple functionality options:
+    - `--reset-all`: Complete system reset (database, backend, frontend)
+    - `--reset-db`: Reset only the database (wipe and re-initialize)
+    - `--restart-backend`: Restart only the backend services
+    - `--restart-frontend`: Restart only the frontend services
+    - `--restart-all`: Restart both frontend and backend
+    - `--start-observability`: Start the observability stack
+    - `--setup-dev`: Set up development environment
+  - `cleanup-duplicates.sh` tool for managing transition from old scripts
+  - Consolidated multiple overlapping scripts for improved maintainability
+
 ### Fixed
-- **k6 Test Scripts**: Fixed validation errors in k6 load tests
+- **k6 Load Testing**: Fixed validation errors in k6 load tests
   - Corrected all status values to match API validation pattern (todo, inProgress, blocked, done)
   - Fixed all path references in GitHub Actions workflow to correctly target test scripts
   - Ensured consistent volume mounts between local Docker and CI environments
   - Resolved "file not found" errors when running tests in Docker
 
+- **Dashboard Configurations**: Cleaned up and standardized Grafana dashboards
+  - Updated all dashboards to use correct Prometheus job labels
+  - Fixed datasource configurations with consistent naming and UIDs
+  - Updated dashboard titles, legend formats, and query filters
+  - Ensured all dashboards are provisioned in the correct folder structure
+  - Removed duplicate/empty Grafana dashboard files
+  - Merged Prometheus monitoring dashboards into a single comprehensive dashboard
+
 ### Improved
+- **Observability Integration**: 
+  - Fixed Tempo configuration for TraceQL metrics support
+  - Enabled `span-metrics` processor with proper configuration
+  - Added remote write configuration to send span metrics to Prometheus
+  - Fixed metrics generator configuration with proper storage paths
+  - Resolved trace export timeout issues
+  - Enabled and configured Traces Drilldown plugin in Grafana
+
+- **Security Updates**: 
+  - Removed hardcoded JWT secrets
+  - Eliminated all hardcoded secrets from CI workflows
+  - Updated GitHub Actions to use environment variables from secrets
+  - Created secure local testing setup with `.env` file support
+
 - **Load Testing Workflow**: Enhanced k6 test execution and result collection
   - Added clear documentation for each k6 test issue fixed
   - Improved run-k6-tests.sh script with better Docker support
   - Standardized test configuration across all environments
+  - Added k6 Docker integration with CI/CD compatibility
+
+- **Script Organization**:
+  - Simplified system management with unified command interface
+  - Reduced maintenance overhead with fewer scripts
+  - Improved discoverability through standardized help options
+  - Preserved critical scripts (restart-backend.sh, restart-frontend.sh, k6 test scripts)
 
 ## [1.5.0] - 2025-06-17
 ### Changed
@@ -75,6 +119,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `generate_secrets.sh`: Secret key generation
 - **Script Documentation**: Comprehensive README for all development utilities
 - **Environment Management**: Dynamic test token loading from environment variables
+
+### Changed
+- **Asset Organization**: Moved PWA icons to public folder and cleaned up image imports
+- **Navigation System**: Improved logout flow with proper state cleanup and React Router navigation
+- **Token Management**: Replaced hardcoded test tokens with environment-based system
+- **File Structure**: Reorganized scripts to root-level directory for better project organization
+- **Error Handling**: Enhanced user feedback for missing development tokens
 
 ### Changed
 - **Asset Organization**: Moved PWA icons to public folder and cleaned up image imports

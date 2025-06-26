@@ -19,7 +19,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Load common test functions
-source "$(dirname "$0")/common-test-functions.sh"
+source "$(dirname "$0")/../common/common-test-functions.sh"
 
 # Configuration
 TIMEOUT=10

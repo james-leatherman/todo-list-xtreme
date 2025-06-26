@@ -5,7 +5,7 @@ echo "🚀 Generating continuous API traffic for dashboard testing..."
 echo "This will run for 2 minutes to generate enough data for rate calculations"
 
 # Load common test functions
-source "$(dirname "$0")/common-test-functions.sh"
+source "$(dirname "$0")/../common/common-test-functions.sh"
 
 # Setup test environment
 if ! setup_test_environment; then

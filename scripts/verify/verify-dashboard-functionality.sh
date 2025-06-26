@@ -11,7 +11,7 @@ echo
 
 # Set proper token
 # Load common test functions
-source "$(dirname "$0")/common-test-functions.sh"
+source "$(dirname "$0")/../common/common-test-functions.sh"
 
 # Setup test environment
 if ! setup_test_environment; then

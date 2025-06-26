@@ -1,159 +1,94 @@
-# Project Scripts
+# Scripts Directory
 
-This directory contains various utility scripts for development, testing, database management, and observability verification.
+This directory contains all scripts for managing the Todo List Xtreme system.
 
-## Observability Verification Scripts
+## Consolidated Scripts
 
-### 🚀 `quick-status-check.sh`
-**Quick 5-second health check of all services**
-- Fastest way to check if all services are running
-- Shows basic service status with color coding
-- Provides quick access URLs and common commands
-
-```bash
-bash scripts/quick-status-check.sh
+### System Tools
+```
+./system-tools.sh [options]
 ```
 
-### 🔍 `verify-observability-stack.sh`
-**Comprehensive observability stack verification (recommended)**
-- Updated and improved primary verification script
-- Tests all core services with retry logic and timeouts
-- Verifies data flow from API → OTEL Collector → Prometheus/Tempo → Grafana
-- Generates test traffic and validates metrics/traces collection
-- Provides detailed troubleshooting hints and access URLs
-- Tests dashboard availability and data source configuration
+**Options:**
+- `--reset-all` - Complete system reset (database, backend, frontend)
+- `--reset-db` - Reset only the database (wipe and re-initialize) 
+- `--restart-backend` - Restart only the backend services
+- `--restart-frontend` - Restart only the frontend services
+- `--restart-all` - Restart both frontend and backend
+- `--start-observability` - Start the observability stack
+- `--setup-dev` - Set up development environment
 
-```bash
-bash scripts/verify-observability-stack.sh
+### Cleanup Duplicates
+```
+./cleanup-duplicates.sh [options]
 ```
 
-### 📊 `verify-complete-observability-stack.sh`
-**Original comprehensive end-to-end verification**
-- Tests database metrics, JWT tokens, and dashboard functionality
-- Includes frontend OpenTelemetry integration checks
-- More detailed testing of specific components
-- Useful for development and debugging
+**Options:**
+- No options: Create symbolic links without changing original files
+- `--archive` - Move duplicate scripts to an 'archived' directory and create symlinks
+- `--remove` - Delete duplicate scripts and create symlinks (use with caution)
 
+### Examples
+
+Reset the entire system (useful when you want to start fresh):
 ```bash
-bash scripts/verify-complete-observability-stack.sh
+./system-tools.sh --reset-all
 ```
 
-### 📈 `verify-complete-observability-stack-v2.sh`
-**Modern comprehensive verification (alternative)**
-- Streamlined version of comprehensive testing
-- Focus on core functionality without external dependencies
-- Better error handling and integer expression fixes
+## Quick Start
 
-```bash
-bash scripts/verify-complete-observability-stack-v2.sh
+For a new developer getting started with the project:
+
+1. Clone the repository
+2. Run `./scripts/system-tools.sh --reset-all` to set up everything
+3. Access the application at http://localhost:3000
+
+## Reserved Scripts
+
+The following scripts are kept separate as they serve specific purposes:
+
+- `restart-backend.sh` - Dedicated script for restarting only the backend
+- `restart-frontend.sh` - Dedicated script for restarting only the frontend
+- All k6 testing scripts
+
+## Directory Structure
+
+```
+scripts/
+├── common/                    # Shared utilities and functions
+├── k6-tests/                  # K6 load testing scripts
+├── utils/                     # Utility scripts 
+├── verify/                    # Verification scripts
+├── system-tools.sh            # Consolidated system management tool
+├── cleanup-duplicates.sh      # Script to clean up duplicate scripts
+├── archived/                  # Created when using cleanup-duplicates.sh --archive
+│   ├── verification/        # Setup verification
+│   └── README.md            # Setup documentation
+├── maintenance/             # Maintenance and utility scripts
+│   └── README.md            # Maintenance documentation
+└── README.md                # This file
 ```
 
-## What Gets Tested in Observability Scripts
+## Quick Start
 
-### Core Services
-- ✅ **FastAPI** - Health endpoint and metrics endpoint
-- ✅ **Prometheus** - API accessibility and target scraping
-- ✅ **Grafana** - Dashboard access and data source configuration
-- ✅ **OpenTelemetry Collector** - OTLP HTTP/gRPC receivers and metrics export
-- ✅ **Tempo** - Trace storage and readiness
+1. **Setup Environment**: `cd scripts/setup/environment && ./setup-dev.sh`
+2. **Start Observability**: `cd scripts/setup/observability && ./start-observability.sh`
+3. **Run Tests**: `cd scripts/test/api && ./test-column-settings-fix.sh`
+4. **Generate Traffic**: `cd scripts/demo/traffic && ./generate-dashboard-traffic.sh`
 
-### Data Flow
-- ✅ **Metrics Collection** - API metrics → Prometheus → Grafana
-- ✅ **Trace Collection** - API traces → OTEL Collector → Tempo → Grafana
-- ✅ **Dashboard Functionality** - Grafana dashboard provisioning and accessibility
+## Common Functions
 
-### Expected Output
-All scripts provide:
-- ✅ **Green checkmarks** for successful tests
-- ⚠️ **Yellow warnings** for minor issues
-- ❌ **Red errors** for critical failures
-- 💡 **Blue hints** for troubleshooting
-
-## Other Available Scripts
-
-### `setup-grafana-dashboards.sh`
-Sets up automated Grafana dashboard configuration:
-- Verifies all dashboard files are in place
-- Checks data source and provider configurations
-- Provides access instructions
+All scripts can use the common functions by sourcing:
 
 ```bash
-./scripts/setup-grafana-dashboards.sh
+source scripts/common/functions.sh
+source scripts/common/api.sh
+source scripts/common/observability.sh
 ```
 
-### `download-popular-dashboards.sh`
-Downloads popular community dashboards from Grafana.com:
-- Node Exporter Full (ID: 1860)
-- Prometheus 2.0 Overview (ID: 3662)  
-- Prometheus Stats (ID: 12229)
-- FastAPI Observability (ID: 7587)
+## Migration Notes
 
-```bash
-./scripts/download-popular-dashboards.sh
-```
-
-### `setup-dev.sh`
-Sets up the development environment:
-- Generates a test token
-- Creates necessary environment files
-- Restarts the development server if running
-
-```bash
-./scripts/setup-dev.sh
-```
-
-### `create-test-user.sh`
-Creates a test user and generates a JWT token for development testing:
-- Creates a test user account (test@example.com)
-- Generates a long-lasting JWT token (365 days)
-- Automatically saves the token to `frontend/.env.development.local`
-- Provides comprehensive authentication setup for development
-
-```bash
-./scripts/create-test-user.sh
-```
-
-### `demo_db_restore.sh`
-Restores the database from a snapshot for demo purposes.
-
-```bash
-./scripts/demo_db_restore.sh
-```
-
-### `wipe_db.sh`
-Wipes the database clean. Use with caution!
-
-```bash
-./scripts/wipe_db.sh
-```
-
-### `generate_secrets.sh`
-Generates necessary secret keys for the application.
-
-```bash
-./scripts/generate_secrets.sh
-```
-
-## Load Testing
-
-### 🧪 `k6-tests/`
-**Dedicated k6 load testing directory**
-- All k6 load testing scripts and modules
-- Modularized authentication and setup utilities
-- Multiple test scenarios (quick, debug, load, comprehensive, concurrent)
-- CI integration with automated performance testing
-- See [k6-tests/README.md](k6-tests/README.md) for detailed documentation
-
-```bash
-cd scripts/k6-tests
-./run-k6-tests.sh quick    # Quick functionality test
-./run-k6-tests.sh load     # Comprehensive load test
-./run-k6-tests.sh all      # Run all test scenarios
-```
-
-## Usage Notes
-
-- All scripts should be run from the project root directory
-- Make sure the backend services are running when using database-related scripts
-- The test token will be valid for 365 days from generation
-- Always use with caution in production environments
+- Old script paths have been updated to use the new structure
+- Common functions are now centralized in `scripts/common/`
+- Each category has its own README with usage instructions
+- Legacy scripts are preserved in their respective categories

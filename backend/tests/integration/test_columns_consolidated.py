@@ -355,13 +355,13 @@ def test_blocked_column_functionality(auth_token):
         print(f"Error verifying 'blocked' column: {e}")
         assert False, f"Error verifying 'blocked' column: {e}"
     
-    # Step 4: Move the todo to a different status
+    # Step 4: Move the todo to 'inProgress' status using PUT
     print("\n=== Step 4: Moving todo to 'inProgress' status ===")
     try:
         update_payload = {
             "status": "inProgress"
         }
-        response = requests.patch(f'{base_url}/api/v1/todos/{todo_id}/', headers=headers, json=update_payload)
+        response = requests.put(f'{base_url}/api/v1/todos/{todo_id}/', headers=headers, json=update_payload)
         assert response.status_code == 200, f"Failed to update todo: {response.status_code}"
         print(f"Updated todo {todo_id} to 'inProgress' status")
     except Exception as e:

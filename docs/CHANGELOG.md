@@ -5,6 +5,15 @@ All notable changes to the Todo List Xtreme project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2025-06-27
+### Changed
+- **Test Consolidation**: Consolidated column-related test files into a single comprehensive test suite
+  - Created `test_columns_consolidated.py` from multiple separate test files
+  - Combined functionality for column settings CRUD, empty columns, blocked column, and persistence testing
+  - Added documentation in `COLUMN_TESTS_CONSOLIDATION.md`
+  - Improved test coverage and reduced code duplication
+  - Standardized test approach and error handling
+
 ## [1.6.0] - 2025-06-26
 ### Added
 - **Complete LGTM Observability Stack**: Added the final component (Mimir) to complete the LGTM (Loki, Grafana, Tempo, Mimir) observability stack

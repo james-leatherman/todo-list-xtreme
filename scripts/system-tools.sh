@@ -30,7 +30,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Get project root directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Function to show usage information
@@ -51,6 +51,24 @@ usage() {
     echo "  -h, --help             Show this help message"
 }
 
+# Function to wait for PostgreSQL to be ready
+wait_for_postgres() {
+    local retries=12  # 12 * 5s = 60 seconds
+    local count=0
+    echo "⏳ Waiting for PostgreSQL to be ready..."
+    while ! PGPASSWORD=${POSTGRES_PASSWORD:-postgres} psql -h ${POSTGRES_SERVER:-localhost} -p ${POSTGRES_PORT:-5432} -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-todolist} -c '\q' 2>/dev/null; do
+        count=$((count+1))
+        if [ $count -ge $retries ]; then
+            echo -e "${RED}❌ PostgreSQL is not ready after 60 seconds. Exiting.${NC}"
+            return 1
+        fi
+        echo "  Still waiting for PostgreSQL... ($count/$retries)"
+        sleep 5
+    done
+    echo -e "${GREEN}✅ PostgreSQL is ready!${NC}"
+    return 0
+}
+
 # Function to initialize the database
 init_db() {
     echo -e "${YELLOW}🗃️  Initializing Todo List Xtreme Database...${NC}"
@@ -64,6 +82,9 @@ init_db() {
         echo "🔧 Activating virtual environment..."
         source venv/bin/activate
     fi
+
+    # Wait for PostgreSQL to be ready
+    wait_for_postgres || return 1
     
     # Check if we're in the right directory
     if [ ! -f "src/todo_api/utils/init_db.py" ]; then
@@ -76,22 +97,22 @@ init_db() {
     echo "📦 Initializing database tables..."
     
     # Initialize database using the new import structure
-    python3 -c "
-    import sys
-    sys.path.insert(0, 'src')
-    
-    try:
-        from todo_api.utils.init_db import init_db
-        init_db()
-        print('✅ Database initialization completed successfully!')
-    except ImportError as e:
-        print(f'❌ Import error: {e}')
-        print('💡 Make sure all dependencies are installed: pip install -r requirements.txt')
-        sys.exit(1)
-    except Exception as e:
-        print(f'❌ Database initialization failed: {e}')
-        sys.exit(1)
-    "
+    cat <<EOF | python3
+import sys
+sys.path.insert(0, 'src')
+
+try:
+    from todo_api.utils.init_db import init_db
+    init_db()
+    print('✅ Database initialization completed successfully!')
+except ImportError as e:
+    print(f'❌ Import error: {e}')
+    print('💡 Make sure all dependencies are installed: pip install -r requirements.txt')
+    sys.exit(1)
+except Exception as e:
+    print(f'❌ Database initialization failed: {e}')
+    sys.exit(1)
+EOF
     
     # Check if the command was successful
     if [ $? -eq 0 ]; then
@@ -187,23 +208,23 @@ create_test_user() {
     echo -e "${YELLOW}👤 Creating test user and generating JWT token...${NC}"
     
     # Create test user and generate JWT token using the new import structure
-    python3 -c "
-    import sys
-    sys.path.insert(0, 'src')
-    
-    try:
-        from todo_api.utils.create_test_user import create_test_user
-        create_test_user()
-        print('✅ Test user and JWT token created successfully!')
-    except ImportError as e:
-        print(f'❌ Import error: {e}')
-        print('💡 Make sure all dependencies are installed: pip install -r requirements.txt')
-        sys.exit(1)
-    except Exception as e:
-        print(f'❌ Test user creation failed: {e}')
-        print('💡 Make sure the database is initialized: ./init-db.sh')
-        sys.exit(1)
-    "
+    cat <<EOF | python3
+import sys
+sys.path.insert(0, 'src')
+
+try:
+    from todo_api.utils.create_test_user import create_test_user
+    create_test_user()
+    print('✅ Test user and JWT token created successfully!')
+except ImportError as e:
+    print(f'❌ Import error: {e}')
+    print('💡 Make sure all dependencies are installed: pip install -r requirements.txt')
+    sys.exit(1)
+except Exception as e:
+    print(f'❌ Test user creation failed: {e}')
+    print('💡 Make sure the database is initialized: ./init-db.sh')
+    sys.exit(1)
+EOF
     
     # Check if the command was successful
     if [ $? -eq 0 ]; then
@@ -366,24 +387,24 @@ reset_all() {
     pkill -f "npm.*start" 2>/dev/null || true
     sleep 2
     
-    echo "2. Resetting database..."
+    echo "2. Starting backend services..."
+    restart_backend
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Backend restart failed${NC}"
+        return 1
+    fi
+    
+    echo "3. Resetting database..."
     reset_db
     if [ $? -ne 0 ]; then
         echo -e "${RED}❌ Database reset failed${NC}"
         return 1
     fi
     
-    echo "3. Creating test user..."
+    echo "4. Creating test user..."
     create_test_user
     if [ $? -ne 0 ]; then
         echo -e "${RED}❌ Test user creation failed${NC}"
-    fi
-    
-    echo "4. Restarting backend services..."
-    restart_backend
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}❌ Backend restart failed${NC}"
-        return 1
     fi
     
     echo "5. Restarting frontend services..."

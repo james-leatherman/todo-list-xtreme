@@ -199,12 +199,40 @@ def update_todo(
             detail="Todo not found"
         )
     
+    # Store the old status before updating
+    old_status = todo.status
+    
     update_data = todo_update.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(todo, field, value)
     
     db.commit()
     db.refresh(todo)
+    
+    # Update column settings if status changed
+    if 'status' in update_data and old_status != todo.status:
+        column = db.query(UserColumnSettings).filter(
+            UserColumnSettings.user_id == current_user.id
+        ).first()
+        
+        if column:
+            columns_config = json.loads(column.columns_config)
+            
+            # Remove from old column
+            if old_status in columns_config:
+                if todo_id in columns_config[old_status]['taskIds']:
+                    columns_config[old_status]['taskIds'].remove(todo_id)
+                elif str(todo_id) in columns_config[old_status]['taskIds']:
+                    columns_config[old_status]['taskIds'].remove(str(todo_id))
+            
+            # Add to new column
+            if todo.status in columns_config:
+                if todo_id not in columns_config[todo.status]['taskIds']:
+                    columns_config[todo.status]['taskIds'].append(todo_id)
+            
+            column.columns_config = json.dumps(columns_config)
+            db.commit()
+    
     return todo
 
 

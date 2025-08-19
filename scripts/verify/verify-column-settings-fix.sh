@@ -2,21 +2,26 @@
 
 set -e
 
+# Source common authentication functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../common/common-test-functions.sh"
+
 echo "🧪 Testing Column Settings Fix"
 echo "=============================="
 
-# Source the JWT token
-source .env.development.local
+# Get authentication token
+if ! get_auth_token; then
+    echo -e "${RED}❌ Failed to get authentication token${NC}"
+    exit 1
+fi
 
-echo "✅ JWT Token loaded: ${TEST_JWT_TOKEN:0:50}..."
+echo "✅ Authentication token loaded: ${AUTH_TOKEN:0:50}..."
 
 # Test 1: Get current column settings
 echo ""
 echo "📋 Test 1: GET column settings"
 echo "------------------------------"
-RESPONSE=$(curl -s -X GET "http://localhost:8000/api/v1/column-settings/" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json")
+RESPONSE=$(make_authenticated_request "GET" "/api/v1/column-settings/")
 
 echo "Raw Response: $RESPONSE"
 echo ""
@@ -52,10 +57,7 @@ fi
 echo ""
 echo "📝 Test 2: PUT column settings"
 echo "------------------------------"
-UPDATE_RESPONSE=$(curl -s -X PUT "http://localhost:8000/api/v1/column-settings/" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
+UPDATE_DATA='{
     "column_order": ["todo", "urgent", "inProgress", "review", "done"],
     "columns_config": {
       "todo": {
@@ -84,7 +86,9 @@ UPDATE_RESPONSE=$(curl -s -X PUT "http://localhost:8000/api/v1/column-settings/"
         "taskIds": [8, 9, 10]
       }
     }
-  }')
+  }'
+
+UPDATE_RESPONSE=$(make_authenticated_request "PUT" "/api/v1/column-settings/" "$UPDATE_DATA")
 
 echo "Update Response: $UPDATE_RESPONSE" | jq .
 
@@ -97,9 +101,7 @@ echo "$UPDATE_RESPONSE" | jq -e '.columns_config.todo.taskIds | length == 3' > /
 echo ""
 echo "💾 Test 3: Verify persistence (GET after PUT)"
 echo "---------------------------------------------"
-VERIFY_RESPONSE=$(curl -s -X GET "http://localhost:8000/api/v1/column-settings/" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json")
+VERIFY_RESPONSE=$(make_authenticated_request "GET" "/api/v1/column-settings/")
 
 echo "Verification Response: $VERIFY_RESPONSE" | jq .
 
@@ -128,9 +130,7 @@ echo "$DB_CHECK"
 echo ""
 echo "🔄 Test 5: Reset to defaults"
 echo "---------------------------"
-RESET_RESPONSE=$(curl -s -X POST "http://localhost:8000/api/v1/column-settings/reset" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json")
+RESET_RESPONSE=$(make_authenticated_request "POST" "/api/v1/column-settings/reset")
 
 echo "Reset Response: $RESET_RESPONSE" | jq .
 

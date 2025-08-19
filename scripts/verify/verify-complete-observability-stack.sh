@@ -105,19 +105,11 @@ fi
 
 # Test 4: JWT Token Management
 test_step "4. Testing JWT token management..."
-if [ -n "$TEST_JWT_TOKEN" ]; then
-    test_success "JWT token loaded from environment"
-    
-    # Test token with API call (simplified)
-    if curl -s -H "Authorization: Bearer $TEST_JWT_TOKEN" http://localhost:8000/health > /dev/null 2>&1; then
-        test_success "JWT token can be used for API calls"
-    else
-        test_warning "JWT token authentication may need refresh"
-        echo "💡 Run: python3 scripts/generate-test-jwt-token.py"
-    fi
+if validate_auth_setup; then
+    echo "✅ JWT Management: Working correctly"
+    ((PASSED_TESTS++))
 else
-    test_warning "JWT token not found in environment"
-    echo "💡 Run: python3 scripts/generate-test-jwt-token.py"
+    echo "❌ JWT Management: Not configured"
 fi
 
 # Test 5: Grafana Dashboards
@@ -193,8 +185,8 @@ fi
 test_step "9. Generating test traffic to verify metrics flow..."
 echo "Generating API traffic..."
 for i in {1..5}; do
-    api_call GET "/todos/" > /dev/null 2>&1
-    api_call GET "/column-settings/" > /dev/null 2>&1
+    make_authenticated_request "GET" "/api/v1/tasks/" > /dev/null 2>&1
+    make_authenticated_request "GET" "/api/v1/column-settings/" > /dev/null 2>&1
     sleep 1
 done
 
@@ -230,13 +222,6 @@ if echo "$TEST_RESULT" | grep -q "PASS.*App.test.js"; then
     ((PASSED_TESTS++))
 else
     echo "❌ Frontend Build: Issues detected"
-fi
-
-if [ -n "$TEST_JWT_TOKEN" ]; then
-    echo "✅ JWT Management: Environment variables working"
-    ((PASSED_TESTS++))
-else
-    echo "❌ JWT Management: Not configured"
 fi
 
 if [ "$DASHBOARD_COUNT" -gt 0 ]; then

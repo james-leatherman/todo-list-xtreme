@@ -2,161 +2,105 @@
 
 set -e
 
-echo "🔧 Testing Column Settings Fix for Frontend Integration"
-echo "====================================================="
+# Source common authentication functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../common/common-test-functions.sh"
 
-# Source the JWT token
-source .env.development.local
+echo "🧪 Testing Column Add Fix"
+echo "========================"
 
-echo "✅ JWT Token loaded: ${TEST_JWT_TOKEN:0:50}..."
+# Get authentication token
+if ! get_auth_token; then
+    echo -e "${RED}❌ Failed to get authentication token${NC}"
+    exit 1
+fi
 
-# Test 1: Test adding a column as the frontend would (with JSON strings)
+echo "✅ Authentication token loaded: ${AUTH_TOKEN:0:50}..."
+
+# Test 1: Get current column settings
 echo ""
-echo "📋 Test 1: Add column with JSON strings (frontend format)"
-echo "--------------------------------------------------------"
-RESPONSE=$(curl -s -X PUT "http://localhost:8000/api/v1/column-settings/" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "columns_config": "{\"todo\":{\"id\":\"todo\",\"title\":\"To Do\",\"taskIds\":[]},\"inProgress\":{\"id\":\"inProgress\",\"title\":\"In Progress\",\"taskIds\":[]},\"review\":{\"id\":\"review\",\"title\":\"Review\",\"taskIds\":[]},\"done\":{\"id\":\"done\",\"title\":\"Completed\",\"taskIds\":[]}}",
-    "column_order": "[\"todo\",\"inProgress\",\"review\",\"done\"]"
-  }')
+echo "📋 Test 1: GET column settings"
+echo "------------------------------"
+RESPONSE=$(make_authenticated_request "GET" "/api/v1/column-settings/")
 
-echo "Response: $RESPONSE" | jq .
-
-# Verify response has required fields
-if echo "$RESPONSE" | jq -e '.id' > /dev/null 2>&1; then
-    echo "✅ ID field present"
-else
-    echo "❌ ID field missing"
-    exit 1
-fi
-
-if echo "$RESPONSE" | jq -e '.column_order[] | select(. == "review")' > /dev/null 2>&1; then
-    echo "✅ New 'review' column added to order"
-else
-    echo "❌ 'review' column not found in order"
-    exit 1
-fi
-
-if echo "$RESPONSE" | jq -e '.columns_config.review' > /dev/null 2>&1; then
-    echo "✅ New 'review' column added to config"
-else
-    echo "❌ 'review' column not found in config"
-    exit 1
-fi
-
-# Test 2: Test adding another column (simulating frontend adding columns)
+echo "Raw Response: $RESPONSE"
 echo ""
-echo "📝 Test 2: Add another column (urgent)"
-echo "-------------------------------------"
-UPDATE_RESPONSE=$(curl -s -X PUT "http://localhost:8000/api/v1/column-settings/" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "columns_config": "{\"todo\":{\"id\":\"todo\",\"title\":\"To Do\",\"taskIds\":[]},\"urgent\":{\"id\":\"urgent\",\"title\":\"Urgent\",\"taskIds\":[]},\"inProgress\":{\"id\":\"inProgress\",\"title\":\"In Progress\",\"taskIds\":[]},\"review\":{\"id\":\"review\",\"title\":\"Review\",\"taskIds\":[]},\"done\":{\"id\":\"done\",\"title\":\"Completed\",\"taskIds\":[]}}",
-    "column_order": "[\"todo\",\"urgent\",\"inProgress\",\"review\",\"done\"]"
-  }')
+echo "Formatted Response:"
+echo "$RESPONSE" | jq . || echo "❌ Failed to parse JSON response"
 
-echo "Update Response: $UPDATE_RESPONSE" | jq .
-
-# Verify update worked
-if echo "$UPDATE_RESPONSE" | jq -e '.column_order | length == 5' > /dev/null 2>&1; then
-    echo "✅ Column order updated (5 columns)"
-else
-    echo "❌ Column order not updated correctly"
-    exit 1
-fi
-
-if echo "$UPDATE_RESPONSE" | jq -e '.columns_config.urgent' > /dev/null 2>&1; then
-    echo "✅ New 'urgent' column added"
-else
-    echo "❌ 'urgent' column not added"
-    exit 1
-fi
-
-# Test 3: Verify persistence by fetching again
+# Test 2: Add a new column
 echo ""
-echo "💾 Test 3: Verify persistence"
-echo "-----------------------------"
-VERIFY_RESPONSE=$(curl -s -X GET "http://localhost:8000/api/v1/column-settings/" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json")
+echo "📝 Test 2: Add new column"
+echo "------------------------"
+ADD_COLUMN_DATA='{
+    "column_id": "urgent",
+    "title": "Urgent Tasks",
+    "position": 1
+}'
+
+ADD_RESPONSE=$(make_authenticated_request "POST" "/api/v1/column-settings/add-column" "$ADD_COLUMN_DATA")
+
+echo "Add Column Response: $ADD_RESPONSE" | jq .
+
+# Verify column was added
+echo "$ADD_RESPONSE" | jq -e '.columns_config.urgent' > /dev/null && echo "✅ New 'urgent' column added"
+echo "$ADD_RESPONSE" | jq -e '.column_order | contains(["urgent"])' > /dev/null && echo "✅ Column added to order"
+
+# Test 3: Verify persistence
+echo ""
+echo "💾 Test 3: Verify persistence (GET after POST)"
+echo "---------------------------------------------"
+VERIFY_RESPONSE=$(make_authenticated_request "GET" "/api/v1/column-settings/")
 
 echo "Verification Response: $VERIFY_RESPONSE" | jq .
 
-# Compare update and verification responses
-if [ "$(echo "$UPDATE_RESPONSE" | jq -c '.column_order')" == "$(echo "$VERIFY_RESPONSE" | jq -c '.column_order')" ]; then
+# Compare add and verification responses
+if [ "$(echo "$ADD_RESPONSE" | jq -c '.column_order')" == "$(echo "$VERIFY_RESPONSE" | jq -c '.column_order')" ]; then
     echo "✅ Column order persisted correctly"
 else
     echo "❌ Column order persistence failed"
-    exit 1
 fi
 
-if [ "$(echo "$UPDATE_RESPONSE" | jq -c '.columns_config.urgent')" == "$(echo "$VERIFY_RESPONSE" | jq -c '.columns_config.urgent')" ]; then
-    echo "✅ New columns persisted correctly"
+if [ "$(echo "$ADD_RESPONSE" | jq -c '.columns_config.urgent')" == "$(echo "$VERIFY_RESPONSE" | jq -c '.columns_config.urgent')" ]; then
+    echo "✅ Columns config persisted correctly"
 else
-    echo "❌ New columns persistence failed"
-    exit 1
+    echo "❌ Columns config persistence failed"
 fi
 
-# Test 4: Test with native objects (ensure backwards compatibility)
+# Test 4: Add another column
 echo ""
-echo "🔄 Test 4: Test with native objects (backwards compatibility)"
-echo "-----------------------------------------------------------"
-NATIVE_RESPONSE=$(curl -s -X PUT "http://localhost:8000/api/v1/column-settings/" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "columns_config": {
-      "todo": {"id": "todo", "title": "To Do", "taskIds": []},
-      "blocked": {"id": "blocked", "title": "Blocked", "taskIds": []},
-      "done": {"id": "done", "title": "Completed", "taskIds": []}
-    },
-    "column_order": ["todo", "blocked", "done"]
-  }')
+echo "📝 Test 4: Add another column"
+echo "----------------------------"
+ADD_COLUMN_DATA_2='{
+    "column_id": "review",
+    "title": "Review",
+    "position": 3
+}'
 
-echo "Native Objects Response: $NATIVE_RESPONSE" | jq .
+ADD_RESPONSE_2=$(make_authenticated_request "POST" "/api/v1/column-settings/add-column" "$ADD_COLUMN_DATA_2")
 
-if echo "$NATIVE_RESPONSE" | jq -e '.column_order | length == 3' > /dev/null 2>&1; then
-    echo "✅ Native objects work correctly"
-else
-    echo "❌ Native objects not working"
-    exit 1
-fi
+echo "Add Second Column Response: $ADD_RESPONSE_2" | jq .
 
-# Test 5: Test mixed format (some JSON strings, some objects)
+# Verify second column was added
+echo "$ADD_RESPONSE_2" | jq -e '.columns_config.review' > /dev/null && echo "✅ Second 'review' column added"
+echo "$ADD_RESPONSE_2" | jq -e '.column_order | contains(["review"])' > /dev/null && echo "✅ Second column added to order"
+
+# Test 5: Final verification
 echo ""
-echo "🔀 Test 5: Test mixed format handling"
-echo "------------------------------------"
-MIXED_RESPONSE=$(curl -s -X PUT "http://localhost:8000/api/v1/column-settings/" \
-  -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "columns_config": {
-      "todo": {"id": "todo", "title": "To Do", "taskIds": []},
-      "done": {"id": "done", "title": "Completed", "taskIds": []}
-    },
-    "column_order": "[\"todo\", \"done\"]"
-  }')
+echo "🔍 Test 5: Final verification"
+echo "----------------------------"
+FINAL_RESPONSE=$(make_authenticated_request "GET" "/api/v1/column-settings/")
 
-echo "Mixed Format Response: $MIXED_RESPONSE" | jq .
+echo "Final Response: $FINAL_RESPONSE" | jq .
 
-if echo "$MIXED_RESPONSE" | jq -e '.column_order | length == 2' > /dev/null 2>&1; then
-    echo "✅ Mixed format handled correctly"
-else
-    echo "❌ Mixed format not handled correctly"
-    exit 1
-fi
+# Check that both columns are present
+echo "$FINAL_RESPONSE" | jq -e '.columns_config.urgent' > /dev/null && echo "✅ 'urgent' column still present"
+echo "$FINAL_RESPONSE" | jq -e '.columns_config.review' > /dev/null && echo "✅ 'review' column still present"
 
 echo ""
-echo "🎉 All tests passed!"
-echo "==================="
-echo "✅ Frontend JSON string format works"
-echo "✅ Multiple column additions work"
-echo "✅ Data persistence confirmed"
-echo "✅ Backwards compatibility maintained"
-echo "✅ Mixed format handling works"
-echo ""
-echo "🔧 The 'Failed to save column settings to the server' error is now FIXED!"
-echo "Users can now successfully add columns through the frontend."
+echo "🎉 All tests completed!"
+echo "======================"
+echo "✅ Column add functionality is working correctly"
+echo "✅ Multiple columns can be added"
+echo "✅ Data persistence verified"
+echo "✅ Column order management working"

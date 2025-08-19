@@ -19,6 +19,10 @@ PROJECT_ROOT="$(cd "${SCRIPTS_DIR}/../.." && pwd)"
 BACKEND_DIR="${PROJECT_ROOT}/backend"
 USE_DOCKER=false
 
+# Source common authentication functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../common/common-test-functions.sh"
+
 echo -e "${BLUE}🚀 K6 Load Testing Runner for Todo List Xtreme API${NC}"
 echo -e "${BLUE}====================================================${NC}"
 
@@ -89,21 +93,10 @@ check_api() {
 generate_token() {
     echo -e "${BLUE}🔑 Generating fresh JWT token...${NC}"
     
-    if [ -f "${PROJECT_ROOT}/scripts/generate-test-jwt-token.py" ]; then
-        cd "${PROJECT_ROOT}"
-        if python3 scripts/generate-test-jwt-token.py >/dev/null 2>&1; then
-            # Source the .env.development.local to get the token
-            if [ -f ".env.development.local" ]; then
-                export AUTH_TOKEN=$(grep "^TEST_JWT_TOKEN=" .env.development.local | cut -d'=' -f2)
-                echo -e "${GREEN}✅ JWT token generated${NC}"
-            else
-                echo -e "${YELLOW}⚠️  Could not find .env.development.local, using default${NC}"
-            fi
-        else
-            echo -e "${YELLOW}⚠️  Could not generate fresh token, using default${NC}"
-        fi
+    if get_auth_token; then
+        echo -e "${GREEN}✅ JWT token generated and loaded${NC}"
     else
-        echo -e "${YELLOW}⚠️  Token generator not found, using default${NC}"
+        echo -e "${YELLOW}⚠️  Could not generate fresh token, using default${NC}"
     fi
 }
 
@@ -157,7 +150,21 @@ run_test() {
     else
         echo -e "${BLUE}🖥️  Using direct k6 execution${NC}"
         
+        # Ensure AUTH_TOKEN is available for k6
+        if [ -z "$AUTH_TOKEN" ]; then
+            echo -e "${YELLOW}⚠️  AUTH_TOKEN not set, attempting to generate one...${NC}"
+            if get_auth_token; then
+                echo -e "${GREEN}✅ AUTH_TOKEN generated and set${NC}"
+            else
+                echo -e "${YELLOW}⚠️  Could not generate AUTH_TOKEN, tests may fail${NC}"
+            fi
+        fi
+        
         # Run k6 with experimental Prometheus remote write output
+        AUTH_TOKEN="${AUTH_TOKEN}" \
+        API_URL="${API_URL}" \
+        TEST_MODE="${test_mode}" \
+        DEBUG="${DEBUG:-false}" \
         k6 run \
             --summary-trend-stats="avg,min,med,max,p(90),p(95),p(99)" \
             --summary-time-unit=ms \

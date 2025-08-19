@@ -72,8 +72,8 @@ const testConfigs = {
       checks: ['rate>0.95'],
       http_req_duration: ['p(95)<1000'],
       http_req_failed: ['rate<0.05'],
-    },
-    description: 'Quick smoke test'
+    }
+    // Quick smoke test
   },
   load: {
     stages: [
@@ -86,8 +86,8 @@ const testConfigs = {
       checks: ['rate>0.95'],
       http_req_duration: ['p(95)<2000'],
       http_req_failed: ['rate<0.1'],
-    },
-    description: 'Load testing with stages'
+    }
+    // Load testing with stages
   },
   comprehensive: {
     vus: 3,
@@ -96,8 +96,8 @@ const testConfigs = {
       checks: ['rate>0.95'],
       http_req_duration: ['p(95)<1000'],
       http_req_failed: ['rate<0.1'],
-    },
-    description: 'Comprehensive feature testing'
+    }
+    // Comprehensive feature testing
   },
   stress: {
     stages: [
@@ -109,8 +109,8 @@ const testConfigs = {
       checks: ['rate>0.90'],  // Lower threshold for stress
       http_req_duration: ['p(95)<5000'],
       http_req_failed: ['rate<0.2'],
-    },
-    description: 'Stress testing'
+    }
+    // Stress testing
   }
 };
 
@@ -118,7 +118,7 @@ const testConfigs = {
 const config = testConfigs[TEST_MODE] || testConfigs.quick;
 export const options = config;
 
-console.log(`🎯 Running ${config.description} (mode: ${TEST_MODE})`);
+console.log(`🎯 Running ${TEST_MODE} test (mode: ${TEST_MODE})`);
 if (DEBUG) {
   console.log('🐛 DEBUG MODE ENABLED - Detailed logging will be shown');
 }
@@ -585,7 +585,7 @@ function performHighVolumeOperation(operation) {
 }
 
 export function setup() {
-  console.log(`🚀 Starting ${config.description}...`);
+  console.log(`🚀 Starting ${TEST_MODE} test...`);
   debugLog('Test configuration', config);
 
   // Verify API is reachable
@@ -608,13 +608,13 @@ export function setup() {
     console.warn('⚠️ Initial system reset failed, continuing anyway...');
   }
 
-  console.log(`✅ ${config.description} setup complete`);
+  console.log(`✅ ${TEST_MODE} test setup complete`);
   return { startTime: Date.now() };
 }
 
 export function teardown(data) {
   const duration = Date.now() - data.startTime;
-  console.log(`🏁 ${config.description} completed in ${duration}ms`);
+  console.log(`🏁 ${TEST_MODE} test completed in ${duration}ms`);
 
   // Final cleanup
   console.log('🧹 Performing final cleanup...');
@@ -622,8 +622,8 @@ export function teardown(data) {
   debugLog('Final cleanup result', { success: cleanupSuccess });
 
   if (cleanupSuccess && verifyCleanState()) {
-    console.log(`✅ ${config.description} completed with full cleanup`);
+    console.log(`✅ ${TEST_MODE} test completed with full cleanup`);
   } else {
-    console.log(`⚠️ ${config.description} completed but cleanup verification failed`);
+    console.log(`⚠️ ${TEST_MODE} test completed but cleanup verification failed`);
   }
 }

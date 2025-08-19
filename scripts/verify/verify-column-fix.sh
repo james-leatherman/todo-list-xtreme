@@ -6,32 +6,17 @@ echo "=================================="
 echo "This script simulates the exact scenarios that were causing issues"
 echo
 
-# Load common test functions
-source "$(dirname "$0")/../common/common-test-functions.sh"
+# Source common authentication functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../common/common-test-functions.sh"
 
-# Setup test environment
-if ! setup_test_environment; then
+# Get authentication token
+if ! get_auth_token; then
+    echo -e "${RED}❌ Failed to get authentication token${NC}"
     exit 1
 fi
 
-# Function to make API calls
-api_call() {
-    local method=$1
-    local endpoint=$2
-    local data=$3
-    
-    if [ -n "$data" ]; then
-        curl -s -X "$method" \
-             -H "Content-Type: application/json" \
-             -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-             -d "$data" \
-             "$API_BASE_URL$endpoint"
-    else
-        curl -s -X "$method" \
-             -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-             "$API_BASE_URL$endpoint"
-    fi
-}
+echo "✅ Authentication token loaded: ${AUTH_TOKEN:0:50}..."
 
 echo "🔄 Scenario 1: User deletes all their custom columns"
 echo "===================================================="
@@ -43,7 +28,7 @@ custom_setup='{
   "column_order": "[\"urgent\", \"later\"]"
 }'
 
-result=$(api_call PUT "/column-settings/" "$custom_setup")
+result=$(make_authenticated_request "PUT" "/api/v1/column-settings/" "$custom_setup")
 echo "   ✅ Custom columns created"
 
 # Step 2: Simulate user deleting all columns
@@ -53,12 +38,12 @@ empty_state='{
   "column_order": "[]"
 }'
 
-result=$(api_call PUT "/column-settings/" "$empty_state")
+result=$(make_authenticated_request "PUT" "/api/v1/column-settings/" "$empty_state")
 echo "   ✅ All columns deleted - this used to break the app!"
 
 # Step 3: Check current state
 echo "3. Current backend state:"
-current=$(api_call GET "/column-settings/")
+current=$(make_authenticated_request "GET" "/api/v1/column-settings/")
 echo "   Config: $(echo "$current" | jq -r '.columns_config')"
 echo "   Order: $(echo "$current" | jq -r '.column_order')"
 

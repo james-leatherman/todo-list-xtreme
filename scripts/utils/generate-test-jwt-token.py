@@ -26,11 +26,17 @@ def load_env_file(env_path):
 def generate_test_token():
     """Generate a test JWT token"""
     # Load backend environment variables
-    backend_env_path = Path(__file__).parent.parent / "backend" / ".env"
+    # Get the project root (two levels up from scripts/utils/)
+    project_root = Path(__file__).parent.parent.parent
+    backend_env_path = project_root / "backend" / ".env"
+    
+    print(f"🔍 Looking for backend .env at: {backend_env_path}")
+    
     env_vars = load_env_file(backend_env_path)
     
     if not env_vars.get('SECRET_KEY'):
-        print("❌ Error: SECRET_KEY not found in backend/.env", file=sys.stderr)
+        print(f"❌ Error: SECRET_KEY not found in {backend_env_path}", file=sys.stderr)
+        print(f"Available keys: {list(env_vars.keys())}", file=sys.stderr)
         sys.exit(1)
     
     # Token configuration

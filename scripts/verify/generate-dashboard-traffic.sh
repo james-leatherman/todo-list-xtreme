@@ -1,80 +1,33 @@
 #!/bin/bash
 
-# Generate continuous API traffic for dashboard testing
-echo "🚀 Generating continuous API traffic for dashboard testing..."
-echo "This will run for 2 minutes to generate enough data for rate calculations"
+# Source common authentication functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../common/common-test-functions.sh"
 
-# Load common test functions
-source "$(dirname "$0")/../common/common-test-functions.sh"
+echo "🚀 Generating Dashboard Traffic"
+echo "=============================="
 
-# Setup test environment
-if ! setup_test_environment; then
+# Get authentication token
+if ! get_auth_token; then
+    echo -e "${RED}❌ Failed to get authentication token${NC}"
     exit 1
 fi
 
-# Function to make API calls
-api_call() {
-    local method=$1
-    local endpoint=$2
-    local data=$3
-    
-    if [ -n "$data" ]; then
-        curl -s -X "$method" \
-             -H "Content-Type: application/json" \
-             -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-             -d "$data" \
-             "$API_BASE_URL$endpoint" > /dev/null
-    else
-        curl -s -X "$method" \
-             -H "Authorization: Bearer $TEST_JWT_TOKEN" \
-             "$API_BASE_URL$endpoint" > /dev/null
-    fi
-}
+echo "✅ Authentication token loaded: ${AUTH_TOKEN:0:50}..."
 
-echo "Starting traffic generation... (Press Ctrl+C to stop)"
-echo "Each dot represents a batch of API calls"
+# Generate traffic for 30 seconds
+echo "🔄 Generating traffic for 30 seconds..."
+end_time=$((SECONDS + 30))
 
-counter=0
-end_time=$(($(date +%s) + 120))  # Run for 2 minutes
-
-while [ $(date +%s) -lt $end_time ]; do
-    counter=$((counter + 1))
-    echo -n "."
+while [ $SECONDS -lt $end_time ]; do
+    # Get column settings
+    make_authenticated_request "GET" "/api/v1/column-settings/" > /dev/null 2>&1
     
-    # Mix of API calls
-    api_call GET "/todos/"
-    api_call GET "/column-settings/"
-    api_call GET "/auth/me"
+    # Get tasks
+    make_authenticated_request "GET" "/api/v1/tasks/" > /dev/null 2>&1
     
-    if [ $((counter % 3)) -eq 0 ]; then
-        api_call POST "/todos/" '{"title":"Load Test Todo '$counter'","description":"Generated for load testing","is_completed":false}'
-    fi
-    
-    if [ $((counter % 5)) -eq 0 ]; then
-        api_call PUT "/column-settings/" '{"columns_config":"{}","column_order":"[]"}'
-    fi
-    
-    if [ $((counter % 10)) -eq 0 ]; then
-        echo " [$counter requests sent, $(( end_time - $(date +%s) ))s remaining]"
-    fi
-    
-    sleep 1
+    # Small delay between requests
+    sleep 0.5
 done
 
-echo
-echo "✅ Traffic generation complete!"
-echo "📊 Total API calls made: approximately $((counter * 3)) calls"
-echo
-echo "🌐 Now check the dashboard at: http://localhost:3001/d/api-metrics-dashboard"
-echo "   You should see active metrics in all panels!"
-
-# Quick verification
-echo
-echo "🔍 Quick metrics verification:"
-echo "Current total requests:"
-curl -s "http://localhost:9090/api/v1/query?query=http_requests_total" | grep -o '"value":\[[^]]*\]' | head -3
-echo
-echo "Testing rate calculation (should have data now):"
-rate_result=$(curl -s "http://localhost:9090/api/v1/query?query=rate(http_requests_total[1m])")
-rate_count=$(echo "$rate_result" | grep -o '"value":\[[^]]*\]' | wc -l)
-echo "Rate query now returns $rate_count data points"
+echo "✅ Traffic generation completed!"

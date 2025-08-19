@@ -4,6 +4,11 @@
 
 set -e
 
+# Set project root and backend directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+BACKEND_DIR="$PROJECT_ROOT/backend"
+
 # Fix NODE_OPTIONS issue that can cause MODULE_NOT_FOUND errors
 if [[ "$NODE_OPTIONS" == *"bootloader.js"* ]]; then
     echo "🔧 Clearing problematic NODE_OPTIONS to fix VS Code debugger conflict..."
@@ -14,15 +19,19 @@ fi
 echo "🔧 Setting up test environment..."
 
 # Load environment variables from .env file if it exists
-if [ -f "../backend/.env" ]; then
+echo "🔍 Looking for .env file at: $BACKEND_DIR/.env"
+if [ -f "$BACKEND_DIR/.env" ]; then
     echo "📁 Loading environment variables from backend/.env"
     set -a  # automatically export all variables
-    source ../backend/.env
+    source "$BACKEND_DIR/.env"
     set +a  # turn off automatic export
+    echo "📋 SECRET_KEY loaded: ${SECRET_KEY:0:20}..."
+else
+    echo "❌ .env file not found at $BACKEND_DIR/.env"
 fi
 
 # Navigate to backend directory
-cd "$(dirname "$0")./backend"
+cd "$BACKEND_DIR"
 
 # Check if PyJWT is installed
 if ! python3 -c "import jwt" 2>/dev/null; then
@@ -77,7 +86,7 @@ echo "🔑 Token (first 50 chars): ${TEST_AUTH_TOKEN:0:50}..."
 
 # Run tests
 echo "🧪 Running backend tests..."
-source ../backend/venv/bin/activate
+source "$BACKEND_DIR/venv/bin/activate"
 pytest "$@" -v --tb=short -s
 
 echo "✅ Tests completed!"

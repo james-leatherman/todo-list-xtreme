@@ -1,13 +1,20 @@
 import requests
 import json
 import sys
+import os
 
 def test_api_endpoints():
     # Configuration
     base_url = "http://localhost:8000"
     
-    # Use the test token we generated
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzQ5MTcyMzExfQ.Xwo6PVcoIgchrd3rWlBDKMWofs18yx0QUqzX0CSefLE"
+    # Get the test token from environment variable (set by common auth system)
+    token = os.environ.get("TEST_AUTH_TOKEN")
+    if not token:
+        print("❌ ERROR: TEST_AUTH_TOKEN environment variable not set")
+        print("💡 Please run the test using the common authentication system:")
+        print("   ./scripts/verify/run-tests-local.sh")
+        sys.exit(1)
+    
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"

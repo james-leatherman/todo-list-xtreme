@@ -45,7 +45,7 @@ def test_api_endpoints():
         "title": "Test API Integration",
         "description": "Testing that the API and frontend work together"
     }
-    resp = requests.post(f"{base_url}/api/v1/todos/", headers=headers, json=new_todo)
+    resp = requests.post(f"{base_url}/api/v1/todos/", headers=headers, json=new_todo, timeout=5)
     print(f"Status: {resp.status_code}")
     print(f"Response: {resp.json() if resp.status_code in [200, 201] else resp.text}")
     
